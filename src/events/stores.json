@@ -1,0 +1,51 @@
+{
+  "httpMethod": "get",
+  "body": "[{\"storeId\":\"a6c31de9-e0b0-4e72-a9d0-7b56d29f4616\",\"name\":\"consectetur\",\"active\":true,\"vendorId\":\"f85d559a-4767-4ec1-b349-88d6e208286f\",\"description\":{\"translations\":{\"es_es\":\"Hola\",\"en_us\":\"Hello\"}},\"services\":[{\"name\":\"amet\",\"url\":\"mollit\",\"active\":false}],\"contactInfo\":{\"phone\":\"23955400\"},\"locationInfo\":{\"address\":\"Louisa Street\",\"latitude\":40.7527198,\"longitude\":-74.00635,\"cityId\":\"c91b68e4-3e6a-47a6-a06f-d12964c2fe03\",\"city\":\"Gorham\",\"stateId\":\"559f1288-6379-4b41-8f8b-4566102549f6\",\"state\":\"VI\",\"countryId\":\"104017fe-6b11-4b87-87c3-5b2768b60abe\",\"country\":\"EE\",\"postalCode\":\"10001\"},\"deliveryInfo\":{\"minimumOrder\":25.93,\"maximumOrder\":110.17,\"cookTime\":\"10\",\"deliveryId\":\"7f6d8ba9-ff98-411c-81f9-30ca0b3133f3\",\"shippingCost\":1.16},\"isDefault\":true,\"enableTips\":false,\"timezone\":\"UTC-5\",\"images\":[{\"type\":\"PNG\",\"bucket\":\"esse\",\"cloudFrontUrl\":\"do\",\"key\":\"cillum\",\"name\":\"irure\",\"url\":\"laboris\"}],\"polygons\":{\"coordinates\":[[[[0,0],[0,1],[1,1],[1,0],[0,0]]]],\"type\":\"multipolygon\"},\"schedulesByChannel\":[{\"channelId\":\"35bd5b9a-05ef-4b7e-ac8d-fd42e5ac67f6\",\"schedules\":[{\"dayOfWeek\":\"SATURDAY\",\"timePeriods\":[{\"startTime\":111111,\"endTime\":111111,\"utcOffset\":\"-05:00\"}]}]}],\"metadata\":{\"key\":\"value\",\"storeCode\":\"string\",\"externalId\":\"string\",\"externalCode\":\"string\",\"idDeliveryKfc\":\"string\"}}]",
+  "headers": {
+    "Accountid": " 64e78fb0874361aa5b5d06bc"
+  },
+  "isBase64Encoded": false,
+  "multiValueHeaders": {},
+  "multiValueQueryStringParameters": {},
+  "path": "/countries",
+  "pathParameters": {},
+  "queryStringParameters": {},
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234",
+    "authorizer": {},
+    "httpMethod": "get",
+    "identity": {
+      "accessKey": "",
+      "accountId": "",
+      "apiKey": "",
+      "apiKeyId": "",
+      "caller": "",
+      "clientCert": {
+        "clientCertPem": "",
+        "issuerDN": "",
+        "serialNumber": "",
+        "subjectDN": "",
+        "validity": { "notAfter": "", "notBefore": "" }
+      },
+      "cognitoAuthenticationProvider": "",
+      "cognitoAuthenticationType": "",
+      "cognitoIdentityId": "",
+      "cognitoIdentityPoolId": "",
+      "principalOrgId": "",
+      "sourceIp": "",
+      "user": "",
+      "userAgent": "",
+      "userArn": ""
+    },
+    "path": "/countries",
+    "protocol": "HTTP/1.1",
+    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+    "requestTimeEpoch": 1428582896000,
+    "resourceId": "123456",
+    "resourcePath": "/countries",
+    "stage": "dev"
+  },
+  "resource": "",
+  "stageVariables": {}
+}
