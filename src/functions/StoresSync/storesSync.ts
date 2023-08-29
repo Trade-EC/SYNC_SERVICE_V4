@@ -19,26 +19,30 @@ export const lambdaHandler = async (
     const account = await db.collection("account").findOne({ accountId });
     const storesToCreate = [];
     for (const store of stores) {
+      const { storeId, name, description, locationInfo, images } = store;
+      const { services, active, isDefault, deliveryInfo, metadata } = store;
+      const savedStore = await db.collection("stores").findOne({ storeId });
+      console.log(JSON.stringify(savedStore));
       const storeToCreate = {
         status: "DRAFT",
         version: "2023-07-01-1",
-        storeId: store.storeId,
-        storeExternalId: store.metadata?.storeExternalId,
-        storeName: store.name,
-        name: store.name,
-        description: store.description.translations.es_es,
-        descriptionV4: store.description,
+        storeId,
+        storeExternalId: metadata?.storeExternalId,
+        storeName: name,
+        name,
+        description: description.translations.es_es,
+        descriptionV4: description,
         phone: store.contactInfo.phone,
-        minOrderAmount: store.deliveryInfo.minimumOrder,
-        maxOrderAmount: store.deliveryInfo.maximumOrder,
-        services: store.services,
-        active: store.active,
-        isDefault: store.isDefault,
+        minOrderAmount: deliveryInfo.minimumOrder,
+        maxOrderAmount: deliveryInfo.maximumOrder,
+        services,
+        active,
+        isDefault,
         outOfService: false, // quemado
-        cookTime: store.deliveryInfo.cookTime, // minutes
+        cookTime: deliveryInfo.cookTime, // minutes
         enableTips: store.enableTips,
-        images: store.images,
-        minOrder: store.deliveryInfo.minimumOrder,
+        images: images,
+        minOrder: deliveryInfo.minimumOrder,
         // minOrderSymbol
         // orderSymbol
         polygons: store.polygons,
@@ -52,38 +56,41 @@ export const lambdaHandler = async (
         ),
         schedulesByChannelV4: store.schedulesByChannel,
         catalogues: [],
-        address: store.locationInfo.address,
+        address: locationInfo.address,
         country: {
-          id: store.locationInfo.countryId,
-          name: store.locationInfo.country
+          id: locationInfo.countryId,
+          name: locationInfo.country
           // active: true De donde sale? - Dani, debe avisar la info
         },
         city: {
-          id: store.locationInfo.cityId,
-          name: store.locationInfo.city
+          id: locationInfo.cityId,
+          name: locationInfo.city
           // active: true De donde sale? - Dani, debe avisar la info
         },
-        latitude: store.locationInfo.latitude,
-        longitude: store.locationInfo.longitude,
+        latitude: locationInfo.latitude,
+        longitude: locationInfo.longitude,
         location: {
-          lat: store.locationInfo.latitude,
-          lon: store.locationInfo.longitude
+          lat: locationInfo.latitude,
+          lon: locationInfo.longitude
         },
         locationV4: {
-          address: store.locationInfo.address,
-          latitude: store.locationInfo.latitude,
-          longitude: store.locationInfo.longitude,
-          city: store.locationInfo.city,
-          state: store.locationInfo.state,
-          country: store.locationInfo.country,
-          postalCode: store.locationInfo.postalCode
+          address: locationInfo.address,
+          latitude: locationInfo.latitude,
+          longitude: locationInfo.longitude,
+          city: locationInfo.city,
+          state: locationInfo.state,
+          country: locationInfo.country,
+          postalCode: locationInfo.postalCode
         },
-        additionalInfo: store.metadata,
-        metadata: store.metadata,
+        additionalInfo: metadata,
+        metadata: metadata,
         account,
         accounts: [account]
       };
       storesToCreate.push(storeToCreate);
+    }
+    for (const store of storesToCreate) {
+      await db.collection("stores").insertOne(store);
     }
     return { statusCode: 200, body: JSON.stringify(stores) };
   } catch (e) {

@@ -3,7 +3,8 @@ jest.mock("mongodb", () => {
     MongoClient: jest.fn(() => ({
       db: jest.fn(() => ({
         collection: jest.fn(() => ({
-          findOne: jest.fn()
+          findOne: jest.fn(),
+          insertOne: jest.fn()
         }))
       }))
     }))
