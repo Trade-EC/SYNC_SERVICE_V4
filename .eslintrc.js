@@ -21,8 +21,8 @@ module.exports = {
     // e.g. "@typescript-eslint/explicit-function-return-type": "off",
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": [
-      "error",
-      { vars: "all", args: "none", ignoreRestSiblings: false }
+      "warn",
+      { vars: "all", args: "none", ignoreRestSiblings: true }
     ],
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-ts-comment": "off",

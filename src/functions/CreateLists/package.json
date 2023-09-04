@@ -1,0 +1,10 @@
+{
+  "name": "create-lists",
+  "version": "1.0.0",
+  "description": "Lambda function to create lists for sync process",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "clear:modules": "rm -rf node_modules"
+  }
+}

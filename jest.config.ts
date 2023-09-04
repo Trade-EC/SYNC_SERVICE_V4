@@ -13,7 +13,15 @@ const config: Config = {
   coverageDirectory: "coverage",
   coverageProvider: "v8",
   testMatch: ["**/*.test.ts"],
-  setupFilesAfterEnv: ["./src/setupTestsAfterEnv.ts"]
+  moduleNameMapper: {
+    "^/opt/nodejs/(.*)$": "<rootDir>/src/layers/sync-service-layer/$1"
+  },
+  setupFilesAfterEnv: ["./src/setupTestsAfterEnv.ts"],
+  moduleDirectories: [
+    "node_modules",
+    "src/layers/sync-service-layer/node_modules",
+    "src/functions/**/node_modules"
+  ]
 };
 
 export default config;

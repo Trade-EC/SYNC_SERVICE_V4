@@ -1,5 +1,5 @@
 import { Db, MongoClient } from "mongodb";
-const MONGODB_URI = "mongodb://root:example@172.17.0.3:27017";
+const MONGODB_URI = "mongodb://root:example@172.17.0.3:27017/";
 
 let cachedDbClient: Db | null = null;
 

@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
-import { lambdaHandler } from "./storesSync";
+import { lambdaHandler } from "./handler";
 import * as storeEvent from "../../events/stores.json";
 
 describe("Unit test for app handler", function () {

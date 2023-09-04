@@ -1,9 +1,7 @@
 import { z } from "zod";
 
 export const numberString = z.preprocess(
-  (value, ctx) => {
-    return parseFloat(z.string().parse(value));
-  },
+  value => parseFloat(z.string().parse(value)),
   z.number(),
   {}
 );
