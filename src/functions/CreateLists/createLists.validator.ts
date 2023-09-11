@@ -28,7 +28,7 @@ export const productValidator = z.object({
   featured: z.boolean().optional(),
   modifierId: z.string().max(45).optional(),
   tags: z.array(z.string()).optional(),
-  productModifiers: z.array(z.string().or(productModifier)),
+  productModifiers: z.array(z.string().or(productModifier)).optional(),
   // TODO: Es un array, verificar
   // priceInfo: z.array(productPriceInfoValidator),
   priceInfo: productPriceInfoValidator,
@@ -38,13 +38,13 @@ export const productValidator = z.object({
   images: z.array(imageValidator).optional(),
   schedules: z.array(scheduleValidator).optional(),
   additionalInfo: z.record(z.string().min(1), z.any()).optional(),
-  type: z.union([
-    z.literal("PRODUCT"),
-    z.literal("MODIFIER"),
-    z.literal("COMPLEMENT"),
-    z.literal("PRODUCTO"),
-    z.literal("MODIFICADOR"),
-    z.literal("COMPLEMENTO")
+  type: z.enum([
+    "PRODUCT",
+    "MODIFIER",
+    "COMPLEMENT",
+    "PRODUCTO",
+    "MODIFICADOR",
+    "COMPLEMENTO"
   ])
 });
 
@@ -67,17 +67,16 @@ export const modifierGroupValidator = z.object({
   // // TODO: verificar requerido
   visible: z.boolean().optional(),
   // visible: z.boolean(),
-  type: z.union([
-    z.literal("RADIO"),
-    z.literal("CHECKBOX"),
-    z.literal("QUANTITY"),
-    z.literal("SELECT"),
-    z.literal("CUSTOMIZE"),
-    z.literal("SUPER_SIZE"),
-    z.literal("CUSTOMIZE_ADD"),
-    z.literal("CUSTOMIZE_SUBTRACT"),
-    // TODO: Verificar todos los tipos de modifiers
-    z.literal("CUSTOM")
+  type: z.enum([
+    "RADIO",
+    "CHECKBOX",
+    "QUANTITY",
+    "SELECT",
+    "CUSTOMIZE",
+    "SUPER_SIZE",
+    "CUSTOMIZE_ADD",
+    "CUSTOMIZE_SUBTRACT",
+    "CUSTOM"
   ]),
   additionalInfo: z.record(z.string().min(1), z.any()).optional(),
   modifierOptions: z.array(modifierOptionValidator)
@@ -104,14 +103,97 @@ export const baseCategoryValidator = z.object({
   productCategoryId: z.string().max(45),
   name: z.string().max(100),
   displayInList: z.boolean(),
-  feature: z.boolean().optional(),
+  featured: z.boolean().optional(),
   crossSellingCategory: z.boolean().optional(),
   position: z.number().int().optional(),
   images: z.array(imageValidator).max(1).optional(),
-  productListing: z.array(productListingValidator)
+  productListing: z.array(productListingValidator),
+  schedules: z.array(scheduleValidator).optional()
 });
 
 export const categoryValidator: z.ZodType<Category> =
   baseCategoryValidator.extend({
     childCategories: z.lazy(() => categoryValidator.array()).optional()
+  });
+
+export const listsValidator = z
+  .object({
+    list: listValidator,
+    products: z.array(productValidator),
+    categories: z.array(categoryValidator),
+    modifierGroups: z.array(modifierGroupValidator)
+  })
+  .superRefine((schema, ctx) => {
+    const { products, categories, modifierGroups } = schema;
+
+    const productIds = products.map(product => product.productId);
+    const modifierGroupIds = modifierGroups.map(
+      modifierGroup => modifierGroup.modifierId
+    );
+
+    const productsInCategoriesSet = new Set<string>();
+    categories.forEach(category =>
+      category.productListing.forEach(product =>
+        productsInCategoriesSet.add(product.productId)
+      )
+    );
+
+    const nonExistProductsForCategories = [...productsInCategoriesSet].filter(
+      productInCategory => !productIds.includes(productInCategory)
+    );
+
+    if (nonExistProductsForCategories.length > 0) {
+      nonExistProductsForCategories.forEach(productId => {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Categories: Product ${productId} non exist`
+        });
+      });
+    }
+
+    const modifiersInProductsSet = new Set<string>();
+    products.forEach(product =>
+      product.productModifiers?.forEach(productModifier => {
+        if (typeof productModifier === "string") {
+          modifiersInProductsSet.add(productModifier);
+        }
+
+        if (typeof productModifier === "object") {
+          modifiersInProductsSet.add(productModifier.modifierId);
+        }
+      })
+    );
+
+    const nonExistModifiers = [...modifiersInProductsSet].filter(
+      modifierId => !modifierGroupIds.includes(modifierId)
+    );
+
+    if (nonExistModifiers.length > 0) {
+      nonExistModifiers.forEach(modifierId => {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Products: Modifier ${modifierId} non exist`
+        });
+      });
+    }
+
+    const productInModifierSet = new Set<string>();
+    modifierGroups.forEach(modifierGroup =>
+      modifierGroup.modifierOptions.forEach(modifierOption => {
+        productInModifierSet.add(modifierOption.productId);
+      })
+    );
+
+    const nonExistProductForModifier = [...productInModifierSet].filter(
+      productId => !productIds.includes(productId)
+    );
+
+    if (nonExistProductForModifier.length > 0) {
+      nonExistProductForModifier.forEach(productId => {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `ModifierGroup: Product ${productId} non exist`
+        });
+      });
+    }
   });

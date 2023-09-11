@@ -1,5 +1,6 @@
 import { z } from "/opt/nodejs/node_modules/zod";
 import { taxesValidator } from "/opt/nodejs/validators/common.validator";
+import { schedulesByChannelValidator } from "/opt/nodejs/validators/common.validator";
 import { scheduleValidator } from "/opt/nodejs/validators/common.validator";
 import { numberString } from "/opt/nodejs/validators/custom.validator";
 
@@ -15,13 +16,7 @@ export const channelValidator = z.object({
 export const storeServicesValidator = z.object({
   // TODO: Confirmar
   name: z.string(),
-  active: z.union([z.literal("ACTIVE"), z.literal("INACTIVE")])
-});
-
-export const schedulesByChannelValidator = z.object({
-  // TODO: Validar con existentes
-  channelId: z.string(),
-  schedules: z.array(scheduleValidator)
+  active: z.enum(["ACTIVE", "INACTIVE"])
 });
 
 export const storeContactValidator = z.object({
@@ -31,7 +26,7 @@ export const storeContactValidator = z.object({
 
 export const storeDeliveryValidator = z.object({
   deliveryTimeValue: z.number().int().or(numberString),
-  deliveryTimeUnit: z.union([z.literal("min"), z.literal("hour")]),
+  deliveryTimeUnit: z.enum(["min", "hour"]),
   minimumOrder: z.number(),
   shippingCost: z.number(),
   cookTime: z.number().int()

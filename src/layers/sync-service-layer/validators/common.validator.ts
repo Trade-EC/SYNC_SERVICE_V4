@@ -6,16 +6,15 @@ export const taxesValidator = z.object({
 });
 
 export const scheduleValidator = z.object({
-  // TODO: Confirmar SPECIAL
-  day: z.union([
-    z.literal("MONDAY"),
-    z.literal("TUESDAY"),
-    z.literal("WEDNESDAY"),
-    z.literal("THURSDAY"),
-    z.literal("FRIDAY"),
-    z.literal("SATURDAY"),
-    z.literal("SUNDAY"),
-    z.literal("SPECIAL")
+  day: z.enum([
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+    "SPECIAL"
   ]),
   // TODO: Validador especial
   startDate: z.string().optional(),
@@ -29,4 +28,13 @@ export const scheduleValidator = z.object({
 export const imageValidator = z.object({
   imageCategoryId: z.string().max(45).or(z.number().int()),
   fileUrl: z.string()
+});
+
+export const schedulesByChannelValidator = z.object({
+  channelId: z.string(),
+  schedules: z.array(scheduleValidator)
+});
+
+export const headersValidator = z.object({
+  Account: z.string()
 });
