@@ -4,7 +4,8 @@ jest.mock("mongodb", () => {
       db: jest.fn(() => ({
         collection: jest.fn(() => ({
           findOne: jest.fn(),
-          insertOne: jest.fn()
+          insertOne: jest.fn(),
+          updateOne: jest.fn()
         }))
       }))
     }))

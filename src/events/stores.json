@@ -2,7 +2,7 @@
   "httpMethod": "get",
   "body": "{\"stores\":[{\"name\":\"EL HORNERO GONZALEZ SUAREZ TESTSSS\",\"active\":true,\"default\":true,\"storeId\":\"1\",\"services\":[],\"vendorId\":\"10\",\"schedules\":[{\"day\":\"MONDAY\",\"endTime\":\"22:30\",\"startTime\":\"11:00\"},{\"day\":\"TUESDAY\",\"endTime\":\"22:30\",\"startTime\":\"11:00\"},{\"day\":\"WEDNESDAY\",\"endTime\":\"22:30\",\"startTime\":\"11:00\"},{\"day\":\"THURSDAY\",\"endTime\":\"22:30\",\"startTime\":\"11:00\"},{\"day\":\"FRIDAY\",\"endTime\":\"22:30\",\"startTime\":\"11:00\"},{\"day\":\"SATURDAY\",\"endTime\":\"22:30\",\"startTime\":\"11:00\"},{\"day\":\"SUNDAY\",\"endTime\":\"21:30\",\"startTime\":\"11:00\"}],\"storeCode\":\"1\",\"taxesInfo\":{\"vatRatePercentage\":12},\"contactInfo\":{\"phone\":\"1700-005005\",\"address\":\"GONZALEZ SUAREZ N 32-62 Y JACINTO BEJARANO\"},\"deliveryInfo\":{\"cookTime\":30,\"deliveryId\":\"1\",\"minimumOrder\":6,\"shippingCost\":1.9999},\"locationInfo\":{\"city\":\"QUITO\",\"latitude\":\"-0.194983\",\"longitude\":\"-78.478709\"},\"storeChannels\":[\"HORNERO-DOMICILE\"]}],\"channels\":[{\"active\":true,\"channel\":\"Domicilio App\",\"channelId\":\"HORNERO-DOMICILE\",\"ecommerceChannelId\":\"1\"}],\"vendorId\":\"10\"}",
   "headers": {
-    "Accountid": "53be0c22-8bb4-445d-bfab-ecb7d0688588"
+    "Account": "53be0c22-8bb4-445d-bfab-ecb7d0688588"
   },
   "isBase64Encoded": false,
   "multiValueHeaders": {},

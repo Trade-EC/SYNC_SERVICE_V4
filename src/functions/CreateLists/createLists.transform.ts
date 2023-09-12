@@ -191,15 +191,7 @@ export const transformProduct = (props: TransformProductsProps) => {
           if (!modifierProduct) return null;
 
           return {
-            ...transformProduct({
-              product: modifierProduct,
-              storesId,
-              channelId,
-              vendorId,
-              products,
-              modifierGroups,
-              categories
-            }),
+            productId,
             attributes: {
               externalId: productId,
               showInMenu: true,
@@ -216,24 +208,6 @@ export const transformProduct = (props: TransformProductsProps) => {
       };
     })
     .filter(modifier => !!modifier);
-
-  const syncUpselling: any = upselling
-    ?.map(productId => {
-      const foundProduct = products.find(
-        product => productId.toString() === product.productId.toString()
-      );
-      if (!foundProduct) return undefined;
-      return transformProduct({
-        product: foundProduct,
-        storesId,
-        channelId,
-        vendorId,
-        products,
-        modifierGroups,
-        categories
-      });
-    })
-    .filter(product => !!product);
 
   const syncCategories = transformCategoriesByProduct(
     categories,
@@ -285,7 +259,7 @@ export const transformProduct = (props: TransformProductsProps) => {
     ],
     // images: Se va a hacer sincro de imagenes Si.
     questions,
-    upselling: syncUpselling,
+    upselling,
     standardTime: standardTime || schedules ? "YES" : "NO", // Si me llegan schedules standardTime YES si no NO
     schedules: schedules
       ? transformSchedules(schedules, storesId, channelId)
