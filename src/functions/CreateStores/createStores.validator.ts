@@ -8,13 +8,10 @@ export const channelValidator = z.object({
   active: z.boolean(),
   channel: z.string(),
   channelId: z.string(),
-  ecommerceChannelId: z.string().optional(),
   additionalInfo: z.record(z.string().min(1), z.any()).optional()
 });
 
-// TODO: Enviar mensajes de errores entendibles y granulares
 export const storeServicesValidator = z.object({
-  // TODO: Confirmar
   name: z.string(),
   active: z.enum(["ACTIVE", "INACTIVE"])
 });
@@ -46,7 +43,6 @@ export const storeValidator = z.object({
   // vendorId: z.number().or(z.string()),
   storeCode: z.string().max(60).optional(),
   featured: z.boolean().optional(),
-  // TODO: Validar con existentes
   storeChannels: z.array(z.string()),
   storeImages: z.array(z.string().url()).optional(),
   services: z.array(storeServicesValidator).optional(),

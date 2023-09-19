@@ -1,8 +1,9 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { createOrUpdateProducts } from "./createLists.repository";
-import { transformProduct } from "./createLists.transform";
 import { listsValidator } from "./createLists.validator";
+
+import { transformProduct } from "/opt/nodejs/transforms/product.transform";
 
 export const syncListsService = async (event: APIGatewayProxyEvent) => {
   const { body } = event;

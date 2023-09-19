@@ -9,7 +9,11 @@
     "clear:modules": "rm -rf node_modules"
   },
   "dependencies": {
+    "lodash": "^4.17.21",
     "mongodb": "^6.0.0",
     "zod": "^3.22.2"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.198"
   }
 }

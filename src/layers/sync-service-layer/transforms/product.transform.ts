@@ -1,7 +1,8 @@
-import { Category, ModifierGroup } from "./createLists.types";
-import { TransformProductsProps } from "./createLists.types";
-import { PriceInfo, TaxesInfo } from "./createLists.types";
+import { isUndefined } from "../utils/common.utils";
 
+import { Category, ModifierGroup } from "/opt/nodejs/types/lists.types";
+import { PriceInfo, TaxesInfo } from "/opt/nodejs/types/lists.types";
+import { TransformProductsProps } from "/opt/nodejs/types/lists.types";
 import { transformSchedules } from "/opt/nodejs/utils/schedule.utils";
 
 export const transformCategoriesByProduct = (
@@ -16,7 +17,7 @@ export const transformCategoriesByProduct = (
   );
 
   return categoriesByProduct.map(category =>
-    transformCategory(category, storesId, channelId, vendorId)
+    transformCategory(category, storesId, channelId, vendorId, productId)
   );
 };
 
@@ -24,11 +25,16 @@ export const transformCategory = (
   category: Category,
   storesId: string[],
   channelId: string,
-  vendorId: string
+  vendorId: string,
+  productId: string
   // parentId?: string
 ) => {
   const { name, productCategoryId, schedules } = category;
-  const { featured, childCategories = [], position } = category;
+  const { featured, childCategories = [], productListing } = category;
+  const productInCategory = productListing.find(
+    listing => listing.productId === productId
+  );
+  const { position } = productInCategory ?? {};
 
   const newCategory = {
     categoryId: productCategoryId,
@@ -46,15 +52,15 @@ export const transformCategory = (
     additionalInfo: {
       externalId: productCategoryId
     },
-    featured,
+    featured: !isUndefined(featured) ? featured : null,
     available: true,
     subcategories: !!childCategories.length,
     active: true,
-    "vendorId#storeId#channelId": storesId.map(storeId => ({
+    vendorIdStoreIdChannelId: storesId.map(storeId => ({
       vendorId,
       storeId,
       channelId,
-      position,
+      position: !isUndefined(position) ? position : null,
       displayInMenu: "YES"
     }))
   };
@@ -108,7 +114,7 @@ export const transformPrices = (
   const points = {
     category: "POINTS",
     symbol: "",
-    netPrice: pointPrice,
+    netPrice: pointPrice ?? 0,
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
@@ -118,7 +124,7 @@ export const transformPrices = (
   const suggested = {
     category: "SUGGESTED",
     symbol: "",
-    netPrice: suggestedPrice,
+    netPrice: suggestedPrice ?? 0,
     ...getTaxesAndGrossPrice(suggestedPrice ?? 0, taxesInfo),
     discounts: [],
     discountGrossPrice: 0,
@@ -129,7 +135,7 @@ export const transformPrices = (
   const suggestedPoints = {
     category: "SUGGESTED_POINTS",
     symbol: "",
-    netPrice: suggestedPointPrice,
+    netPrice: suggestedPointPrice ?? 0,
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
@@ -137,9 +143,11 @@ export const transformPrices = (
   };
 
   productPrice["NORMAL"] = normal;
-  productPrice["POINTS"] = pointPrice ? points : undefined;
-  productPrice["SUGGESTED"] = suggestedPrice ? suggested : undefined;
-  productPrice["SUGGESTED_POINTS"] = suggestedPoints;
+  productPrice["POINTS"] = !isUndefined(pointPrice) ? points : null;
+  productPrice["SUGGESTED"] = !isUndefined(suggestedPrice) ? suggested : null;
+  productPrice["SUGGESTED_POINTS"] = !isUndefined(suggestedPoints)
+    ? suggestedPoints
+    : null;
 
   return productPrice;
 };
@@ -154,9 +162,9 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
     name: modifier,
     description: "",
     min: minOptions,
-    max: maxOptions
-    // additionalInfo: {} No existe null -> php
-    // visible No existe php
+    max: maxOptions,
+    additionalInfo: null,
+    visible: true
   };
   return question;
 };
@@ -219,6 +227,8 @@ export const transformProduct = (props: TransformProductsProps) => {
 
   const newProduct = {
     productId,
+    status: "DRAFT",
+    version: "2023-07-01-1",
     name,
     description,
     type,
@@ -231,22 +241,29 @@ export const transformProduct = (props: TransformProductsProps) => {
       externalId: productId,
       showInMenu: true
     },
-    additionalInfo,
-    tags,
-    prices: transformPrices(priceInfo, taxInfo),
+    additionalInfo: !isUndefined(additionalInfo) ? additionalInfo : null,
+    tags: tags ? tags : [],
+    prices: [
+      {
+        vendorIdStoreIdChannelId: storesId.map(
+          storeId => `${vendorId}#${storeId}#${channelId}`
+        ),
+        prices: transformPrices(priceInfo, taxInfo)
+      }
+    ],
     categories: syncCategories,
     externalData: null, // No se encontró en el PHP
     isPriceVip: false,
     outOfService: false,
     outOfStock: false,
-    sponsored: featured,
+    sponsored: !isUndefined(featured) ? featured : null,
     suggestedPrice: suggestedPrice ? suggestedPrice.toPrecision(2) : 0,
     maxAmountForSale: 0,
-    status: [
+    statuses: [
       {
-        "vendorId#storeId#channelId": storesId.map(storeId => [
-          `${vendorId}#${storeId}#${channelId}`
-        ]),
+        vendorIdStoreIdChannelId: storesId.map(
+          storeId => `${vendorId}#${storeId}#${channelId}`
+        ),
         availability: true,
         isVisible: true,
         maxInCart: null,
@@ -258,11 +275,22 @@ export const transformProduct = (props: TransformProductsProps) => {
       }
     ],
     // images: Se va a hacer sincro de imagenes Si.
-    questions,
-    upselling,
+    questions:
+      questions?.map(question => ({
+        vendorIdStoreIdChannelId: storesId.map(
+          storeId => `${vendorId}#${storeId}#${channelId}`
+        ),
+        ...question
+      })) ?? [],
+    upselling: upselling ? upselling : [],
     standardTime: standardTime || schedules ? "YES" : "NO", // Si me llegan schedules standardTime YES si no NO
     schedules: schedules
-      ? transformSchedules(schedules, storesId, channelId)
+      ? transformSchedules(schedules, storesId, channelId).map(schedule => ({
+          vendorIdStoreIdChannelId: storesId.map(
+            storeId => `${vendorId}#${storeId}#${channelId}`
+          ),
+          ...schedule
+        }))
       : []
   };
 

@@ -1,8 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
-import { handleError } from "/opt/nodejs/utils/error.utils";
-
 import { syncListsService } from "./createLists.service";
+
+import { handleError } from "/opt/nodejs/utils/error.utils";
 
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent

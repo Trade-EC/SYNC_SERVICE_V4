@@ -78,4 +78,6 @@ export const transformSchedules = (
       newSchedules.push(newSchedule);
     });
   });
+
+  return newSchedules;
 };
