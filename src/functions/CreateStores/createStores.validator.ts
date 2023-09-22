@@ -64,7 +64,6 @@ export const scheduledActivitiesValidator = z.object({
 export const channelsAndStoresValidator = z
   .object({
     vendorId: z.string(),
-    force: z.boolean().optional(),
     stores: z.array(storeValidator),
     channels: z.array(channelValidator),
     scheduledActivities: z.array(scheduledActivitiesValidator).optional()

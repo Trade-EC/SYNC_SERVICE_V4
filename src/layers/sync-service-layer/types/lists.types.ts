@@ -21,6 +21,7 @@ export interface TransformProductsProps {
   vendorId: string;
   storesId: string[];
   channelId: string;
+  accountId: string;
   product: Product;
   modifierGroups: ModifierGroup[];
   products: Product[];

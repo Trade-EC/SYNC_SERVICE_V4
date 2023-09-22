@@ -1,4 +1,5 @@
 import { isUndefined } from "../utils/common.utils";
+import { imageHandler } from "../utils/images.utils";
 
 import { Category, ModifierGroup } from "/opt/nodejs/types/lists.types";
 import { PriceInfo, TaxesInfo } from "/opt/nodejs/types/lists.types";
@@ -169,12 +170,13 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
   return question;
 };
 
-export const transformProduct = (props: TransformProductsProps) => {
+export const transformProduct = async (props: TransformProductsProps) => {
   const { product, channelId, storesId, vendorId, modifierGroups } = props;
-  const { products, categories } = props;
+  const { categories, accountId } = props;
   const { productId, name, description, type, featured } = product;
   const { tags, additionalInfo, standardTime, schedules } = product;
   const { priceInfo, taxInfo, productModifiers, upselling } = product;
+  const { images } = product;
   const { suggestedPrice } = priceInfo;
 
   const questions = productModifiers
@@ -193,10 +195,11 @@ export const transformProduct = (props: TransformProductsProps) => {
       const syncModifiers: any = modifierGroup?.modifierOptions
         .map(modifier => {
           const { productId, optionId } = modifier;
-          const modifierProduct = products.find(
-            product => product.productId === productId
-          );
-          if (!modifierProduct) return null;
+          // TODO: Ver si esto es necesario
+          // const modifierProduct = products.find(
+          //   product => product.productId === productId
+          // );
+          // if (!modifierProduct) return null;
 
           return {
             productId,
@@ -216,6 +219,10 @@ export const transformProduct = (props: TransformProductsProps) => {
       };
     })
     .filter(modifier => !!modifier);
+  const imagesPromises = images?.map(image =>
+    imageHandler(image.fileUrl, "product")
+  );
+  const newImages = await Promise.all(imagesPromises ?? []);
 
   const syncCategories = transformCategoriesByProduct(
     categories,
@@ -229,6 +236,7 @@ export const transformProduct = (props: TransformProductsProps) => {
     productId,
     status: "DRAFT",
     version: "2023-07-01-1",
+    accountId,
     name,
     description,
     type,
@@ -241,6 +249,7 @@ export const transformProduct = (props: TransformProductsProps) => {
       externalId: productId,
       showInMenu: true
     },
+    images: newImages,
     additionalInfo: !isUndefined(additionalInfo) ? additionalInfo : null,
     tags: tags ? tags : [],
     prices: [

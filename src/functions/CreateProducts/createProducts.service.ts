@@ -1,21 +1,34 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { transformProduct } from "/opt/nodejs/transforms/product.transform";
+import { headersValidator } from "/opt/nodejs/validators/common.validator";
+import { fetchDraftStores } from "/opt/nodejs/repositories/common.repository";
 
 import { createProducts, findProduct } from "./createProducts.repository";
 import { mergeCategories, mergeEntity } from "./createProducts.transform";
+import { transformKFCProducts } from "./createProducts.transform";
 import { createProductsValidator } from "./createProducts.validator";
+import { Lists } from "../CreateLists/createLists.types";
 
 export const createProductsService = async (event: APIGatewayProxyEvent) => {
-  const { body } = event;
+  const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
-  const validatedInfo = createProductsValidator.parse(parsedBody);
-  const { categories, list, modifierGroups, products } = validatedInfo;
+  const { Account: accountId } = headersValidator.parse(headers);
+  let listInfo;
+  if (accountId === "1") {
+    listInfo = transformKFCProducts(
+      parsedBody,
+      createProductsValidator
+    ) as Lists;
+  } else {
+    listInfo = createProductsValidator.parse(parsedBody);
+  }
+  const { categories, list, modifierGroups, products } = listInfo;
   const { channelId, storeId, vendorId, listName } = list;
   let storesId: string[];
   if (storeId === "replicate_in_all") {
-    // TODO: get all storesId from mongo
-    storesId = storeId.split(",");
+    const dbStores = await fetchDraftStores(accountId, vendorId);
+    storesId = dbStores.map(dbStore => dbStore.storeId);
   } else {
     storesId = storeId.split(",");
   }
@@ -31,6 +44,7 @@ export const createProductsService = async (event: APIGatewayProxyEvent) => {
       product,
       storesId,
       channelId,
+      accountId,
       vendorId,
       products,
       modifierGroups,
