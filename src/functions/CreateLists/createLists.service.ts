@@ -44,7 +44,7 @@ export const syncListsService = async (event: APIGatewayProxyEvent) => {
 
   const syncProducts = await Promise.all(syncProductsPromises);
 
-  const newProducts = createOrUpdateProducts(
+  const newProducts = await createOrUpdateProducts(
     syncProducts,
     storesId,
     vendorId,

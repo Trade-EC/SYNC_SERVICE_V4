@@ -8,7 +8,7 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 60
+    Timeout: 180
     Layers:
       - !Ref LayerSyncService
     Environment:
@@ -30,7 +30,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: SyncImagesSQS
-      VisibilityTimeout: 60
+      VisibilityTimeout: 180
       Tags:
         - Key: Name
           Value: SyncImagesSQS
@@ -92,6 +92,7 @@ Resources:
       CodeUri: src/functions/CreateLists/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
+      Timeout: 300
       Architectures:
         - x86_64
       Events:
@@ -101,6 +102,12 @@ Resources:
             Path: /lists
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt SyncImagesSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -127,6 +134,12 @@ Resources:
             Path: /products
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt SyncImagesSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -153,6 +166,12 @@ Resources:
             Queue: !GetAtt SyncImagesSQS.Arn
             ScalingConfig:
               MaximumConcurrency: 10
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: "arn:aws:s3:::syncservicev4.admin.dev/*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -175,3 +194,6 @@ Outputs:
   SyncServiceV4Bucket:
     Description: "S3 Bucket for SyncServices"
     Value: !Sub "syncservicev4.admin.${StageName}"
+  SyncServiceV4BucketARN:
+    Description: "S3 Bucket for SyncServices"
+    Value: !GetAtt SyncServiceV4Bucket.Arn

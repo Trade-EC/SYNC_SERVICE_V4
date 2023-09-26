@@ -12,17 +12,17 @@ export const getAwsDirectory = (imageCategory: string) => {
     case "vendor":
       return "vendors/";
     default:
-      return "misc";
+      return "misc/";
   }
 };
 
 export const imageHandler = async (url: string, imageCategory: string) => {
-  const image = await fetchImage(url);
-  const response = { url };
+  const image = await fetchImage(url, imageCategory);
+  const response = { url, imageCategory };
   if (image) return response;
   await sqsClient.sendMessage({
     QueueUrl: process.env.SYNC_IMAGES_SQS_URL!,
-    MessageBody: JSON.stringify({ url, imageCategory })
+    MessageBody: JSON.stringify(response)
   });
 
   return response;

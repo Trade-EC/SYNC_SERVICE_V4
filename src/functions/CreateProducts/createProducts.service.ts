@@ -40,7 +40,7 @@ export const createProductsService = async (event: APIGatewayProxyEvent) => {
   for (const product of products) {
     const { productId } = product;
     const productDB = await findProduct(productId);
-    const transformedProduct = transformProduct({
+    const transformedProduct = await transformProduct({
       product,
       storesId,
       channelId,
@@ -58,9 +58,9 @@ export const createProductsService = async (event: APIGatewayProxyEvent) => {
 
     const { categories: dbCategories, prices: dbPrices } = productDB;
     const { statuses: dbStatuses, schedules: dbSchedules } = productDB;
-    const { questions: dbQuestions } = productDB;
+    const { questions: dbQuestions, images: dbImages } = productDB;
     const { categories: newCategories, prices: newPrices } = transformedProduct;
-    const { statuses: newStatuses } = transformedProduct;
+    const { statuses: newStatuses, images: newImages } = transformedProduct;
     const { schedules: newSchedules } = transformedProduct;
     const { questions: newQuestions } = transformedProduct;
 
@@ -91,11 +91,17 @@ export const createProductsService = async (event: APIGatewayProxyEvent) => {
       newQuestions,
       vendorIdStoreIdChannelId
     );
+    const mergedImages = mergeEntity(
+      dbImages,
+      newImages,
+      vendorIdStoreIdChannelId
+    );
     transformedProduct.categories = mergedCategories;
     transformedProduct.prices = mergedPrices;
     transformedProduct.statuses = mergedStatuses;
     transformedProduct.schedules = mergedSchedules;
     transformedProduct.questions = mergedQuestions;
+    transformedProduct.images = mergedImages;
     syncProducts.push(transformedProduct);
   }
 

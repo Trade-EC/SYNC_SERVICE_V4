@@ -6,7 +6,7 @@ import { PriceInfo, TaxesInfo } from "/opt/nodejs/types/lists.types";
 import { TransformProductsProps } from "/opt/nodejs/types/lists.types";
 import { transformSchedules } from "/opt/nodejs/utils/schedule.utils";
 
-export const transformCategoriesByProduct = (
+export const transformCategoriesByProduct = async (
   categories: Category[],
   productId: string,
   storesId: string[],
@@ -17,12 +17,14 @@ export const transformCategoriesByProduct = (
     category.productListing.some(listing => listing.productId === productId)
   );
 
-  return categoriesByProduct.map(category =>
+  const categoriesByProductPromises = categoriesByProduct.map(category =>
     transformCategory(category, storesId, channelId, vendorId, productId)
   );
+
+  return Promise.all(categoriesByProductPromises);
 };
 
-export const transformCategory = (
+export const transformCategory = async (
   category: Category,
   storesId: string[],
   channelId: string,
@@ -30,17 +32,22 @@ export const transformCategory = (
   productId: string
   // parentId?: string
 ) => {
-  const { name, productCategoryId, schedules } = category;
+  const { name, productCategoryId, schedules, images } = category;
   const { featured, childCategories = [], productListing } = category;
   const productInCategory = productListing.find(
     listing => listing.productId === productId
   );
   const { position } = productInCategory ?? {};
 
+  const imagesPromises = images?.map(image =>
+    imageHandler(image.fileUrl, "category")
+  );
+  const newImages = await Promise.all(imagesPromises ?? []);
+
   const newCategory = {
     categoryId: productCategoryId,
     name,
-    // images Se va a hacer sincro de imagenes ??
+    images: newImages,
     schedules: schedules
       ? transformSchedules(schedules, storesId, channelId)
       : [],
@@ -224,7 +231,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
   );
   const newImages = await Promise.all(imagesPromises ?? []);
 
-  const syncCategories = transformCategoriesByProduct(
+  const syncCategories = await transformCategoriesByProduct(
     categories,
     productId,
     storesId,
@@ -249,7 +256,13 @@ export const transformProduct = async (props: TransformProductsProps) => {
       externalId: productId,
       showInMenu: true
     },
-    images: newImages,
+    images:
+      newImages?.map(image => ({
+        vendorIdStoreIdChannelId: storesId.map(
+          storeId => `${vendorId}#${storeId}#${channelId}`
+        ),
+        ...image
+      })) ?? [],
     additionalInfo: !isUndefined(additionalInfo) ? additionalInfo : null,
     tags: tags ? tags : [],
     prices: [
@@ -283,7 +296,6 @@ export const transformProduct = async (props: TransformProductsProps) => {
         }
       }
     ],
-    // images: Se va a hacer sincro de imagenes Si.
     questions:
       questions?.map(question => ({
         vendorIdStoreIdChannelId: storesId.map(
