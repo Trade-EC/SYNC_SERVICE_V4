@@ -1,31 +1,26 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
+import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
+import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 
 import { createOrUpdateStores } from "./createStores.repository";
 import { storeTransformer } from "./createStores.transform";
 import { ChannelsAndStores } from "./createStores.types";
-import { channelsAndStoresValidator } from "./createStores.validator";
 
-import { headersValidator } from "/opt/nodejs/validators/common.validator";
-import { transformKFCStores } from "/opt/nodejs/transforms/kfcStore.transform";
-
-export const syncStoresService = async (event: APIGatewayProxyEvent) => {
-  const { body, headers } = event;
-  const parsedBody = JSON.parse(body ?? "");
-  const { Account: accountId } = headersValidator.parse(headers);
-  let channelsAndStores;
-  if (accountId === "1") {
-    channelsAndStores = transformKFCStores(
-      parsedBody,
-      channelsAndStoresValidator
-    ) as ChannelsAndStores;
-  } else {
-    channelsAndStores = channelsAndStoresValidator.parse(parsedBody);
-  }
+export const syncStoresService = async (
+  channelsAndStores: ChannelsAndStores,
+  accountId: string
+) => {
   const { stores, vendorId } = channelsAndStores;
   const syncStores = stores.map(store =>
     storeTransformer(store, accountId, vendorId)
   );
   const newStores = createOrUpdateStores(syncStores);
+  const syncRequest: SyncRequest = {
+    accountId,
+    status: "SUCCESS",
+    type: "CHANNELS_STORES",
+    vendorId
+  };
+  await saveSyncRequest(syncRequest);
   return newStores;
 };
 

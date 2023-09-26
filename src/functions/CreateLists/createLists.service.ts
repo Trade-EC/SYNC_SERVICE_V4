@@ -1,24 +1,12 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
-
 import { createOrUpdateProducts } from "./createLists.repository";
-import { listsValidator } from "./createLists.validator";
-import { transformKFCList } from "./createLists.transform";
 import { Lists } from "./createLists.types";
 
 import { transformProduct } from "/opt/nodejs/transforms/product.transform";
-import { headersValidator } from "/opt/nodejs/validators/common.validator";
 import { fetchDraftStores } from "/opt/nodejs/repositories/common.repository";
+import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
+import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 
-export const syncListsService = async (event: APIGatewayProxyEvent) => {
-  const { body, headers } = event;
-  const parsedBody = JSON.parse(body ?? "");
-  const { Account: accountId } = headersValidator.parse(headers);
-  let listInfo;
-  if (accountId === "1") {
-    listInfo = transformKFCList(parsedBody, listsValidator) as Lists;
-  } else {
-    listInfo = listsValidator.parse(parsedBody);
-  }
+export const syncListsService = async (listInfo: Lists, accountId: string) => {
   const { categories, list, modifierGroups, products } = listInfo;
   const { channelId, storeId, vendorId, listName } = list;
   let storesId: string[];
@@ -51,6 +39,17 @@ export const syncListsService = async (event: APIGatewayProxyEvent) => {
     channelId,
     listName
   );
+
+  const syncRequest: SyncRequest = {
+    accountId,
+    channelId,
+    status: "SUCCESS",
+    storesId: storeId,
+    type: "LISTS",
+    vendorId
+  };
+
+  await saveSyncRequest(syncRequest);
 
   return newProducts;
 };

@@ -16,3 +16,7 @@ export interface SchemaSchedule
   from: number;
   to: number;
 }
+
+export interface HeadersProps {
+  accountId: string;
+}

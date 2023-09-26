@@ -60,10 +60,10 @@ Resources:
     Metadata:
       BuildMethod: nodejs18.x
 
-  CreateStores:
+  ValidateStores:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: src/functions/CreateStores/
+      CodeUri: src/functions/ValidateStores/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
       Architectures:
@@ -75,6 +75,65 @@ Resources:
             Path: /channels-stores
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+                - lambda:InvokeAsync
+              Resource: !GetAtt CreateStores.Arn     
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  CreateStores:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/CreateStores/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ValidateLists:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/ValidateLists/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /lists
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+                - lambda:InvokeAsync
+              Resource: !GetAtt CreateLists.Arn     
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -95,19 +154,45 @@ Resources:
       Timeout: 300
       Architectures:
         - x86_64
-      Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /lists
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
       Policies:
         - Statement:
             - Effect: Allow
               Action:
                 - sqs:SendMessage
               Resource: !GetAtt SyncImagesSQS.Arn
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ValidateProducts:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/ValidateProducts/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /products
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+                - lambda:InvokeAsync
+              Resource: !GetAtt CreateProducts.Arn     
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -127,13 +212,6 @@ Resources:
       Runtime: nodejs18.x
       Architectures:
         - x86_64
-      Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /products
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
       Policies:
         - Statement:
             - Effect: Allow

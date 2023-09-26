@@ -106,3 +106,10 @@ export const categoryValidator: z.ZodType<Category> =
   baseCategoryValidator.extend({
     childCategories: z.lazy(() => categoryValidator.array()).optional()
   });
+
+export const productsValidator = z.object({
+  list: listValidator,
+  products: z.array(productValidator),
+  categories: z.array(categoryValidator),
+  modifierGroups: z.array(modifierGroupValidator)
+});
