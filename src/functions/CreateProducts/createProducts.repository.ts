@@ -39,11 +39,3 @@ export const createProducts = async (
   const newProducts = await Promise.all(productPromises);
   return newProducts;
 };
-
-export const findProduct = async (productId: string) => {
-  const dbClient = await connectToDatabase();
-  const product = await dbClient
-    .collection("products")
-    .findOne({ productId, status: "DRAFT" });
-  return product;
-};

@@ -24,6 +24,5 @@ export interface TransformProductsProps {
   accountId: string;
   product: Product;
   modifierGroups: ModifierGroup[];
-  products: Product[];
   categories: Category[];
 }

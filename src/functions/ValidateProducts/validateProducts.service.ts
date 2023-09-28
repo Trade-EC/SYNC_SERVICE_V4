@@ -14,7 +14,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   const { body, headers, requestContext } = event;
   const { requestId: xArtisnTraceId } = requestContext;
   const parsedBody = JSON.parse(body ?? "");
-  const { Account: accountId } = headersValidator.parse(headers);
+  const { account: accountId } = headersValidator.parse(headers);
   let listInfo;
   if (accountId === "1") {
     listInfo = transformKFCProducts(parsedBody, productsValidator) as Lists;

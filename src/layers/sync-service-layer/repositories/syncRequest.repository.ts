@@ -10,10 +10,13 @@ export const fetchSyncRequest = async (syncRequest: SyncRequest) => {
 };
 
 export const saveSyncRequest = async (syncRequest: SyncRequest) => {
-  const { status, ...filters } = syncRequest;
   const dbClient = await connectToDatabase();
   const dbSyncRequest = await dbClient
     .collection("syncRequests")
-    .updateOne({ ...filters }, { $set: { ...syncRequest } }, { upsert: true });
+    .updateOne(
+      { ...syncRequest, status: "PENDING" },
+      { $set: { ...syncRequest } },
+      { upsert: true }
+    );
   return dbSyncRequest;
 };

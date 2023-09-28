@@ -1,10 +1,12 @@
+import { mergeCategories } from "/opt/nodejs/transforms/product.transform";
+import { mergeEntity } from "/opt/nodejs/transforms/product.transform";
 import { transformProduct } from "/opt/nodejs/transforms/product.transform";
 import { fetchDraftStores } from "/opt/nodejs/repositories/common.repository";
+import { findProduct } from "/opt/nodejs/repositories/common.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 
-import { createProducts, findProduct } from "./createProducts.repository";
-import { mergeCategories, mergeEntity } from "./createProducts.transform";
+import { createProducts } from "./createProducts.repository";
 import { Lists } from "./createProducts.types";
 
 export const createProductsService = async (
@@ -24,8 +26,7 @@ export const createProductsService = async (
     storeId => `${vendorId}#${storeId}#${channelId}`
   );
 
-  const syncProducts: any[] = [];
-  for (const product of products) {
+  const syncProducts = products.map(async product => {
     const { productId } = product;
     const productDB = await findProduct(productId);
     const transformedProduct = await transformProduct({
@@ -40,8 +41,7 @@ export const createProductsService = async (
     });
 
     if (!productDB) {
-      syncProducts.push(transformedProduct);
-      continue;
+      return transformedProduct;
     }
 
     const { categories: dbCategories, prices: dbPrices } = productDB;
@@ -90,8 +90,8 @@ export const createProductsService = async (
     transformedProduct.schedules = mergedSchedules;
     transformedProduct.questions = mergedQuestions;
     transformedProduct.images = mergedImages;
-    syncProducts.push(transformedProduct);
-  }
+    return transformedProduct;
+  });
 
   const newProducts = createProducts(
     syncProducts,
@@ -104,7 +104,7 @@ export const createProductsService = async (
   const syncRequest: SyncRequest = {
     accountId,
     channelId,
-    status: "PENDING",
+    status: "SUCCESS",
     storesId: storeId,
     type: "PRODUCTS",
     vendorId

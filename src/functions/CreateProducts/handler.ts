@@ -1,15 +1,13 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-
 import { handleError } from "/opt/nodejs/utils/error.utils";
 
 import { createProductsService } from "./createProducts.service";
+import { CreateProductsProps } from "./createProducts.types";
 
-export const lambdaHandler = async (
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
+export const lambdaHandler = async (props: CreateProductsProps) => {
   try {
-    const response = await createProductsService(event);
-    return { statusCode: 200, body: JSON.stringify(response) };
+    const { body, headers } = props;
+    const { accountId } = headers;
+    await createProductsService(body, accountId);
   } catch (e) {
     console.log(JSON.stringify(e));
     console.log(e);

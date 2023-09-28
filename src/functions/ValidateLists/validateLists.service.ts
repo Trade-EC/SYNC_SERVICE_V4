@@ -14,7 +14,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   const { body, headers, requestContext } = event;
   const { requestId: xArtisnTraceId } = requestContext;
   const parsedBody = JSON.parse(body ?? "");
-  const { Account: accountId } = headersValidator.parse(headers);
+  const { account: accountId } = headersValidator.parse(headers);
   let listInfo;
   if (accountId === "1") {
     listInfo = transformKFCList(parsedBody, listsValidator) as Lists;
@@ -28,7 +28,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     channelId,
     status: "PENDING",
     storesId: storeId,
-    type: "LISTS",
+    type: "LIST",
     vendorId
   };
   const dbSyncRequest = await fetchSyncRequest(syncRequest);

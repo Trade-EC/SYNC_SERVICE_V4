@@ -1,5 +1,5 @@
 export interface SyncRequest {
-  type: "PRODUCTS" | "LISTS" | "CHANNELS_STORES";
+  type: "PRODUCTS" | "LIST" | "CHANNELS_STORES";
   accountId: string;
   vendorId: string;
   channelId?: string;

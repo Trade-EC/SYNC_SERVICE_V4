@@ -13,7 +13,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   const { body, headers, requestContext } = event;
   const { requestId: xArtisnTraceId } = requestContext;
   const parsedBody = JSON.parse(body ?? "");
-  const { Account: accountId } = headersValidator.parse(headers);
+  const { account: accountId } = headersValidator.parse(headers);
   let channelsAndStores;
   if (accountId === "1") {
     channelsAndStores = transformKFCStores(
