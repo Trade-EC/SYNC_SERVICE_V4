@@ -1,9 +1,9 @@
 import { connectToDatabase } from "../utils/mongo.utils";
 
-export const fetchImage = async (url: string, imageCategory: string) => {
+export const fetchImage = async (externalUrl: string, category: string) => {
   const dbClient = await connectToDatabase();
   const image = await dbClient
     .collection("images")
-    .findOne({ url, imageCategory });
+    .findOne({ externalUrl, category });
   return image;
 };

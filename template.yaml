@@ -14,6 +14,9 @@ Globals:
     Environment:
       Variables:
         SYNC_IMAGES_SQS_URL: !Ref SyncImagesSQS
+        SYNC_LISTS_SQS_URL: !Ref ListSyncSQS
+        SYNC_PRODUCTS_SQS_URL: !Ref ProductsSyncSQS
+        SYNC_STORES_SQS_URL: !Ref StoresSyncSQS
 
 Parameters:
   StageName:
@@ -34,6 +37,39 @@ Resources:
       Tags:
         - Key: Name
           Value: SyncImagesSQS
+
+  ListSyncSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ListSyncSQS.fifo
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      VisibilityTimeout: 300
+      Tags:
+        - Key: Name
+          Value: ListSyncSQS
+
+  StoresSyncSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: StoresSyncSQS.fifo
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      VisibilityTimeout: 300
+      Tags:
+        - Key: Name
+          Value: StoresSyncSQS
+
+  ProductsSyncSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ProductsSyncSQS.fifo
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      VisibilityTimeout: 300
+      Tags:
+        - Key: Name
+          Value: ProductsSyncSQS
 
   # API Gateway
   SyncServiceV4Api:
@@ -79,9 +115,8 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
-                - lambda:InvokeFunction
-                - lambda:InvokeAsync
-              Resource: !GetAtt CreateStores.Arn     
+                - sqs:SendMessage
+              Resource: !GetAtt StoresSyncSQS.Arn 
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -101,6 +136,11 @@ Resources:
       Runtime: nodejs18.x
       Architectures:
         - x86_64
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt StoresSyncSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -131,9 +171,8 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
-                - lambda:InvokeFunction
-                - lambda:InvokeAsync
-              Resource: !GetAtt CreateLists.Arn     
+                - sqs:SendMessage
+              Resource: !GetAtt ListSyncSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -151,15 +190,24 @@ Resources:
       CodeUri: src/functions/CreateLists/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
-      Timeout: 300
       Architectures:
         - x86_64
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ListSyncSQS.Arn
+            BatchSize: 1
+            ScalingConfig:
+               MaximumConcurrency: 10
+      MemorySize: 512
       Policies:
         - Statement:
             - Effect: Allow
               Action:
-                - sqs:SendMessage
-              Resource: !GetAtt SyncImagesSQS.Arn
+                - lambda:InvokeFunction
+                - lambda:InvokeAsync
+              Resource: !GetAtt CreateProduct.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -190,9 +238,8 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
-                - lambda:InvokeFunction
-                - lambda:InvokeAsync
-              Resource: !GetAtt CreateProducts.Arn     
+                - sqs:SendMessage
+              Resource: !GetAtt ProductsSyncSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -208,6 +255,32 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: src/functions/CreateProducts/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+                - lambda:InvokeAsync
+              Resource: !GetAtt CreateProduct.Arn
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  CreateProduct:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/CreateProduct/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
       Architectures:
@@ -243,7 +316,7 @@ Resources:
           Properties:
             Queue: !GetAtt SyncImagesSQS.Arn
             ScalingConfig:
-              MaximumConcurrency: 10
+               MaximumConcurrency: 10
       Policies:
         - Statement:
             - Effect: Allow

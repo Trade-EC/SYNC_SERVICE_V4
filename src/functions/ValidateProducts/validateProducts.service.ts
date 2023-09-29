@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { headersValidator } from "/opt/nodejs/validators/common.validator";
-import { lambdaClient } from "/opt/nodejs/configs/config";
+import { sqsClient } from "/opt/nodejs/configs/config";
 import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
@@ -42,14 +42,14 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   }
   await saveSyncRequest(syncRequest);
   const newHeaders = { accountId };
-  // invoke lambda
-  await lambdaClient.invoke({
-    FunctionName: "sync-service-v4-CreateProducts-VuqMe0FMY8Ro",
-    InvocationType: "Event",
-    Payload: JSON.stringify({
+
+  await sqsClient.sendMessage({
+    QueueUrl: process.env.SYNC_PRODUCTS_SQS_URL!,
+    MessageBody: JSON.stringify({
       body: listInfo,
       headers: { ...newHeaders, xArtisnTraceId }
-    })
+    }),
+    MessageGroupId: `${vendorId}-${accountId}`
   });
 
   return {
