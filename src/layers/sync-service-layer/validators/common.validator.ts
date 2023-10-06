@@ -38,3 +38,11 @@ export const schedulesByChannelValidator = z.object({
 export const headersValidator = z.object({
   account: z.string()
 });
+
+export const syncScheduleValidator = scheduleValidator
+  .pick({ day: true, endDate: true, startDate: true })
+  .extend({
+    catalogueId: z.string(),
+    from: z.number(),
+    to: z.number()
+  });

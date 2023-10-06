@@ -8,7 +8,6 @@ import { handleError } from "/opt/nodejs/utils/error.utils";
 export const lambdaHandler = async (event: SQSEvent) => {
   try {
     const { Records } = event;
-    console.log("Records length", Records.length);
     const recordPromises = Records.map(async record => {
       const { body: bodyRecord } = record ?? {};
       const props: CreateListsProps = JSON.parse(bodyRecord ?? "");

@@ -5,7 +5,7 @@ import { sqsClient } from "/opt/nodejs/configs/config";
 import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
-import { productsValidator } from "/opt/nodejs/validators/lists.validator";
+import { productsValidator } from "/opt/nodejs/validators/requestsLists.validator";
 
 import { transformKFCProducts } from "./validateProducts.transform";
 import { Lists } from "./validateProducts.types";

@@ -40,8 +40,6 @@ export const syncListsService = async (listInfo: Lists, accountId: string) => {
 
   const sendMessages = await Promise.all(sendMessagesPromises);
 
-  console.log("length", sendMessages.length);
-
   const syncRequest: SyncRequest = {
     accountId,
     channelId,

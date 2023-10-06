@@ -28,15 +28,17 @@ export const transformProducts = (products: any[]) => {
 
 export const transformCategories = (categories: any[]) => {
   return categories.map(category => {
-    if (category.images === null) {
+    const { images, productListing, childCategories } = category;
+    if (images === null) {
       delete category.images;
     }
-    category.productListing = category.productListing.map(
-      (productListing: any) => {
-        productListing.productId = String(productListing.productId);
-        return productListing;
-      }
-    );
+    category.productListing = productListing?.map((productListing: any) => {
+      productListing.productId = String(productListing.productId);
+      return productListing;
+    });
+
+    category.childCategories = transformCategories(childCategories ?? []);
+
     return category;
   });
 };

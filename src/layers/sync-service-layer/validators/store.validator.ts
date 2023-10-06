@@ -1,105 +1,56 @@
-import { z } from "/opt/nodejs/node_modules/zod";
-import { taxesValidator } from "/opt/nodejs/validators/common.validator";
-import { schedulesByChannelValidator } from "/opt/nodejs/validators/common.validator";
-import { scheduleValidator } from "/opt/nodejs/validators/common.validator";
-import { numberString } from "/opt/nodejs/validators/custom.validator";
+import { z } from "zod";
 
-export const channelValidator = z.object({
-  active: z.boolean(),
-  channel: z.string(),
-  channelId: z.string(),
-  additionalInfo: z.record(z.string().min(1), z.any()).optional()
+import { syncScheduleValidator } from "./common.validator";
+
+export const locationValidator = z.object({
+  lat: z.number(),
+  lng: z.number()
 });
 
-export const storeServicesValidator = z.object({
+export const idValidator = z.object({
+  id: z.string()
+});
+
+export const accountValidator = z.object({
+  id: z.string()
+});
+
+export const cityValidator = z.object({
+  id: z.string(),
   name: z.string(),
-  active: z.enum(["ACTIVE", "INACTIVE"])
-});
-
-export const storeContactValidator = z.object({
-  phone: z.string().max(60),
-  address: z.string()
-});
-
-export const storeDeliveryValidator = z.object({
-  deliveryTimeValue: z.number().int().or(numberString),
-  deliveryTimeUnit: z.enum(["min", "hour"]),
-  minimumOrder: z.number(),
-  shippingCost: z.number(),
-  cookTime: z.number().int()
-});
-
-export const storeLocationValidator = z.object({
-  city: z.string(),
-  latitude: numberString,
-  longitude: numberString
+  active: z.boolean()
 });
 
 export const storeValidator = z.object({
-  name: z.string().max(100),
+  storeId: z.string(),
+  status: z.enum(["DRAFT", "PUBLISHED", "ERROR"]),
+  version: z.string(),
+  storeName: z.string(),
+  address: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  description: z.string(),
+  phone: z.string(),
+  minOrderAmount: z.number(),
   active: z.boolean(),
-  default: z.boolean(),
-  storeId: z.string(),
-  // vendorId: z.number().or(z.string()),
-  storeCode: z.string().max(60).optional(),
-  featured: z.boolean().optional(),
-  storeChannels: z.array(z.string()),
-  storeImages: z.array(z.string().url()).optional(),
-  services: z.array(storeServicesValidator).optional(),
-  schedulesByChannel: z.array(schedulesByChannelValidator).optional(),
-  taxesInfo: taxesValidator.optional(),
-  contactInfo: storeContactValidator,
-  deliveryInfo: storeDeliveryValidator.deepPartial().optional(),
-  locationInfo: storeLocationValidator,
-  paymentMethodInfo: z.record(z.string().min(1), z.any()).optional(),
-  schedules: z.array(scheduleValidator).optional()
+  isDefault: z.boolean(),
+  outOfService: z.boolean(),
+  cookTime: z.number(),
+  enableTips: z.boolean(),
+  images: z.array(z.any()), // TODO:
+  minOrder: z.number(),
+  minOrderSymbol: z.string().nullable(),
+  orderSymbol: z.string().nullable(),
+  catalogues: z.array(z.string()), // TODO:
+  polygons: z.array(z.any()).nullable(), // TODO:
+  sponsored: z.boolean(),
+  tips: z.array(z.any()).nullable(), // TODO:
+  timezone: z.string().nullable(),
+  schedules: z.array(syncScheduleValidator),
+  location: locationValidator,
+  country: z.any().nullable(),
+  vendor: idValidator,
+  accounts: z.array(idValidator),
+  account: accountValidator,
+  city: cityValidator
 });
-
-export const scheduledActivitiesValidator = z.object({
-  storeId: z.string(),
-  scheduledActiveStatus: z.date().optional(),
-  scheduledInactiveStatus: z.date().optional()
-});
-
-export const channelsAndStoresValidator = z
-  .object({
-    vendorId: z.string(),
-    stores: z.array(storeValidator),
-    channels: z.array(channelValidator),
-    scheduledActivities: z.array(scheduledActivitiesValidator).optional()
-  })
-  .superRefine((schema, ctx) => {
-    const { channels, stores } = schema;
-
-    const channelsId = channels.map(channel => channel.channelId);
-
-    stores.forEach((store, index) => {
-      const channelsFound = store.storeChannels.filter(storeChannel =>
-        channelsId.includes(storeChannel)
-      );
-
-      if (channelsFound.length !== store.storeChannels.length) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["stores", index, "storeChannels"],
-          message: "StoreChannels not match with channels array"
-        });
-      }
-
-      const channelsInSchedules = store.schedulesByChannel?.map(
-        scheduleChannel => scheduleChannel.channelId
-      );
-
-      const scheduleChannelsFound = channelsInSchedules?.filter(
-        channelInSchedule => channelsId.includes(channelInSchedule)
-      );
-
-      if (channelsInSchedules?.length !== scheduleChannelsFound?.length) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["stores", index, "schedulesByChannel"],
-          message: "SchedulesByChannel not match with channels array"
-        });
-      }
-    });
-  });

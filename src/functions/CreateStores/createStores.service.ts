@@ -13,7 +13,7 @@ export const syncStoresService = async (
   const syncStores = stores.map(store =>
     storeTransformer(store, accountId, vendorId)
   );
-  const newStores = createOrUpdateStores(syncStores);
+  const newStores = await createOrUpdateStores(syncStores);
   const syncRequest: SyncRequest = {
     accountId,
     status: "SUCCESS",

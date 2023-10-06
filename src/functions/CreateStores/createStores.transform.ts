@@ -61,6 +61,9 @@ export const storeTransformer = (
     vendor: {
       id: vendorId
     },
-    accounts: [{ id: accountId }]
+    accounts: [{ id: accountId }],
+    account: {
+      accountId
+    }
   };
 };

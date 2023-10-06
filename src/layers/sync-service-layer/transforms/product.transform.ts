@@ -26,7 +26,7 @@ export const transformCategoriesByProduct = async (
   return Promise.all(categoriesByProductPromises);
 };
 
-export const transformCategory = async (
+export const transformCategory: any = async (
   category: Category,
   storesId: string[],
   channelId: string,
@@ -54,9 +54,16 @@ export const transformCategory = async (
       ? transformSchedules(schedules, storesId, channelId)
       : [],
     // subcategories: childCategories.map(childCategory =>
-    //   transformCategory(childCategory, storeId, channelId, productCategoryId)
+    //   transformCategory(
+    //     childCategory,
+    //     storesId,
+    //     channelId,
+    //     productCategoryId,
+    //     productId,
+    //     parentId
+    //   )
     // ),
-    // parentId,
+    // parentId: parentId ? parentId : null,
     standardTime: schedules ? "YES" : "NO",
     reload: false,
     additionalInfo: {
@@ -64,7 +71,7 @@ export const transformCategory = async (
     },
     featured: !isUndefined(featured) ? featured : null,
     available: true,
-    subcategories: !!childCategories.length,
+    // subcategories: !!childCategories.length,
     active: true,
     vendorIdStoreIdChannelId: storesId.map(storeId => ({
       vendorId,
@@ -242,9 +249,9 @@ export const transformProduct = async (props: TransformProductsProps) => {
   );
 
   const newProduct = {
-    productId,
+    productId: `${accountId}#${productId}`,
     status: "DRAFT",
-    version: "2023-07-01-1",
+    version: "2023-10-06-1",
     accountId,
     name,
     description,
@@ -314,7 +321,13 @@ export const transformProduct = async (props: TransformProductsProps) => {
           ),
           ...schedule
         }))
-      : []
+      : [],
+    vendor: {
+      id: vendorId
+    },
+    account: {
+      accountId
+    }
   };
 
   return newProduct;

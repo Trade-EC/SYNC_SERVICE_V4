@@ -2,13 +2,14 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { headersValidator } from "/opt/nodejs/validators/common.validator";
 import { transformKFCStores } from "/opt/nodejs/transforms/kfcStore.transform";
-import { lambdaClient, sqsClient } from "/opt/nodejs/configs/config";
+import { sqsClient } from "/opt/nodejs/configs/config";
 import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
-import { channelsAndStoresValidator } from "/opt/nodejs/validators/store.validator";
+import { channelsAndStoresValidator } from "/opt/nodejs/validators/requestStore.validator";
 
 import { ChannelsAndStores } from "./validateStores.types";
+
 export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   const { body, headers, requestContext } = event;
   const { requestId: xArtisnTraceId } = requestContext;
