@@ -3,7 +3,7 @@ import { SQSEvent } from "aws-lambda";
 import { syncListsService } from "./createLists.service";
 import { CreateListsProps } from "./createLists.types";
 
-import { handleError } from "/opt/nodejs/utils/error.utils";
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 export const lambdaHandler = async (event: SQSEvent) => {
   try {
@@ -18,8 +18,8 @@ export const lambdaHandler = async (event: SQSEvent) => {
       console.log("lists create");
     });
     await Promise.all(recordPromises);
-  } catch (e) {
-    console.log(JSON.stringify(e));
-    return handleError(e);
+  } catch (error) {
+    logger.error("creating stores error", { error });
+    return error;
   }
 };

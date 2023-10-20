@@ -1,6 +1,6 @@
 import { SQSEvent } from "aws-lambda";
 
-import { handleError } from "/opt/nodejs/utils/error.utils";
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 import { createProductsService } from "./createProducts.service";
 import { CreateProductsProps } from "./createProducts.types";
@@ -14,9 +14,8 @@ export const lambdaHandler = async (event: SQSEvent) => {
     const { body, headers } = props;
     const { accountId } = headers;
     await createProductsService(body, accountId);
-  } catch (e) {
-    console.log(JSON.stringify(e));
-    console.log(e);
-    return handleError(e);
+  } catch (error) {
+    logger.error("creating stores error", { error });
+    return error;
   }
 };

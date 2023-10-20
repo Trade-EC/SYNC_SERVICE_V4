@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import { taxesValidator } from "../validators/common.validator";
-import { baseCategoryValidator } from "../validators/requestsLists.validator";
-import { modifierGroupValidator } from "../validators/requestsLists.validator";
-import { productPriceInfoValidator } from "../validators/requestsLists.validator";
-import { productValidator } from "../validators/requestsLists.validator";
+import { baseCategoryValidator } from "../validators/lists.validator";
+import { modifierGroupValidator } from "../validators/lists.validator";
+import { productPriceInfoValidator } from "../validators/lists.validator";
+import { productValidator } from "../validators/lists.validator";
 
 export type BaseCategory = z.infer<typeof baseCategoryValidator>;
 

@@ -1,12 +1,12 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { SQSEvent } from "aws-lambda";
 
 import { lambdaHandler } from "./handler";
-import * as storeEvent from "../../events/stores.json";
+import * as storeEvent from "../../events/stores.sqs.json";
 
 describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {
-    const event: APIGatewayProxyEvent = storeEvent;
-    const result: APIGatewayProxyResult = await lambdaHandler(event);
+    const event: SQSEvent = storeEvent;
+    const result = await lambdaHandler(event);
 
     expect(result.statusCode).toEqual(200);
   });

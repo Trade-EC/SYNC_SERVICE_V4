@@ -1,3 +1,4 @@
+import { DbProduct } from "../types/products.types";
 import { connectToDatabase } from "../utils/mongo.utils";
 
 export const fetchDraftStores = async (accountId: string, vendorId: string) => {
@@ -21,5 +22,5 @@ export const findProduct = async (productId: string) => {
   const product = await dbClient
     .collection("products")
     .findOne({ productId, status: "DRAFT" });
-  return product;
+  return product as unknown as DbProduct;
 };

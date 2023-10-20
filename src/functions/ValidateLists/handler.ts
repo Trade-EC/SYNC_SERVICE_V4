@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { handleError } from "/opt/nodejs/utils/error.utils";
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 import { validateListsService } from "./validateLists.service";
 
@@ -12,7 +13,8 @@ export const lambdaHandler = async (
 
     return response;
   } catch (e) {
-    console.log(JSON.stringify(e));
-    return handleError(e);
+    const error = handleError(e);
+    logger.error("error", { error });
+    return error;
   }
 };

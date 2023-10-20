@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const additionalInfoValidator = z.record(z.string().min(1), z.any());
+
 export const taxesValidator = z.object({
   taxRate: z.number().optional(),
   vatRatePercentage: z.number().optional()
@@ -38,11 +40,3 @@ export const schedulesByChannelValidator = z.object({
 export const headersValidator = z.object({
   account: z.string()
 });
-
-export const syncScheduleValidator = scheduleValidator
-  .pick({ day: true, endDate: true, startDate: true })
-  .extend({
-    catalogueId: z.string(),
-    from: z.number(),
-    to: z.number()
-  });

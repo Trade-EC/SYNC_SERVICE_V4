@@ -18,7 +18,7 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   const dbClient = await connectToDatabase();
   const stores = await dbClient
     .collection("stores")
-    .find({ "vendor.id": vendorId, "account.accountId": accountId })
+    .find({ "vendor.id": vendorId, "account.id": accountId })
     .toArray();
 
   const rawProducts = await dbClient
@@ -41,7 +41,7 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
     ])
     .toArray();
 
-  const products = rawProducts.map(product => {
+  const productsPromises = rawProducts.map(async product => {
     const { questionsProducts } = product;
     const transformedQuestions = transformQuestions(
       product?.questions ?? [],
@@ -55,6 +55,8 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
       questions: transformedQuestions
     };
   });
+
+  const products = await Promise.all(productsPromises);
 
   const Bucket = "syncservicev4.admin.dev";
   const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
@@ -99,6 +101,26 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
     key: productsKey,
     status: "DONE"
   };
+
+  const fetchOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  };
+
+  const productsSync = fetch(
+    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${Bucket}&key=${productsKey}`,
+    fetchOptions
+  );
+
+  const storesSync = fetch(
+    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${Bucket}&key=${storesKey}`,
+    fetchOptions
+  );
+
+  const responses = await Promise.all([productsSync, storesSync]);
+  console.log(JSON.stringify(responses));
 
   return {
     statusCode: 200,

@@ -3,7 +3,7 @@ import { SQSEvent } from "aws-lambda";
 import { syncStoresService } from "./createStores.service";
 import { CreateStoresProps } from "./createStores.types";
 
-import { handleError } from "/opt/nodejs/utils/error.utils";
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 export async function lambdaHandler(event: SQSEvent) {
   try {
@@ -15,9 +15,8 @@ export async function lambdaHandler(event: SQSEvent) {
     const { accountId } = headers;
     const response = await syncStoresService(body, accountId);
     return { statusCode: 200, body: JSON.stringify(response) };
-  } catch (e) {
-    console.log(JSON.stringify(e));
-    console.log(e);
-    return handleError(e);
+  } catch (error) {
+    logger.error("creating stores error", { error });
+    return error;
   }
 }

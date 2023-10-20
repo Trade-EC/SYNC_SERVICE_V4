@@ -10,7 +10,7 @@ export const transformQuestions = (
     const transformedAnswers = answers?.map((answer: any) => {
       const { productId } = answer;
       const product = productQuestions.find(
-        product => product.productId === productId
+        product => product.attributes.externalId === productId
       );
 
       if (!product) {
@@ -25,6 +25,7 @@ export const transformQuestions = (
         level + 1
       );
 
+      delete product["_id"];
       return {
         ...product,
         ...answer

@@ -6,7 +6,8 @@ import { sqsClient } from "/opt/nodejs/configs/config";
 import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
-import { channelsAndStoresValidator } from "/opt/nodejs/validators/requestStore.validator";
+import { channelsAndStoresValidator } from "/opt/nodejs/validators/store.validator";
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 import { ChannelsAndStores } from "./validateStores.types";
 
@@ -25,6 +26,8 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     channelsAndStores = channelsAndStoresValidator.parse(parsedBody);
   }
   const { vendorId } = channelsAndStores;
+  logger.appendKeys({ vendorId, accountId });
+  logger.info("Validating stores");
   const syncRequest: SyncRequest = {
     accountId,
     status: "PENDING",
@@ -51,6 +54,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     }),
     MessageGroupId: `${vendorId}-${accountId}`
   });
+  logger.info("Stores creation request sent to SQS");
   return {
     statusCode: 200,
     body: JSON.stringify({

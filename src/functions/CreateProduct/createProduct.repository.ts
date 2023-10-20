@@ -1,7 +1,8 @@
 import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
+import { DbProduct } from "/opt/nodejs/types/products.types";
 
 export const createOrUpdateProduct = async (
-  product: any,
+  product: DbProduct,
   storesId: string[],
   vendorId: string,
   channelId: string,

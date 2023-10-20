@@ -4,6 +4,7 @@ import { fetchDraftStores } from "/opt/nodejs/repositories/common.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { lambdaClient } from "/opt/nodejs/configs/config";
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 export const syncListsService = async (listInfo: Lists, accountId: string) => {
   const { categories, list, modifierGroups, products } = listInfo;
@@ -19,6 +20,8 @@ export const syncListsService = async (listInfo: Lists, accountId: string) => {
     storeId => `${vendorId}#${storeId}#${channelId}`
   );
 
+  logger.appendKeys({ vendorId, accountId });
+  logger.info("Creating list initiating");
   const sendMessagesPromises = products.map(async product => {
     const body = {
       product,
@@ -38,6 +41,7 @@ export const syncListsService = async (listInfo: Lists, accountId: string) => {
     });
   });
 
+  logger.info("Wait for products in list responses");
   const sendMessages = await Promise.all(sendMessagesPromises);
 
   const syncRequest: SyncRequest = {
@@ -51,5 +55,6 @@ export const syncListsService = async (listInfo: Lists, accountId: string) => {
 
   await saveSyncRequest(syncRequest);
 
+  logger.info("Creating lists finished");
   return sendMessages;
 };

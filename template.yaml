@@ -83,6 +83,20 @@ Resources:
     Properties:
       BucketName: !Sub "syncservicev4.admin.${StageName}"
 
+  ProductBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SyncServiceV4Bucket
+      PolicyDocument:
+        Id: PublicReadPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub arn:aws:s3:::${SyncServiceV4Bucket}/*
+            
   #Lambdas
   LayerSyncService:
     Type: AWS::Serverless::LayerVersion
@@ -259,6 +273,15 @@ Resources:
       Runtime: nodejs18.x
       Architectures:
         - x86_64
+      MemorySize: 256
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ProductsSyncSQS.Arn
+            BatchSize: 1
+            ScalingConfig:
+               MaximumConcurrency: 10
       Policies:
         - Statement:
             - Effect: Allow
@@ -350,6 +373,12 @@ Resources:
             Path: /publish-sync
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: "arn:aws:s3:::syncservicev4.admin.dev/*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

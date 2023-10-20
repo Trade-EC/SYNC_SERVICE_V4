@@ -5,10 +5,12 @@ import { sqsClient } from "/opt/nodejs/configs/config";
 import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
-import { productsValidator } from "/opt/nodejs/validators/requestsLists.validator";
+import { productsValidator } from "/opt/nodejs/validators/lists.validator";
 
 import { transformKFCProducts } from "./validateProducts.transform";
 import { Lists } from "./validateProducts.types";
+
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   const { body, headers, requestContext } = event;
@@ -23,6 +25,8 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   }
   const { list } = listInfo;
   const { storeId, vendorId, channelId } = list;
+  logger.appendKeys({ vendorId, accountId });
+  logger.info("Validating Products");
   const syncRequest: SyncRequest = {
     accountId,
     channelId,
@@ -51,6 +55,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
     }),
     MessageGroupId: `${vendorId}-${accountId}`
   });
+  logger.info("Products creation request sent to SQS");
 
   return {
     statusCode: 200,

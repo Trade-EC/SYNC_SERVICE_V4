@@ -1,9 +1,11 @@
+import { DBStore } from "./createStores.types";
+
 import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
 
 // TODO: fix types
-export const createOrUpdateStores = async (stores: any) => {
+export const createOrUpdateStores = async (stores: DBStore[]) => {
   const dbClient = await connectToDatabase();
-  const storePromises = stores.map((store: any) => {
+  const storePromises = stores.map(store => {
     const { storeId } = store;
     return dbClient.collection("stores").updateOne(
       { storeId, status: "DRAFT" },

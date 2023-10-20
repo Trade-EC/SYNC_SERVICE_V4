@@ -5,6 +5,7 @@ import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository
 import { Lists } from "./createProducts.types";
 
 import { lambdaClient } from "/opt/nodejs/configs/config";
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 export const createProductsService = async (
   listInfo: Lists,
@@ -19,10 +20,14 @@ export const createProductsService = async (
   } else {
     storesId = storeId.split(",");
   }
+  logger.appendKeys({ vendorId, accountId });
+  logger.info("Creating products initiating");
   const vendorIdStoreIdChannelId = storesId.map(
     storeId => `${vendorId}#${storeId}#${channelId}`
   );
 
+  logger.appendKeys({ vendorId, accountId });
+  logger.info("Send product to CreateProduct function");
   const sendMessagesPromises = products.map(async product => {
     const body = {
       product,
@@ -42,6 +47,7 @@ export const createProductsService = async (
     });
   });
 
+  logger.info("Wait for products responses");
   const sendMessages = await Promise.all(sendMessagesPromises);
 
   const syncRequest: SyncRequest = {
@@ -54,5 +60,6 @@ export const createProductsService = async (
   };
 
   await saveSyncRequest(syncRequest);
+  logger.info("Creating products finished");
   return sendMessages;
 };

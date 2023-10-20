@@ -3,14 +3,16 @@ import { CreateProductProps } from "./createProduct.types";
 
 import { findProduct } from "/opt/nodejs/repositories/common.repository";
 import { transformProduct } from "/opt/nodejs/transforms/product.transform";
-import { mergeCategories } from "/opt/nodejs/transforms/product.transform";
 import { mergeEntity } from "/opt/nodejs/transforms/product.transform";
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
   const { storesId, vendorId, listName } = body;
   const { productId } = product;
+  logger.appendKeys({ vendorId, accountId, externalId: productId });
+  logger.info("Creating list initiating");
   const productDB = await findProduct(productId);
   const transformedProduct = await transformProduct({
     product,
@@ -21,8 +23,8 @@ export const createProductService = async (props: CreateProductProps) => {
     modifierGroups,
     categories
   });
-
   if (!productDB) {
+    logger.info("Creating product", { product: transformedProduct });
     return await createOrUpdateProduct(
       transformedProduct,
       storesId,
@@ -32,6 +34,7 @@ export const createProductService = async (props: CreateProductProps) => {
     );
   }
 
+  logger.info("Merging product");
   const { categories: dbCategories, prices: dbPrices } = productDB;
   const { statuses: dbStatuses, schedules: dbSchedules } = productDB;
   const { questions: dbQuestions, images: dbImages } = productDB;
@@ -40,15 +43,13 @@ export const createProductService = async (props: CreateProductProps) => {
   const { schedules: newSchedules } = transformedProduct;
   const { questions: newQuestions } = transformedProduct;
 
-  const mergedCategories = mergeCategories(
+  const mergedCategories = mergeEntity(
     dbCategories,
     newCategories,
-    vendorId,
-    storesId,
-    channelId
+    vendorIdStoreIdChannelId
   );
   const mergedPrices = mergeEntity(
-    dbPrices ?? [],
+    dbPrices,
     newPrices,
     vendorIdStoreIdChannelId
   );
@@ -78,7 +79,7 @@ export const createProductService = async (props: CreateProductProps) => {
   transformedProduct.schedules = mergedSchedules;
   transformedProduct.questions = mergedQuestions;
   transformedProduct.images = mergedImages;
-  console.log("Running init");
+  logger.info("Storing product", { product: transformedProduct });
   return await createOrUpdateProduct(
     transformedProduct,
     storesId,

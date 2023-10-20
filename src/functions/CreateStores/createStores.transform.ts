@@ -1,4 +1,4 @@
-import { Store } from "./createStores.types";
+import { DBStore, Store } from "./createStores.types";
 
 import { transformStoreSchedules } from "/opt/nodejs/utils/schedule.utils";
 import { transformStoreSchedulesByChannel } from "/opt/nodejs/utils/schedule.utils";
@@ -7,7 +7,7 @@ export const storeTransformer = (
   store: Store,
   accountId: string,
   vendorId: string
-) => {
+): DBStore => {
   const { storeId, name, contactInfo, locationInfo, schedules } = store;
   const { schedulesByChannel, storeChannels, deliveryInfo } = store;
   const { services, active, default: isDefault, featured } = store;
@@ -23,6 +23,7 @@ export const storeTransformer = (
     status: "DRAFT",
     version: "2023-07-01-1",
     storeName: name,
+    maxOrderAmount: 0,
     address: contactInfo.address,
     latitude: locationInfo.latitude,
     longitude: locationInfo.longitude,
@@ -30,7 +31,10 @@ export const storeTransformer = (
     description: "",
     phone: contactInfo.phone,
     minOrderAmount: deliveryInfo?.minimumOrder ?? 0,
-    services: services?.filter(service => service.active),
+    services:
+      services
+        ?.map(service => ({ ...service, active: service.active === "ACTIVE" }))
+        .filter(service => service.active) ?? [],
     active: active,
     isDefault,
     outOfService: false,
@@ -42,12 +46,12 @@ export const storeTransformer = (
     orderSymbol: null,
     catalogues: [],
     polygons: null,
-    sponsored: featured, // Debería salir del vendor
+    sponsored: !!featured, // Debería salir del vendor
     tips: [], // Salen del vendor
     timezone: null,
     location: {
       lat: locationInfo.latitude,
-      lng: locationInfo.longitude
+      lon: locationInfo.longitude
     },
     additionalInfo: {
       externalId: storeId
@@ -61,9 +65,9 @@ export const storeTransformer = (
     vendor: {
       id: vendorId
     },
-    accounts: [{ id: accountId }],
+    accounts: [{ accountId }],
     account: {
-      accountId
+      id: accountId
     }
   };
 };
