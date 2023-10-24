@@ -1,6 +1,5 @@
 import { sqsClient } from "../configs/config";
 import { fetchImage } from "../repositories/images.repository";
-import { DbImage } from "../types/common.types";
 
 export const getAwsDirectory = (imageCategory: string) => {
   switch (imageCategory) {

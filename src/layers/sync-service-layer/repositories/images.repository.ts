@@ -5,5 +5,6 @@ export const fetchImage = async (externalUrl: string, category: string) => {
   const image = await dbClient
     .collection("images")
     .findOne({ externalUrl, category });
+
   return image;
 };

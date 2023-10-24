@@ -6,6 +6,7 @@ export const fetchSyncRequest = async (syncRequest: SyncRequest) => {
   const dbSyncRequest = await dbClient
     .collection("syncRequests")
     .findOne({ ...syncRequest });
+
   return dbSyncRequest;
 };
 
@@ -18,5 +19,6 @@ export const saveSyncRequest = async (syncRequest: SyncRequest) => {
       { $set: { ...syncRequest } },
       { upsert: true }
     );
+
   return dbSyncRequest;
 };

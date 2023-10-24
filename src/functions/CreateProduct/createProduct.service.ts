@@ -9,10 +9,10 @@ import { logger } from "/opt/nodejs/configs/observability.config";
 export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
-  const { storesId, vendorId, listName } = body;
+  const { storesId, vendorId, listName, listId } = body;
   const { productId } = product;
-  logger.appendKeys({ vendorId, accountId, externalId: productId });
-  logger.info("Creating list initiating");
+  logger.appendKeys({ vendorId, accountId, externalId: productId, listId });
+  logger.info("Creating product initiating");
   const productDB = await findProduct(productId);
   const transformedProduct = await transformProduct({
     product,

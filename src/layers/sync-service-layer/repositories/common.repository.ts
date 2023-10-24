@@ -22,5 +22,6 @@ export const findProduct = async (productId: string) => {
   const product = await dbClient
     .collection("products")
     .findOne({ productId, status: "DRAFT" });
+
   return product as unknown as DbProduct;
 };

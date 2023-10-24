@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { Context } from "aws-lambda";
 
 import { publishSyncService } from "./publishSync.service";
 
@@ -6,8 +7,10 @@ import { handleError } from "/opt/nodejs/utils/error.utils";
 import { logger } from "/opt/nodejs/configs/observability.config";
 
 export const lambdaHandler = async (
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
+  context: Context
 ): Promise<APIGatewayProxyResult> => {
+  context.callbackWaitsForEmptyEventLoop = false;
   try {
     const response = await publishSyncService(event);
     return response;

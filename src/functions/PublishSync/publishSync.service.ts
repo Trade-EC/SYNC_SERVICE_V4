@@ -1,12 +1,17 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import { publishSyncValidator } from "./publishSync.validator";
+import { fetchProducts, fetchStores } from "./publishSync.repository";
+import { updateStatus, saveStoresInHistory } from "./publishSync.repository";
+import { saveProductsInHistory } from "./publishSync.repository";
+import { saveProductsInS3, saveStoresInS3 } from "./publishSync.repository";
 import { transformQuestions } from "./publishSync.transform";
+import { publishSyncValidator } from "./publishSync.validator";
 
 // import { headersValidator } from "/opt/nodejs/validators/common.validator";
-import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
-import { s3Client } from "/opt/nodejs/configs/config";
-import { Upload } from "/opt/nodejs/node_modules/@aws-sdk/lib-storage";
+import { logger } from "/opt/nodejs/configs/observability.config";
+import CONSTANTS from "/opt/nodejs/configs/constants";
+
+const { BUCKET } = CONSTANTS.GENERAL;
 
 export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   const { body, headers, requestContext } = event;
@@ -15,33 +20,16 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   const { Account: accountId } = headers;
   const info = publishSyncValidator.parse(parsedBody);
   const { vendorId } = info;
-  const dbClient = await connectToDatabase();
-  const stores = await dbClient
-    .collection("stores")
-    .find({ "vendor.id": vendorId, "account.id": accountId })
-    .toArray();
+  logger.appendKeys({ vendorId, accountId });
+  logger.info("Publish sync initiating");
 
-  const rawProducts = await dbClient
-    .collection("products")
-    .aggregate([
-      {
-        $graphLookup: {
-          from: "products",
-          startWith: "$attributes.externalId",
-          connectFromField: "questions.answers.productId",
-          connectToField: "attributes.externalId",
-          as: "questionsProducts",
-          maxDepth: 2,
-          restrictSearchWithMatch: {
-            "vendor.id": "10",
-            "account.accountId": "1"
-          }
-        }
-      }
-    ])
-    .toArray();
+  if (!accountId || !vendorId) throw new Error("Missing required fields");
 
-  const productsPromises = rawProducts.map(async product => {
+  logger.info("Collecting stores and products");
+  const stores = await fetchStores(vendorId, accountId);
+  const rawProducts = await fetchProducts(vendorId, accountId);
+
+  const products = rawProducts.map(product => {
     const { questionsProducts } = product;
     const transformedQuestions = transformQuestions(
       product?.questions ?? [],
@@ -56,72 +44,39 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
     };
   });
 
-  const products = await Promise.all(productsPromises);
+  logger.info("Storing data in S3");
+  const storeResponse = await saveStoresInS3(vendorId, accountId, stores);
+  const { key: storesKey } = storeResponse;
+  const productResponse = await saveProductsInS3(vendorId, accountId, products);
+  const { key: productsKey } = productResponse;
 
-  const Bucket = "syncservicev4.admin.dev";
-  const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
-  const productsKey = `sync/${accountId}/${vendorId}/products.json`;
-  const storesInput = {
-    Bucket,
-    Key: storesKey,
-    Body: Buffer.from(JSON.stringify(stores))
-  };
-  const productsInput = {
-    Bucket,
-    Key: productsKey,
-    Body: Buffer.from(JSON.stringify(products))
-  };
-  const uploadStores = new Upload({
-    client: s3Client,
-    params: storesInput
-  });
-  const uploadProducts = new Upload({
-    client: s3Client,
-    params: productsInput
-  });
-  const responseStores = await uploadStores.done();
-  const responseProducts = await uploadProducts.done();
-  const { $metadata: storesMetadata } = responseStores;
-  const { $metadata: productsMetadata } = responseProducts;
-  if (
-    storesMetadata.httpStatusCode !== 200 ||
-    productsMetadata.httpStatusCode !== 200
-  )
-    throw new Error("Upload stores failed");
+  // logger.info("Send info to admin");
+  // const fetchOptions = {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json"
+  //   }
+  // };
+  // const productsSync = fetch(
+  //   `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${BUCKET}&key=${productsKey}`,
+  //   fetchOptions
+  // );
 
-  // TODO: Ver si se consigue la URL del archivo
-  const storeResponse = {
-    bucket: Bucket,
-    key: storesKey,
-    status: "DONE"
-  };
+  // const storesSync = fetch(
+  //   `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${BUCKET}&key=${storesKey}`,
+  //   fetchOptions
+  // );
 
-  const productResponse = {
-    bucket: Bucket,
-    key: productsKey,
-    status: "DONE"
-  };
+  // await Promise.all([productsSync, storesSync]);
+  logger.info("Saving in history");
+  await saveStoresInHistory(vendorId, accountId);
+  await saveProductsInHistory(vendorId, accountId);
 
-  const fetchOptions = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    }
-  };
+  logger.info("Switch to publish");
+  await updateStatus(vendorId, accountId, "products");
+  await updateStatus(vendorId, accountId, "stores");
 
-  const productsSync = fetch(
-    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${Bucket}&key=${productsKey}`,
-    fetchOptions
-  );
-
-  const storesSync = fetch(
-    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${Bucket}&key=${storesKey}`,
-    fetchOptions
-  );
-
-  const responses = await Promise.all([productsSync, storesSync]);
-  console.log(JSON.stringify(responses));
-
+  logger.info("Publish sync finished");
   return {
     statusCode: 200,
     body: JSON.stringify({

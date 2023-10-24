@@ -1,3 +1,5 @@
+import { logger } from "/opt/nodejs/configs/observability.config";
+
 export const transformQuestions = (
   questions: any[],
   productQuestions: any[],
@@ -14,7 +16,7 @@ export const transformQuestions = (
       );
 
       if (!product) {
-        console.log("productId", productId);
+        logger.info("product answer not found", { productId });
         return answer;
       }
 

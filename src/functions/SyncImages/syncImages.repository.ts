@@ -1,10 +1,10 @@
+import { Image } from "./syncImages.types";
+
 import { CompleteMultipartUploadCommandOutput } from "/opt/nodejs/node_modules/@aws-sdk/client-s3";
 import { Upload } from "/opt/nodejs/node_modules/@aws-sdk/lib-storage";
 import { getAwsImageProps } from "/opt/nodejs/utils/images.utils";
 import { s3Client } from "/opt/nodejs/configs/config";
 import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
-
-import { Image } from "./syncImages.types";
 
 export const createOrUpdateImages = async (image: Partial<Image>) => {
   const { externalUrl, name } = image;

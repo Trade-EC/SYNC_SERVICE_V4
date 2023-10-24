@@ -1,11 +1,12 @@
-import { SQSEvent } from "aws-lambda";
+import { Context, SQSEvent } from "aws-lambda";
 
 import { syncListsService } from "./createLists.service";
 import { CreateListsProps } from "./createLists.types";
 
 import { logger } from "/opt/nodejs/configs/observability.config";
 
-export const lambdaHandler = async (event: SQSEvent) => {
+export const lambdaHandler = async (event: SQSEvent, context: Context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
   try {
     const { Records } = event;
     const recordPromises = Records.map(async record => {

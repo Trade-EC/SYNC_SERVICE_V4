@@ -8,7 +8,7 @@ import { logger } from "/opt/nodejs/configs/observability.config";
 
 export const syncListsService = async (listInfo: Lists, accountId: string) => {
   const { categories, list, modifierGroups, products } = listInfo;
-  const { channelId, storeId, vendorId, listName } = list;
+  const { channelId, storeId, vendorId, listName, listId } = list;
   let storesId: string[];
   if (storeId === "replicate_in_all") {
     const dbStores = await fetchDraftStores(accountId, vendorId);
@@ -20,7 +20,7 @@ export const syncListsService = async (listInfo: Lists, accountId: string) => {
     storeId => `${vendorId}#${storeId}#${channelId}`
   );
 
-  logger.appendKeys({ vendorId, accountId });
+  logger.appendKeys({ vendorId, accountId, listId });
   logger.info("Creating list initiating");
   const sendMessagesPromises = products.map(async product => {
     const body = {
@@ -31,7 +31,8 @@ export const syncListsService = async (listInfo: Lists, accountId: string) => {
       vendorId,
       modifierGroups,
       categories,
-      listName
+      listName,
+      listId
     };
     const messageBody = { vendorIdStoreIdChannelId, body };
     return await lambdaClient.invoke({

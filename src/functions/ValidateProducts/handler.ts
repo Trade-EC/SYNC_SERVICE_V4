@@ -1,14 +1,17 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { Context } from "aws-lambda";
+
+import { validateProductsService } from "./validateProducts.service";
 
 import { handleError } from "/opt/nodejs/utils/error.utils";
 import { logger } from "/opt/nodejs/configs/observability.config";
 
-import { validateProductsService } from "./validateProducts.service";
-
 export const lambdaHandler = async (
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
+  context: Context
 ): Promise<APIGatewayProxyResult> => {
   try {
+    context.callbackWaitsForEmptyEventLoop = false;
     const response = await validateProductsService(event);
     return response;
   } catch (e) {

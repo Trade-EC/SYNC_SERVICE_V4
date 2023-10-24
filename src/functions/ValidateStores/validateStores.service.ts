@@ -11,13 +11,15 @@ import { logger } from "/opt/nodejs/configs/observability.config";
 
 import { ChannelsAndStores } from "./validateStores.types";
 
+const kfcAccounts = ["1", "9"];
+
 export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   const { body, headers, requestContext } = event;
   const { requestId: xArtisnTraceId } = requestContext;
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
   let channelsAndStores;
-  if (accountId === "1") {
+  if (kfcAccounts.includes(accountId)) {
     channelsAndStores = transformKFCStores(
       parsedBody,
       channelsAndStoresValidator
@@ -46,6 +48,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   await saveSyncRequest(syncRequest);
   const newHeaders = { accountId };
 
+  logger.info("Sending creation stores requests to SQS");
   await sqsClient.sendMessage({
     QueueUrl: process.env.SYNC_STORES_SQS_URL!,
     MessageBody: JSON.stringify({
@@ -54,7 +57,8 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     }),
     MessageGroupId: `${vendorId}-${accountId}`
   });
-  logger.info("Stores creation request sent to SQS");
+
+  logger.info("Validation stores finished");
   return {
     statusCode: 200,
     body: JSON.stringify({

@@ -1,9 +1,8 @@
+import { Lists } from "./createProducts.types";
+
 import { fetchDraftStores } from "/opt/nodejs/repositories/common.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-
-import { Lists } from "./createProducts.types";
-
 import { lambdaClient } from "/opt/nodejs/configs/config";
 import { logger } from "/opt/nodejs/configs/observability.config";
 
@@ -12,7 +11,7 @@ export const createProductsService = async (
   accountId: string
 ) => {
   const { categories, list, modifierGroups, products } = listInfo;
-  const { channelId, storeId, vendorId, listName } = list;
+  const { channelId, storeId, vendorId, listName, listId } = list;
   let storesId: string[];
   if (storeId === "replicate_in_all") {
     const dbStores = await fetchDraftStores(accountId, vendorId);
@@ -20,7 +19,7 @@ export const createProductsService = async (
   } else {
     storesId = storeId.split(",");
   }
-  logger.appendKeys({ vendorId, accountId });
+  logger.appendKeys({ vendorId, accountId, listId });
   logger.info("Creating products initiating");
   const vendorIdStoreIdChannelId = storesId.map(
     storeId => `${vendorId}#${storeId}#${channelId}`
@@ -37,7 +36,8 @@ export const createProductsService = async (
       vendorId,
       modifierGroups,
       categories,
-      listName
+      listName,
+      listId
     };
     const messageBody = { vendorIdStoreIdChannelId, body };
     return await lambdaClient.invoke({

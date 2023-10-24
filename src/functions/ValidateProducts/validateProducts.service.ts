@@ -6,11 +6,12 @@ import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repositor
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 import { productsValidator } from "/opt/nodejs/validators/lists.validator";
+import { logger } from "/opt/nodejs/configs/observability.config";
 
 import { transformKFCProducts } from "./validateProducts.transform";
 import { Lists } from "./validateProducts.types";
 
-import { logger } from "/opt/nodejs/configs/observability.config";
+const kfcAccounts = ["1", "9"];
 
 export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   const { body, headers, requestContext } = event;
@@ -18,7 +19,8 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
   let listInfo;
-  if (accountId === "1") {
+  // TODO: Reemplazar por validadores custom
+  if (kfcAccounts.includes(accountId)) {
     listInfo = transformKFCProducts(parsedBody, productsValidator) as Lists;
   } else {
     listInfo = productsValidator.parse(parsedBody);
@@ -47,6 +49,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   await saveSyncRequest(syncRequest);
   const newHeaders = { accountId };
 
+  logger.info("Sending creation products requests to SQS");
   await sqsClient.sendMessage({
     QueueUrl: process.env.SYNC_PRODUCTS_SQS_URL!,
     MessageBody: JSON.stringify({
@@ -55,8 +58,8 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
     }),
     MessageGroupId: `${vendorId}-${accountId}`
   });
-  logger.info("Products creation request sent to SQS");
 
+  logger.info("Validation products finished");
   return {
     statusCode: 200,
     body: JSON.stringify({

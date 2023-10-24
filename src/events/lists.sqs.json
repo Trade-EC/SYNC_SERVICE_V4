@@ -1,0 +1,24 @@
+{
+  "Records": [
+    {
+      "messageId": "a949ded8-e387-4541-a243-44dd3f394c20",
+      "receiptHandle": "AQEBeVN2APuLrRewSLCAiM8KSDN61cXJFcCEH1f1UVrQ43IF2OxJX7fxe+pZMsyExoHRqOAjrVTd2lII9+RV0I/wMBHTkyy+VpWQ2x3OdEmnHJjQqN0zQ6fNZ/3sct4pIcJH9n9RhE6XEfRGF+PlcOrHTKUO6sH63rpEnvi1G1zSF6rNU9dlEv7TupYP9dk/KXDNnqgcp7NeRgMUCxPD3/w0mtwYlODWFM7xEwgO8vzRETxVNcnPsXeXZW9MO6O2Plk5TYYXnPP4r53+ERiYXgOPaw==",
+      "body": "{\"body\": {\"list\":{\"listId\":\"List-NK01\",\"storeId\":\"NK01\",\"listName\":\"Lista NK01\",\"vendorId\":\"10\",\"channelId\":\"SUSHI-CORP-1\",\"ecommerceChannelId\":\"1\"},\"products\":[{\"name\":\"MENU FESTIVAL\",\"type\":\"PRODUCTO\",\"active\":true,\"images\":[{\"fileUrl\":\"https://medusabrokerimages.blob.core.windows.net/images/68f503e6-0677-490c-a0b8-a7ae1d804a66.jpg\",\"imageCategoryId\":\"product\"}],\"priceInfo\":{\"price\":29.5,\"pointPrice\":0,\"priceAsModifier\":0},\"productId\":\"2146438983\",\"schedules\":[],\"taxesInfo\":{\"vatRatePercentage\":12},\"description\":\"MENU FESTIVAL\",\"additionalInfo\":{\"extrasPerUnit\":[{\"code\":\"2146437097\",\"name\":\"Salsa de soya\",\"value\":3},{\"code\":\"2146437096\",\"name\":\"Salsa de anguila\",\"value\":4},{\"code\":\"2146436099\",\"name\":\"chopsticks\",\"value\":4}]},\"productModifiers\":[{\"position\":1,\"modifierId\":\"22225\"},{\"position\":2,\"modifierId\":\"22208\"}]},{\"name\":\"50 BOCADOS ESP\",\"type\":\"PRODUCTO\",\"active\":true,\"images\":[{\"fileUrl\":\"https://medusabrokerimages.blob.core.windows.net/images/c5eb40cf-339e-4eb9-9cfb-f1a8d7f16ccc.jpg\",\"imageCategoryId\":\"product\"}],\"priceInfo\":{\"price\":0,\"pointPrice\":0,\"priceAsModifier\":0},\"productId\":\"2146439084\",\"schedules\":[],\"taxesInfo\":{\"vatRatePercentage\":12},\"description\":\"50 BOCADOS ESP\",\"additionalInfo\":{\"extrasPerUnit\":[{\"code\":\"2146437097\",\"name\":\"Salsa de soya\",\"value\":3},{\"code\":\"2146437096\",\"name\":\"Salsa de anguila\",\"value\":4},{\"code\":\"2146436099\",\"name\":\"chopsticks\",\"value\":4}]},\"productModifiers\":[]},{\"name\":\"CREMOSO DE MARACUYA\",\"type\":\"PRODUCTO\",\"active\":true,\"images\":[{\"fileUrl\":\"https://medusabrokerimages.blob.core.windows.net/images/f112b8e0-a336-4143-b6c9-4b543b9ee2a8.jpg\",\"imageCategoryId\":\"product\"}],\"priceInfo\":{\"price\":0,\"pointPrice\":0,\"priceAsModifier\":0},\"productId\":\"2146439136\",\"schedules\":[],\"taxesInfo\":{\"vatRatePercentage\":12},\"description\":\"CREMOSO DE MARACUYA\",\"additionalInfo\":{\"extrasPerUnit\":[{\"code\":\"2146437097\",\"name\":\"Salsa de soya\",\"value\":0},{\"code\":\"2146437096\",\"name\":\"Salsa de anguila\",\"value\":0},{\"code\":\"2146436099\",\"name\":\"chopsticks\",\"value\":0}]},\"productModifiers\":[]}],\"categories\":[{\"name\":\"SUPER PROMOCIONES\",\"images\":[{\"fileUrl\":\"https://medusabrokerimages.blob.core.windows.net/images/b002740a-410f-487d-a834-f41a1d6f26c4.jpg\",\"imageCategoryId\":\"product\"}],\"position\":0,\"displayInList\":true,\"productListing\":[{\"position\":0,\"productId\":\"2146438983\"}],\"productCategoryId\":\"22270\"}],\"modifierGroups\":[{\"type\":\"CUSTOM\",\"modifier\":\"ESCOJA EL ROLLO\",\"maxOptions\":1,\"minOptions\":1,\"modifierId\":\"22225\",\"modifierOptions\":[{\"name\":\"MENU 50 BOCADOS SEL ESP KB\",\"optionId\":\"2146436683\",\"position\":1,\"productId\":\"2146439084\"}]},{\"type\":\"CUSTOM\",\"modifier\":\"ESCOJA EL POSTRE?\",\"maxOptions\":3,\"minOptions\":3,\"modifierId\":\"22208\",\"modifierOptions\":[{\"name\":\"CREMOSO DE MARACUYA KB\",\"optionId\":\"2146436680\",\"position\":1,\"productId\":\"2146439136\"}]}]}, \"headers\":{\"accountId\":\"1\",\"xArtisnTraceId\":\"9bdee887-9928-474c-a20b-49468c384d1d\"}}",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "AWSTraceHeader": "Root=1-6532bee1-7763fd604f0ba37b7ee4dcd7;Parent=1091d335077a550d;Sampled=0;Lineage=89f31974:0",
+        "SentTimestamp": "1697824486990",
+        "SequenceNumber": "18881387142378992128",
+        "MessageGroupId": "10-1",
+        "SenderId": "AROA4YRKNIM2ZAONI2G2J:sync-service-v4-ValidateStores-C2ZdBkmurB16",
+        "MessageDeduplicationId": "6b2545f0e13bbc32311477ec8ad344f2a693a5e4deedb1e3fc92109e99bd2f0b",
+        "ApproximateFirstReceiveTimestamp": "1697824486990"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "43846973576558f60feb2a7749ab664b",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-east-2:877336019765:StoresSyncSQS.fifo",
+      "awsRegion": "us-east-2"
+    }
+  ]
+}
