@@ -1,19 +1,23 @@
-import { Context } from "aws-lambda";
+import { Context, SQSEvent } from "aws-lambda";
 
 import { createProductService } from "./createProduct.service";
-import { CreateProductProps } from "./createProduct.types";
 
 import { logger } from "/opt/nodejs/configs/observability.config";
 
-export const lambdaHandler = async (
-  props: CreateProductProps,
-  context: Context
-) => {
+export const lambdaHandler = async (event: SQSEvent, context: Context) => {
   context.callbackWaitsForEmptyEventLoop = false;
   try {
-    return createProductService(props);
+    const { Records } = event;
+    const recordPromises = Records.map(async record => {
+      const { body: bodyRecord } = record ?? {};
+      const props = JSON.parse(bodyRecord ?? "");
+
+      await createProductService(props);
+      console.log("lists create");
+    });
+    await Promise.all(recordPromises);
   } catch (error) {
-    logger.error("creating stores error", { error });
+    logger.error("creating product error", { error });
     return error;
   }
 };

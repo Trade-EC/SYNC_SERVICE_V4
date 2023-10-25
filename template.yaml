@@ -17,6 +17,7 @@ Globals:
         SYNC_LISTS_SQS_URL: !Ref ListSyncSQS
         SYNC_PRODUCTS_SQS_URL: !Ref ProductsSyncSQS
         SYNC_STORES_SQS_URL: !Ref StoresSyncSQS
+        SYNC_PRODUCT_SQS_URL: !Ref ProductSyncSQS
 
 Parameters:
   StageName:
@@ -70,6 +71,17 @@ Resources:
       Tags:
         - Key: Name
           Value: ProductsSyncSQS
+  
+  ProductSyncSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ProductSyncSQS.fifo
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      VisibilityTimeout: 300
+      Tags:
+        - Key: Name
+          Value: ProductSyncSQS
 
   # API Gateway
   SyncServiceV4Api:
@@ -214,14 +226,13 @@ Resources:
             BatchSize: 1
             ScalingConfig:
                MaximumConcurrency: 10
-      MemorySize: 512
+      MemorySize: 256
       Policies:
         - Statement:
             - Effect: Allow
               Action:
-                - lambda:InvokeFunction
-                - lambda:InvokeAsync
-              Resource: !GetAtt CreateProduct.Arn
+                - sqs:SendMessage
+              Resource: !GetAtt ProductSyncSQS.Arn 
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -286,9 +297,8 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
-                - lambda:InvokeFunction
-                - lambda:InvokeAsync
-              Resource: !GetAtt CreateProduct.Arn
+                - sqs:SendMessage
+              Resource: !GetAtt ProductSyncSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -308,6 +318,14 @@ Resources:
       Runtime: nodejs18.x
       Architectures:
         - x86_64
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ProductSyncSQS.Arn
+            BatchSize: 3
+            ScalingConfig:
+               MaximumConcurrency: 30
       Policies:
         - Statement:
             - Effect: Allow

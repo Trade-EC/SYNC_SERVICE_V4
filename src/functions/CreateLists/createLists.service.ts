@@ -3,7 +3,7 @@ import { Lists } from "./createLists.types";
 import { fetchDraftStores } from "/opt/nodejs/repositories/common.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-import { lambdaClient } from "/opt/nodejs/configs/config";
+import { sqsClient } from "/opt/nodejs/configs/config";
 import { logger } from "/opt/nodejs/configs/observability.config";
 
 export const syncListsService = async (listInfo: Lists, accountId: string) => {
@@ -23,6 +23,7 @@ export const syncListsService = async (listInfo: Lists, accountId: string) => {
   logger.appendKeys({ vendorId, accountId, listId });
   logger.info("Creating list initiating");
   const sendMessagesPromises = products.map(async product => {
+    const { productId } = product;
     const body = {
       product,
       storesId,
@@ -35,14 +36,14 @@ export const syncListsService = async (listInfo: Lists, accountId: string) => {
       listId
     };
     const messageBody = { vendorIdStoreIdChannelId, body };
-    return await lambdaClient.invoke({
-      FunctionName: "sync-service-v4-CreateProduct-R9EqUnslvEvJ",
-      InvocationType: "RequestResponse",
-      Payload: JSON.stringify(messageBody)
+    return await sqsClient.sendMessage({
+      QueueUrl: process.env.SYNC_PRODUCT_SQS_URL!,
+      MessageBody: JSON.stringify(messageBody),
+      MessageGroupId: `${vendorId}-${accountId}-${productId}`
     });
   });
 
-  logger.info("Wait for products in list responses");
+  logger.info("Send product to CreateProduct function");
   const sendMessages = await Promise.all(sendMessagesPromises);
 
   const syncRequest: SyncRequest = {
