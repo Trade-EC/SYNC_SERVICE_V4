@@ -1,7 +1,6 @@
 import { Db, MongoClient, ServerApiVersion } from "mongodb";
 
 import CONSTANTS from "../configs/constants";
-import { logger } from "../configs/observability.config";
 
 const { DB_NAME } = CONSTANTS.GENERAL;
 
@@ -12,7 +11,6 @@ let cachedDbClient: Db | null = null;
 
 export async function connectToDatabase() {
   if (cachedDbClient) {
-    logger.info("MongoDB: Using cached database instance");
     return cachedDbClient;
   }
 
@@ -30,6 +28,5 @@ export async function connectToDatabase() {
   const db = client.db(DB_NAME);
 
   cachedDbClient = db;
-  logger.info("MongoDB: Using new database instance");
   return db;
 }

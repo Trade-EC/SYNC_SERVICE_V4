@@ -14,7 +14,7 @@ import CONSTANTS from "/opt/nodejs/configs/constants";
 const { BUCKET } = CONSTANTS.GENERAL;
 
 export const publishSyncService = async (event: APIGatewayProxyEvent) => {
-  const { body, headers, requestContext } = event;
+  const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
   // const { account: accountId } = headersValidator.parse(headers);
   const { Account: accountId } = headers;
@@ -50,24 +50,24 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   const productResponse = await saveProductsInS3(vendorId, accountId, products);
   const { key: productsKey } = productResponse;
 
-  // logger.info("Send info to admin");
-  // const fetchOptions = {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json"
-  //   }
-  // };
-  // const productsSync = fetch(
-  //   `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${BUCKET}&key=${productsKey}`,
-  //   fetchOptions
-  // );
+  logger.info("Send info to admin");
+  const fetchOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  };
+  const productsSync = fetch(
+    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${BUCKET}&key=${productsKey}`,
+    fetchOptions
+  );
 
-  // const storesSync = fetch(
-  //   `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${BUCKET}&key=${storesKey}`,
-  //   fetchOptions
-  // );
+  const storesSync = fetch(
+    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${BUCKET}&key=${storesKey}`,
+    fetchOptions
+  );
 
-  // await Promise.all([productsSync, storesSync]);
+  await Promise.all([productsSync, storesSync]);
   logger.info("Saving in history");
   await saveStoresInHistory(vendorId, accountId);
   await saveProductsInHistory(vendorId, accountId);

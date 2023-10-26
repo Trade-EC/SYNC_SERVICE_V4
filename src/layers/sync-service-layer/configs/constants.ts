@@ -4,7 +4,8 @@ const CONSTANTS = {
     SERVICE_NAME: "sync-service-v4",
     REGION: "us-east-2",
     BUCKET: "syncservicev4.admin.dev",
-    DB_NAME: "sync-service-dev"
+    DB_NAME: "sync-service-dev",
+    SQS_MAX_BATCH_SIZE: 4
   }
 };
 

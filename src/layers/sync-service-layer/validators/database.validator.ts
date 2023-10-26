@@ -3,7 +3,6 @@ import { z } from "zod";
 import { additionalInfoValidator } from "./common.validator";
 import { scheduleValidator } from "./common.validator";
 import { productValidator } from "./lists.validator";
-import { storeServicesValidator } from "./store.validator";
 
 // ------------------------------------------ images
 

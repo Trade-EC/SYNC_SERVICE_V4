@@ -11,10 +11,11 @@ export const syncImagesService = async (event: SQSEvent) => {
   const imagePromises = Records.map(async record => {
     const { body } = record ?? {};
     const imageInfo: ImageSync = JSON.parse(body ?? "");
-    const { externalUrl = "", category, name } = imageInfo;
-    logger.appendKeys({ externalUrl, category, name });
+    const { externalUrl = "", name } = imageInfo;
+    logger.appendKeys({ externalUrl, name });
 
-    const dbImage = await fetchImage(externalUrl, category);
+    logger.info("Querying", { externalUrl, name });
+    const dbImage = await fetchImage(externalUrl, name);
     if (dbImage) return;
     await createOrUpdateImages({ externalUrl, name, status: "PROCESSING" });
     logger.info("Creating image", { imageInfo });

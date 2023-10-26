@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { cloneDeep, isEqual } from "lodash";
 
 import { DbCategory, DbProduct, DbQuestion } from "../types/products.types";
 import { isUndefined, normalizeProductType } from "../utils/common.utils";
@@ -343,7 +343,7 @@ export const mergeEntity = (
   newEntities: any,
   vendorIdStoreIdChannelId: string[]
 ) => {
-  const temporalEntities = _.cloneDeep(dbEntities);
+  const temporalEntities = cloneDeep(dbEntities);
   // Delete ids with vendor, store and channel id combination.
   const temporalEntitiesCleaned = temporalEntities.map(
     (temporalEntity: any) => {
@@ -362,7 +362,7 @@ export const mergeEntity = (
     const foundPriceIndex = temporalEntitiesCleaned.findIndex(
       (dbEntity: any) => {
         const { vendorIdStoreIdChannelId, ...restDbEntity } = dbEntity;
-        return _.isEqual(restDbEntity, restNewEntity);
+        return isEqual(restDbEntity, restNewEntity);
       }
     );
 

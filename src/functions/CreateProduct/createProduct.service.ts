@@ -5,13 +5,16 @@ import { findProduct } from "/opt/nodejs/repositories/common.repository";
 import { transformProduct } from "/opt/nodejs/transforms/product.transform";
 import { mergeEntity } from "/opt/nodejs/transforms/product.transform";
 import { logger } from "/opt/nodejs/configs/observability.config";
+import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
+import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 
 export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
-  const { storesId, vendorId, listName, listId } = body;
+  const { storesId, vendorId, listName, listId, isLast, storeId } = body;
+  const { source } = body;
   const { productId } = product;
-  logger.appendKeys({ vendorId, accountId, externalId: productId, listId });
+  logger.appendKeys({ vendorId, accountId, productId, listId, isLast });
   logger.info("Creating product initiating");
   const productDB = await findProduct(productId);
   const transformedProduct = await transformProduct({
@@ -23,6 +26,19 @@ export const createProductService = async (props: CreateProductProps) => {
     modifierGroups,
     categories
   });
+  if (isLast) {
+    const syncRequest: SyncRequest = {
+      accountId,
+      channelId,
+      status: "SUCCESS",
+      storesId: storeId,
+      type: source,
+      vendorId
+    };
+
+    logger.info("syncRequest", { syncRequest });
+    await saveSyncRequest(syncRequest);
+  }
   if (!productDB) {
     logger.info("Creating product", { product: transformedProduct });
     return await createOrUpdateProduct(
@@ -79,6 +95,7 @@ export const createProductService = async (props: CreateProductProps) => {
   transformedProduct.schedules = mergedSchedules;
   transformedProduct.questions = mergedQuestions;
   transformedProduct.images = mergedImages;
+
   logger.info("Storing product", { product: transformedProduct });
   return await createOrUpdateProduct(
     transformedProduct,
