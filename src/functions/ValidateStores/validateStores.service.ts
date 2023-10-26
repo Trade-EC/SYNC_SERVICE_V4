@@ -14,6 +14,7 @@ import { ChannelsAndStores } from "./validateStores.types";
 const kfcAccounts = ["1", "9"];
 
 export const validateStoresService = async (event: APIGatewayProxyEvent) => {
+  logger.info("STORE VALIDATE: INIT");
   const { body, headers, requestContext } = event;
   const { requestId: xArtisnTraceId } = requestContext;
   const parsedBody = JSON.parse(body ?? "");

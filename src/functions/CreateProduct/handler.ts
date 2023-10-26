@@ -13,7 +13,6 @@ export const lambdaHandler = async (event: SQSEvent, context: Context) => {
       const props = JSON.parse(bodyRecord ?? "");
 
       await createProductService(props);
-      console.log("lists create");
     });
     await Promise.all(recordPromises);
   } catch (error) {
