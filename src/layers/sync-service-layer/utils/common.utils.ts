@@ -31,7 +31,7 @@ export const sqsChunkEntries = async (
   const promises = chunks.map(async chunk => {
     return sqsClient.sendMessageBatch({
       Entries: chunk,
-      QueueUrl: process.env.SYNC_PRODUCT_SQS_URL!
+      QueueUrl: process.env.SYNC_PRODUCT_SQS_URL ?? ""
     });
   });
 

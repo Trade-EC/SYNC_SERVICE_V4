@@ -14,8 +14,6 @@ Globals:
     Environment:
       Variables:
         SYNC_IMAGES_SQS_URL: !Ref SyncImagesSQS
-        SYNC_LISTS_SQS_URL: !Ref ListSyncSQS
-        SYNC_PRODUCTS_SQS_URL: !Ref ProductsSyncSQS
         SYNC_STORES_SQS_URL: !Ref StoresSyncSQS
         SYNC_PRODUCT_SQS_URL: !Ref ProductSyncSQS
 
@@ -39,17 +37,6 @@ Resources:
         - Key: Name
           Value: SyncImagesSQS
 
-  ListSyncSQS:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: ListSyncSQS.fifo
-      ContentBasedDeduplication: true
-      FifoQueue: true
-      VisibilityTimeout: 300
-      Tags:
-        - Key: Name
-          Value: ListSyncSQS
-
   StoresSyncSQS:
     Type: AWS::SQS::Queue
     Properties:
@@ -60,17 +47,6 @@ Resources:
       Tags:
         - Key: Name
           Value: StoresSyncSQS
-
-  ProductsSyncSQS:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: ProductsSyncSQS.fifo
-      ContentBasedDeduplication: true
-      FifoQueue: true
-      VisibilityTimeout: 300
-      Tags:
-        - Key: Name
-          Value: ProductsSyncSQS
   
   ProductSyncSQS:
     Type: AWS::SQS::Queue
@@ -130,6 +106,7 @@ Resources:
       Runtime: nodejs18.x
       Architectures:
         - x86_64
+      MemorySize: 256
       Events:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -186,6 +163,7 @@ Resources:
       Runtime: nodejs18.x
       Architectures:
         - x86_64
+      MemorySize: 256
       Events:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -193,40 +171,6 @@ Resources:
             Path: /lists
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt ListSyncSQS.Arn
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
-  CreateLists:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/CreateLists/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      Events:
-        SqsTrigger:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt ListSyncSQS.Arn
-            BatchSize: 1
-            ScalingConfig:
-               MaximumConcurrency: 10
-      MemorySize: 256
       Policies:
         - Statement:
             - Effect: Allow
@@ -259,40 +203,6 @@ Resources:
             Path: /products
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt ProductsSyncSQS.Arn
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
-  CreateProducts:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/CreateProducts/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      MemorySize: 256
-      Events:
-        SqsTrigger:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt ProductsSyncSQS.Arn
-            BatchSize: 1
-            ScalingConfig:
-               MaximumConcurrency: 10
       Policies:
         - Statement:
             - Effect: Allow

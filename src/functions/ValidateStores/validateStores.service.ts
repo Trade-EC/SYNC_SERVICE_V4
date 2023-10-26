@@ -50,7 +50,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
 
   logger.info("Sending creation stores requests to SQS");
   await sqsClient.sendMessage({
-    QueueUrl: process.env.SYNC_STORES_SQS_URL!,
+    QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",
     MessageBody: JSON.stringify({
       body: channelsAndStores,
       headers: { ...newHeaders, xArtisnTraceId }

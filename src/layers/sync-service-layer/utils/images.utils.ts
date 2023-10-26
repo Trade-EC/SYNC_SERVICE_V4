@@ -23,7 +23,7 @@ export const imageHandler = async (url: string, imageCategory: string) => {
   const response = { bucket, cloudFrontUrl, key, name, url: s3Url };
   if (image) return response;
   await sqsClient.sendMessage({
-    QueueUrl: process.env.SYNC_IMAGES_SQS_URL!,
+    QueueUrl: process.env.SYNC_IMAGES_SQS_URL ?? "",
     MessageBody: JSON.stringify(imageProps)
   });
 

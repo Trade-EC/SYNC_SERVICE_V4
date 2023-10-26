@@ -1,21 +1,60 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
+import { transformKFCList } from "./validateLists.transform";
+import { listsValidator } from "./validateLists.validator";
+import { Lists } from "./validateLists.types";
+
 import { headersValidator } from "/opt/nodejs/validators/common.validator";
-import { sqsClient } from "/opt/nodejs/configs/config";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { logger } from "/opt/nodejs/configs/observability.config";
-
-import { transformKFCList } from "./validateLists.transform";
-import { listsValidator } from "./validateLists.validator";
-import { Lists } from "../CreateLists/createLists.types";
+import { fetchDraftStores } from "/opt/nodejs/repositories/common.repository";
+import { SendMessageBatchRequestEntry } from "/opt/nodejs/node_modules/@aws-sdk/client-sqs";
+import { sqsChunkEntries } from "/opt/nodejs/utils/common.utils";
+//@ts-ignore
+import sha1 from "/opt/nodejs/node_modules/sha1";
 
 const kfcAccounts = ["1", "9"];
 
+export const syncList = async (listInfo: Lists, accountId: string) => {
+  const { categories, list, modifierGroups, products } = listInfo;
+  const { channelId, storeId, vendorId, listName, listId } = list;
+  let storesId: string[];
+  if (storeId === "replicate_in_all") {
+    const dbStores = await fetchDraftStores(accountId, vendorId);
+    storesId = dbStores.map(dbStore => dbStore.storeId);
+  } else {
+    storesId = storeId.split(",");
+  }
+  const vendorIdStoreIdChannelId = storesId.map(
+    storeId => `${vendorId}#${storeId}#${channelId}`
+  );
+
+  logger.info("Creating list initiating");
+  const Entries = products.map((product, index) => {
+    const isLast = products.length - 1 === index;
+    const { productId, name } = product;
+    const body1 = { product, storesId, channelId, accountId, vendorId };
+    const body2 = { modifierGroups, categories, listName, listId };
+    const body3 = { isLast, storeId };
+    const body = { ...body1, ...body2, ...body3, source: "LIST" };
+    const messageBody = { vendorIdStoreIdChannelId, body };
+    return {
+      Id: sha1(`${vendorId}-${accountId}-${productId}-${name}`),
+      MessageBody: JSON.stringify(messageBody),
+      MessageGroupId: `${vendorId}-${accountId}-${productId}`
+    } as SendMessageBatchRequestEntry;
+  });
+
+  logger.info("Send product to CreateProduct function");
+  const sqsMessages = await sqsChunkEntries(Entries);
+
+  return sqsMessages;
+};
+
 export const validateListsService = async (event: APIGatewayProxyEvent) => {
-  const { body, headers, requestContext } = event;
-  const { requestId: xArtisnTraceId } = requestContext;
+  const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
   let listInfo;
@@ -25,8 +64,8 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     listInfo = listsValidator.parse(parsedBody);
   }
   const { list } = listInfo;
-  const { storeId, vendorId, channelId } = list;
-  logger.appendKeys({ vendorId, accountId });
+  const { storeId, vendorId, channelId, listId } = list;
+  logger.appendKeys({ vendorId, accountId, listId, storeId });
   logger.info("Validating lists");
   const syncRequest: SyncRequest = {
     accountId,
@@ -46,16 +85,8 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     };
   }
   await saveSyncRequest(syncRequest);
-  const newHeaders = { accountId };
   logger.info("Sending creation lists requests to SQS");
-  await sqsClient.sendMessage({
-    QueueUrl: process.env.SYNC_LISTS_SQS_URL!,
-    MessageBody: JSON.stringify({
-      body: listInfo,
-      headers: { ...newHeaders, xArtisnTraceId }
-    }),
-    MessageGroupId: `${vendorId}-${accountId}`
-  });
+  await syncList(listInfo, accountId);
 
   logger.info("Validation lists finished");
   return {

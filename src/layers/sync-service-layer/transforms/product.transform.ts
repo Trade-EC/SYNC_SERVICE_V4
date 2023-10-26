@@ -36,7 +36,7 @@ export const transformCategory = async (
   parentId?: string
 ) => {
   const { name, productCategoryId, schedules, images } = category;
-  const { featured, childCategories = [], productListing } = category;
+  const { featured, productListing } = category;
   const productInCategory = productListing.find(
     listing => listing.productId === productId
   );
