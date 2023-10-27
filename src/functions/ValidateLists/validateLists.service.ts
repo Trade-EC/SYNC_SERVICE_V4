@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
+import { createSyncRecords } from "./validateLists.repository";
 import { transformKFCList } from "./validateLists.transform";
 import { listsValidator } from "./validateLists.validator";
 import { Lists } from "./validateLists.types";
@@ -30,6 +31,19 @@ export const syncList = async (listInfo: Lists, accountId: string) => {
   const vendorIdStoreIdChannelId = storesId.map(
     storeId => `${vendorId}#${storeId}#${channelId}`
   );
+  const syncProducts = products.map(product => {
+    const { productId } = product;
+    return {
+      productId: `${accountId}#${productId}`,
+      listId,
+      channelId,
+      vendorId,
+      storeId,
+      status: "PENDING" as const
+    };
+  });
+
+  await createSyncRecords(syncProducts);
 
   logger.info("Creating list initiating");
   const Entries = products.map((product, index) => {
