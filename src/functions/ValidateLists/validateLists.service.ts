@@ -35,6 +35,7 @@ export const syncList = async (listInfo: Lists, accountId: string) => {
     const { productId } = product;
     return {
       productId: `${accountId}#${productId}`,
+      accountId,
       listId,
       channelId,
       vendorId,

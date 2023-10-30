@@ -27,6 +27,7 @@ export interface HeadersProps {
 export interface SyncProductRecord {
   productId: string;
   listId: string;
+  accountId: string;
   channelId: string;
   vendorId: string;
   storeId: string;

@@ -1,17 +1,18 @@
 import { createOrUpdateProduct } from "./createProduct.repository";
+import { verifyCompletedList } from "./createProduct.repository";
 import { CreateProductProps } from "./createProduct.types";
 
 import { findProduct } from "/opt/nodejs/repositories/common.repository";
 import { transformProduct } from "/opt/nodejs/transforms/product.transform";
 import { mergeEntity } from "/opt/nodejs/transforms/product.transform";
 import { logger } from "/opt/nodejs/configs/observability.config";
+import { SyncProductRecord } from "/opt/nodejs/types/common.types";
 
 export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
   const { storesId, vendorId, listName, listId, isLast, storeId } = body;
   const { source } = body;
-  console.log({ storeId, source });
   const { productId } = product;
   logger.appendKeys({ vendorId, accountId, productId, listId, isLast });
   logger.info("Creating product initiating");
@@ -25,16 +26,27 @@ export const createProductService = async (props: CreateProductProps) => {
     modifierGroups,
     categories
   });
+  const syncProductRequest: SyncProductRecord = {
+    productId: `${accountId}#${productId}`,
+    accountId,
+    listId,
+    channelId,
+    vendorId,
+    storeId,
+    status: "SUCCESS" as const
+  };
 
   if (!productDB) {
     logger.info("Creating product", { product: transformedProduct });
-    return await createOrUpdateProduct(
+    await createOrUpdateProduct(
       transformedProduct,
       storesId,
       vendorId,
       channelId,
       listName
     );
+    await verifyCompletedList(syncProductRequest, source);
+    return;
   }
 
   logger.info("Merging product");
@@ -84,11 +96,13 @@ export const createProductService = async (props: CreateProductProps) => {
   transformedProduct.images = mergedImages;
 
   logger.info("Storing product", { product: transformedProduct });
-  return await createOrUpdateProduct(
+  await createOrUpdateProduct(
     transformedProduct,
     storesId,
     vendorId,
     channelId,
     listName
   );
+  await verifyCompletedList(syncProductRequest, source);
+  return;
 };
