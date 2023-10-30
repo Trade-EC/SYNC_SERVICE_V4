@@ -12,11 +12,11 @@ export const syncStoresService = async (
 ) => {
   const { stores, vendorId } = channelsAndStores;
   logger.appendKeys({ vendorId, accountId });
-  logger.info("Creating stores initiating");
+  logger.info("STORE: INIT");
   const syncStores = stores.map(store =>
     storeTransformer(store, accountId, vendorId)
   );
-  logger.info("Creating stores storing", { syncStores });
+  logger.info("STORE: CREATE", { syncStores });
   const newStores = await createOrUpdateStores(syncStores);
   const syncRequest: SyncRequest = {
     accountId,
@@ -25,6 +25,6 @@ export const syncStoresService = async (
     vendorId
   };
   await saveSyncRequest(syncRequest);
-  logger.info("Creating stores finished");
+  logger.info("STORE: FINISHED");
   return newStores;
 };

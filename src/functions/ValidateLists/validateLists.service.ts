@@ -69,6 +69,7 @@ export const syncList = async (listInfo: Lists, accountId: string) => {
 };
 
 export const validateListsService = async (event: APIGatewayProxyEvent) => {
+  logger.info("LISTS VALIDATE: INIT");
   const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
@@ -81,7 +82,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   const { list } = listInfo;
   const { storeId, vendorId, channelId, listId } = list;
   logger.appendKeys({ vendorId, accountId, listId, storeId });
-  logger.info("Validating lists");
+  logger.info("LISTS VALIDATE: VALIDATING");
   const syncRequest: SyncRequest = {
     accountId,
     channelId,
@@ -100,10 +101,10 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     };
   }
   await saveSyncRequest(syncRequest);
-  logger.info("Sending creation lists requests to SQS");
+  logger.info("LISTS VALIDATE: SEND TO SQS");
   await syncList(listInfo, accountId);
 
-  logger.info("Validation lists finished");
+  logger.info("LISTS VALIDATE: FINISHED");
   return {
     statusCode: 200,
     body: JSON.stringify({

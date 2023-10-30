@@ -15,7 +15,7 @@ export const createProductService = async (props: CreateProductProps) => {
   const { source } = body;
   const { productId } = product;
   logger.appendKeys({ vendorId, accountId, productId, listId, isLast });
-  logger.info("Creating product initiating");
+  logger.info("PRODUCT: INIT");
   const productDB = await findProduct(productId);
   const transformedProduct = await transformProduct({
     product,
@@ -37,7 +37,7 @@ export const createProductService = async (props: CreateProductProps) => {
   };
 
   if (!productDB) {
-    logger.info("Creating product", { product: transformedProduct });
+    logger.info("PRODUCT: CREATE", { product: transformedProduct });
     await createOrUpdateProduct(
       transformedProduct,
       storesId,
@@ -49,7 +49,7 @@ export const createProductService = async (props: CreateProductProps) => {
     return;
   }
 
-  logger.info("Merging product");
+  logger.info("PRODUCT: MERGE");
   const { categories: dbCategories, prices: dbPrices } = productDB;
   const { statuses: dbStatuses, schedules: dbSchedules } = productDB;
   const { questions: dbQuestions, images: dbImages } = productDB;
@@ -95,7 +95,7 @@ export const createProductService = async (props: CreateProductProps) => {
   transformedProduct.questions = mergedQuestions;
   transformedProduct.images = mergedImages;
 
-  logger.info("Storing product", { product: transformedProduct });
+  logger.info("PRODUCT: STORE", { product: transformedProduct });
   await createOrUpdateProduct(
     transformedProduct,
     storesId,
@@ -103,6 +103,8 @@ export const createProductService = async (props: CreateProductProps) => {
     channelId,
     listName
   );
+  logger.info("PRODUCT: VERIFY COMPLETED LIST");
   await verifyCompletedList(syncProductRequest, source);
+  logger.info("PRODUCT: FINISHED");
   return;
 };

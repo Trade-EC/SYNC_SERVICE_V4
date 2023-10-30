@@ -2,7 +2,6 @@ import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
 import { DbProduct } from "/opt/nodejs/types/products.types";
 import { SyncProductRecord } from "/opt/nodejs/types/common.types";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-import { logger } from "/opt/nodejs/configs/observability.config";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 
 export const createOrUpdateProduct = async (
@@ -47,22 +46,24 @@ export const verifyCompletedList = async (
   source: "LIST" | "PRODUCTS"
 ) => {
   const { status, ...registerFilter } = register;
-  const { accountId, channelId, storeId, vendorId } = registerFilter;
+  const { accountId, channelId, storeId, vendorId, listId } = registerFilter;
+  const { productId } = registerFilter;
   const dbClient = await connectToDatabase();
-  await dbClient.collection("syncLists").updateOne(
-    { ...register },
-    {
-      $set: { status: "SUCCESS" }
-    }
-  );
+  await dbClient
+    .collection("syncLists")
+    .updateOne(
+      { productId, vendorId, channelId, accountId, storeId, listId },
+      { $set: { status: "SUCCESS" } },
+      { upsert: false }
+    );
   const allRecords = await dbClient
     .collection("syncLists")
     .find({ ...registerFilter })
     .toArray();
 
-  const allSuccess = allRecords.some(record => record.status !== "SUCCESS");
+  const somePending = allRecords.some(record => record.status === "PENDING");
 
-  if (allSuccess) {
+  if (!somePending) {
     const syncRequest: SyncRequest = {
       accountId,
       channelId,
@@ -72,7 +73,9 @@ export const verifyCompletedList = async (
       vendorId
     };
 
-    logger.info("syncRequest", { syncRequest });
-    await saveSyncRequest(syncRequest);
+    await saveSyncRequest(syncRequest, false);
+    await dbClient
+      .collection("syncLists")
+      .deleteMany({ accountId, channelId, storeId, vendorId, listId });
   }
 };

@@ -10,14 +10,17 @@ export const fetchSyncRequest = async (syncRequest: SyncRequest) => {
   return dbSyncRequest;
 };
 
-export const saveSyncRequest = async (syncRequest: SyncRequest) => {
+export const saveSyncRequest = async (
+  syncRequest: SyncRequest,
+  upsert = true
+) => {
   const dbClient = await connectToDatabase();
   const dbSyncRequest = await dbClient
     .collection("syncRequests")
     .updateOne(
       { ...syncRequest, status: "PENDING" },
       { $set: { ...syncRequest } },
-      { upsert: true }
+      { upsert }
     );
 
   return dbSyncRequest;

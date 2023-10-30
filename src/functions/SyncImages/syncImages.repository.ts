@@ -9,13 +9,9 @@ import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
 export const createOrUpdateImages = async (image: Partial<Image>) => {
   const { externalUrl, name } = image;
   const dbClient = await connectToDatabase();
-  await dbClient.collection("images").updateOne(
-    { externalUrl, name },
-    { $set: { ...image } },
-    {
-      upsert: true
-    }
-  );
+  await dbClient
+    .collection("images")
+    .updateOne({ externalUrl, name }, { $set: { ...image } }, { upsert: true });
   return image;
 };
 

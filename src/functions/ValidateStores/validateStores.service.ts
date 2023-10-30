@@ -30,7 +30,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   }
   const { vendorId } = channelsAndStores;
   logger.appendKeys({ vendorId, accountId });
-  logger.info("Validating stores");
+  logger.info("STORE VALIDATE: VALIDATING");
   const syncRequest: SyncRequest = {
     accountId,
     status: "PENDING",
@@ -49,7 +49,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   await saveSyncRequest(syncRequest);
   const newHeaders = { accountId };
 
-  logger.info("Sending creation stores requests to SQS");
+  logger.info("STORE VALIDATE: SEND TO SQS");
   await sqsClient.sendMessage({
     QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",
     MessageBody: JSON.stringify({
@@ -59,7 +59,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     MessageGroupId: `${vendorId}-${accountId}`
   });
 
-  logger.info("Validation stores finished");
+  logger.info("STORE VALIDATE: FINISHED");
   return {
     statusCode: 200,
     body: JSON.stringify({

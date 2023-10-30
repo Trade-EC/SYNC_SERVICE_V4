@@ -56,6 +56,7 @@ export const syncProducts = async (listInfo: Lists, accountId: string) => {
 };
 
 export const validateProductsService = async (event: APIGatewayProxyEvent) => {
+  logger.info("PRODUCTS VALIDATE: INIT");
   const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
@@ -69,7 +70,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   const { list } = listInfo;
   const { storeId, vendorId, channelId, listId } = list;
   logger.appendKeys({ vendorId, accountId, listId, storeId });
-  logger.info("Validating Products");
+  logger.info("PRODUCTS VALIDATE: VALIDATING");
   const syncRequest: SyncRequest = {
     accountId,
     channelId,
@@ -89,10 +90,10 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   }
   await saveSyncRequest(syncRequest);
 
-  logger.info("Sending creation products requests to SQS");
+  logger.info("PRODUCTS VALIDATE: SEND TO SQS");
   await syncProducts(listInfo, accountId);
 
-  logger.info("Validation products finished");
+  logger.info("PRODUCTS VALIDATE: FINISHED");
   return {
     statusCode: 200,
     body: JSON.stringify({
