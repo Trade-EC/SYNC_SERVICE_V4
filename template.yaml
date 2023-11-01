@@ -139,6 +139,7 @@ Resources:
       Runtime: nodejs18.x
       Architectures:
         - x86_64
+      MemorySize: 256
       Events:
         SqsTrigger:
           Type: SQS
@@ -228,6 +229,7 @@ Resources:
       Runtime: nodejs18.x
       Architectures:
         - x86_64
+      MemorySize: 256
       Events:
         SqsTrigger:
           Type: SQS

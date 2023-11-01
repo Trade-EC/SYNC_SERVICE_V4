@@ -251,6 +251,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
   );
 
   const newProduct: DbProduct = {
+    hash: null,
     productId: `${accountId}#${productId}`,
     status: "DRAFT",
     version: "2023-10-06-1",

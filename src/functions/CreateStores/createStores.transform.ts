@@ -18,9 +18,9 @@ export const storeTransformer = (
     ? transformStoreSchedulesByChannel(schedulesByChannel, storeId)
     : [];
 
-  return {
+  const newStore = {
     storeId,
-    status: "DRAFT",
+    status: "DRAFT" as const,
     version: "2023-07-01-1",
     storeName: name,
     maxOrderAmount: 0,
@@ -70,4 +70,5 @@ export const storeTransformer = (
       id: accountId
     }
   };
+  return newStore;
 };

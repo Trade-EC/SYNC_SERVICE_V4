@@ -7,16 +7,20 @@ import { transformProduct } from "/opt/nodejs/transforms/product.transform";
 import { mergeEntity } from "/opt/nodejs/transforms/product.transform";
 import { logger } from "/opt/nodejs/configs/observability.config";
 import { SyncProductRecord } from "/opt/nodejs/types/common.types";
+// @ts-ignore
+import sha1 from "/opt/nodejs/node_modules/sha1";
+import { sortObjectByKeys } from "/opt/nodejs/utils/common.utils";
 
 export const createProductService = async (props: CreateProductProps) => {
-  const { body, vendorIdStoreIdChannelId } = props;
+  const { body, vendorIdStoreIdChannelId, listHash } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
   const { storesId, vendorId, listName, listId, isLast, storeId } = body;
   const { source } = body;
   const { productId } = product;
+  const dbProductId = `${accountId}#${productId}`;
   logger.appendKeys({ vendorId, accountId, productId, listId, isLast });
   logger.info("PRODUCT: INIT");
-  const productDB = await findProduct(productId);
+  const productDB = await findProduct(dbProductId);
   const transformedProduct = await transformProduct({
     product,
     storesId,
@@ -27,7 +31,7 @@ export const createProductService = async (props: CreateProductProps) => {
     categories
   });
   const syncProductRequest: SyncProductRecord = {
-    productId: `${accountId}#${productId}`,
+    productId: dbProductId,
     accountId,
     listId,
     channelId,
@@ -35,17 +39,21 @@ export const createProductService = async (props: CreateProductProps) => {
     storeId,
     status: "SUCCESS" as const
   };
+  const orderedTransformProduct = sortObjectByKeys(transformedProduct);
 
   if (!productDB) {
-    logger.info("PRODUCT: CREATE", { product: transformedProduct });
+    const hash = sha1(JSON.stringify(orderedTransformProduct));
+    orderedTransformProduct.hash = hash;
+    logger.info("PRODUCT: CREATE", { product: orderedTransformProduct });
     await createOrUpdateProduct(
-      transformedProduct,
+      orderedTransformProduct,
       storesId,
       vendorId,
       channelId,
       listName
     );
-    await verifyCompletedList(syncProductRequest, source);
+    await verifyCompletedList(syncProductRequest, source, listHash);
+    logger.info("PRODUCT: FINISHED");
     return;
   }
 
@@ -53,10 +61,11 @@ export const createProductService = async (props: CreateProductProps) => {
   const { categories: dbCategories, prices: dbPrices } = productDB;
   const { statuses: dbStatuses, schedules: dbSchedules } = productDB;
   const { questions: dbQuestions, images: dbImages } = productDB;
-  const { categories: newCategories, prices: newPrices } = transformedProduct;
-  const { statuses: newStatuses, images: newImages } = transformedProduct;
-  const { schedules: newSchedules } = transformedProduct;
-  const { questions: newQuestions } = transformedProduct;
+  const { categories: newCategories } = orderedTransformProduct;
+  const { prices: newPrices } = orderedTransformProduct;
+  const { statuses: newStatuses, images: newImages } = orderedTransformProduct;
+  const { schedules: newSchedules } = orderedTransformProduct;
+  const { questions: newQuestions } = orderedTransformProduct;
 
   const mergedCategories = mergeEntity(
     dbCategories,
@@ -88,23 +97,33 @@ export const createProductService = async (props: CreateProductProps) => {
     newImages,
     vendorIdStoreIdChannelId
   );
-  transformedProduct.categories = mergedCategories;
-  transformedProduct.prices = mergedPrices;
-  transformedProduct.statuses = mergedStatuses;
-  transformedProduct.schedules = mergedSchedules;
-  transformedProduct.questions = mergedQuestions;
-  transformedProduct.images = mergedImages;
+  orderedTransformProduct.categories = mergedCategories;
+  orderedTransformProduct.prices = mergedPrices;
+  orderedTransformProduct.statuses = mergedStatuses;
+  orderedTransformProduct.schedules = mergedSchedules;
+  orderedTransformProduct.questions = mergedQuestions;
+  orderedTransformProduct.images = mergedImages;
+  const newHash = sha1(JSON.stringify(orderedTransformProduct));
+  orderedTransformProduct.hash = newHash;
+  const { hash } = productDB;
+  if (hash === newHash) {
+    logger.info("HASH COMPARE:", { hash, newHash });
+    logger.info("PRODUCT: NO CHANGES");
+    await verifyCompletedList(syncProductRequest, source, listHash);
+    logger.info("PRODUCT: FINISHED");
+    return;
+  }
 
-  logger.info("PRODUCT: STORE", { product: transformedProduct });
+  logger.info("PRODUCT: STORE", { product: orderedTransformProduct });
   await createOrUpdateProduct(
-    transformedProduct,
+    orderedTransformProduct,
     storesId,
     vendorId,
     channelId,
     listName
   );
   logger.info("PRODUCT: VERIFY COMPLETED LIST");
-  await verifyCompletedList(syncProductRequest, source);
+  await verifyCompletedList(syncProductRequest, source, listHash);
   logger.info("PRODUCT: FINISHED");
   return;
 };

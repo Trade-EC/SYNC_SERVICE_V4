@@ -8,6 +8,8 @@ import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 import { channelsAndStoresValidator } from "/opt/nodejs/validators/store.validator";
 import { logger } from "/opt/nodejs/configs/observability.config";
+// @ts-ignore
+import sha1 from "/opt/nodejs/node_modules/sha1";
 
 import { ChannelsAndStores } from "./validateStores.types";
 
@@ -31,11 +33,13 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   const { vendorId } = channelsAndStores;
   logger.appendKeys({ vendorId, accountId });
   logger.info("STORE VALIDATE: VALIDATING");
+  const hash = sha1(JSON.stringify(channelsAndStores));
   const syncRequest: SyncRequest = {
     accountId,
     status: "PENDING",
     type: "CHANNELS_STORES",
-    vendorId
+    vendorId,
+    hash
   };
   const dbSyncRequest = await fetchSyncRequest(syncRequest);
   if (dbSyncRequest) {

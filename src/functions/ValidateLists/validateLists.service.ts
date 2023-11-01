@@ -18,7 +18,11 @@ import sha1 from "/opt/nodejs/node_modules/sha1";
 
 const kfcAccounts = ["1", "9"];
 
-export const syncList = async (listInfo: Lists, accountId: string) => {
+export const syncList = async (
+  listInfo: Lists,
+  accountId: string,
+  hash: string
+) => {
   const { categories, list, modifierGroups, products } = listInfo;
   const { channelId, storeId, vendorId, listName, listId } = list;
   let storesId: string[];
@@ -54,7 +58,7 @@ export const syncList = async (listInfo: Lists, accountId: string) => {
     const body2 = { modifierGroups, categories, listName, listId };
     const body3 = { isLast, storeId };
     const body = { ...body1, ...body2, ...body3, source: "LIST" };
-    const messageBody = { vendorIdStoreIdChannelId, body };
+    const messageBody = { vendorIdStoreIdChannelId, body, listHash: hash };
     return {
       Id: sha1(`${vendorId}-${accountId}-${productId}-${name}`),
       MessageBody: JSON.stringify(messageBody),
@@ -83,13 +87,15 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   const { storeId, vendorId, channelId, listId } = list;
   logger.appendKeys({ vendorId, accountId, listId, storeId });
   logger.info("LISTS VALIDATE: VALIDATING");
+  const hash = sha1(JSON.stringify(parsedBody));
   const syncRequest: SyncRequest = {
     accountId,
     channelId,
     status: "PENDING",
     storesId: storeId,
     type: "LIST",
-    vendorId
+    vendorId,
+    hash
   };
   const dbSyncRequest = await fetchSyncRequest(syncRequest);
   if (dbSyncRequest) {
@@ -102,7 +108,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   }
   await saveSyncRequest(syncRequest);
   logger.info("LISTS VALIDATE: SEND TO SQS");
-  await syncList(listInfo, accountId);
+  await syncList(listInfo, accountId, hash);
 
   logger.info("LISTS VALIDATE: FINISHED");
   return {

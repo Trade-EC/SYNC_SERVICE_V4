@@ -11,4 +11,5 @@ export interface CreateProductsBody extends TransformProductsProps {
 export interface CreateProductProps {
   body: CreateProductsBody;
   vendorIdStoreIdChannelId: string[];
+  listHash: string;
 }

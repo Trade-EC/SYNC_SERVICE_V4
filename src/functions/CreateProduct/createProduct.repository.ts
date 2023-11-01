@@ -15,7 +15,7 @@ export const createOrUpdateProduct = async (
   const { productId } = product;
 
   const createdProduct = dbClient.collection("products").updateOne(
-    { productId, status: "DRAFT" },
+    { productId, $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }] },
     {
       $set: { ...product }
     },
@@ -24,7 +24,7 @@ export const createOrUpdateProduct = async (
 
   const storesPromises = storesId.map(storeId => {
     return dbClient.collection("stores").updateOne(
-      { storeId, status: "DRAFT" },
+      { storeId, $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }] },
       {
         $addToSet: {
           catalogues: {
@@ -43,11 +43,11 @@ export const createOrUpdateProduct = async (
 
 export const verifyCompletedList = async (
   register: SyncProductRecord,
-  source: "LIST" | "PRODUCTS"
+  source: "LIST" | "PRODUCTS",
+  listHash: string
 ) => {
-  const { status, ...registerFilter } = register;
+  const { status, productId, ...registerFilter } = register;
   const { accountId, channelId, storeId, vendorId, listId } = registerFilter;
-  const { productId } = registerFilter;
   const dbClient = await connectToDatabase();
   await dbClient
     .collection("syncLists")
@@ -61,16 +61,17 @@ export const verifyCompletedList = async (
     .find({ ...registerFilter })
     .toArray();
 
-  const somePending = allRecords.some(record => record.status === "PENDING");
+  const allSuccess = allRecords.every(record => record.status === "SUCCESS");
 
-  if (!somePending) {
+  if (allSuccess) {
     const syncRequest: SyncRequest = {
       accountId,
       channelId,
       status: "SUCCESS",
       storesId: storeId,
       type: source,
-      vendorId
+      vendorId,
+      hash: listHash
     };
 
     await saveSyncRequest(syncRequest, false);

@@ -21,7 +21,7 @@ export const saveProductsInHistory = async (
           status: "DRAFT"
         }
       },
-      { $addFields: { status: "PUBLISHED", deleted_at: new Date() } },
+      { $addFields: { status: "DELETED", deleted_at: new Date() } },
       { $project: { _id: 0 } },
       { $merge: { into: "historyStores" } }
     ])
@@ -45,7 +45,7 @@ export const saveStoresInHistory = async (
           status: "DRAFT"
         }
       },
-      { $addFields: { status: "PUBLISHED", deleted_at: new Date() } },
+      { $addFields: { status: "DELETED", deleted_at: new Date() } },
       { $project: { _id: 0 } },
       { $merge: { into: "historyProducts" } }
     ])
@@ -58,7 +58,7 @@ export const fetchStores = async (vendorId: string, accountId: string) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
     .collection("stores")
-    .find({ "vendor.id": vendorId, "account.id": accountId })
+    .find({ "vendor.id": vendorId, "account.id": accountId, status: "DRAFT" })
     .toArray();
 
   return response;
@@ -69,6 +69,13 @@ export const fetchProducts = async (vendorId: string, accountId: string) => {
   const response = dbClient
     .collection("products")
     .aggregate([
+      {
+        $match: {
+          "vendor.id": vendorId,
+          "account.accountId": accountId,
+          status: "DRAFT"
+        }
+      },
       {
         $graphLookup: {
           from: "products",
@@ -146,18 +153,34 @@ export const saveProductsInS3 = async (
   };
 };
 
-export const updateStatus = async (
+export const updateStatusStores = async (
   vendorId: string,
-  accountId: string,
-  collection: "products" | "stores"
+  accountId: string
 ) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
-    .collection(collection)
+    .collection("stores")
     .updateMany(
       { "vendor.id": vendorId, "account.id": accountId, status: "DRAFT" },
       { $set: { status: "PUBLISHED" } }
     );
+
+  return response;
+};
+
+export const updateStatusProducts = async (
+  vendorId: string,
+  accountId: string
+) => {
+  const dbClient = await connectToDatabase();
+  const response = await dbClient.collection("products").updateMany(
+    {
+      "vendor.id": vendorId,
+      "account.accountId": accountId,
+      status: "DRAFT"
+    },
+    { $set: { status: "PUBLISHED" } }
+  );
 
   return response;
 };

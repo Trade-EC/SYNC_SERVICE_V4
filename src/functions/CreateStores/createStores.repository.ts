@@ -9,7 +9,7 @@ export const createOrUpdateStores = async (stores: DBStore[]) => {
     return dbClient
       .collection("stores")
       .updateOne(
-        { storeId, status: "DRAFT" },
+        { storeId, $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }] },
         { $set: { ...store } },
         { upsert: true }
       );

@@ -1,6 +1,8 @@
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 import { logger } from "/opt/nodejs/configs/observability.config";
+// @ts-ignore
+import sha1 from "/opt/nodejs/node_modules/sha1";
 
 import { createOrUpdateStores } from "./createStores.repository";
 import { storeTransformer } from "./createStores.transform";
@@ -17,12 +19,14 @@ export const syncStoresService = async (
     storeTransformer(store, accountId, vendorId)
   );
   logger.info("STORE: CREATE", { syncStores });
+  const hash = sha1(JSON.stringify(channelsAndStores));
   const newStores = await createOrUpdateStores(syncStores);
   const syncRequest: SyncRequest = {
     accountId,
     status: "SUCCESS",
     type: "CHANNELS_STORES",
-    vendorId
+    vendorId,
+    hash
   };
   await saveSyncRequest(syncRequest);
   logger.info("STORE: FINISHED");

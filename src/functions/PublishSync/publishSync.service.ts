@@ -1,13 +1,15 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { fetchProducts, fetchStores } from "./publishSync.repository";
-import { updateStatus, saveStoresInHistory } from "./publishSync.repository";
+import { updateStatusProducts } from "./publishSync.repository";
+import { updateStatusStores } from "./publishSync.repository";
+import { saveStoresInHistory } from "./publishSync.repository";
 import { saveProductsInHistory } from "./publishSync.repository";
 import { saveProductsInS3, saveStoresInS3 } from "./publishSync.repository";
 import { transformQuestions } from "./publishSync.transform";
 import { publishSyncValidator } from "./publishSync.validator";
 
-// import { headersValidator } from "/opt/nodejs/validators/common.validator";
+import { headersValidator } from "/opt/nodejs/validators/common.validator";
 import { logger } from "/opt/nodejs/configs/observability.config";
 import CONSTANTS from "/opt/nodejs/configs/constants";
 
@@ -16,16 +18,15 @@ const { BUCKET } = CONSTANTS.GENERAL;
 export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
-  // const { account: accountId } = headersValidator.parse(headers);
-  const { Account: accountId } = headers;
+  const { account: accountId } = headersValidator.parse(headers);
   const info = publishSyncValidator.parse(parsedBody);
   const { vendorId } = info;
   logger.appendKeys({ vendorId, accountId });
-  logger.info("Publish sync initiating");
+  logger.info("PUBLISH: INIT");
 
   if (!accountId || !vendorId) throw new Error("Missing required fields");
 
-  logger.info("Collecting stores and products");
+  logger.info("PUBLISH: FETCHING DATA");
   const stores = await fetchStores(vendorId, accountId);
   const rawProducts = await fetchProducts(vendorId, accountId);
 
@@ -44,13 +45,13 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
     };
   });
 
-  logger.info("Storing data in S3");
+  logger.info("PUBLISH: SAVING IN S3");
   const storeResponse = await saveStoresInS3(vendorId, accountId, stores);
   const { key: storesKey } = storeResponse;
   const productResponse = await saveProductsInS3(vendorId, accountId, products);
   const { key: productsKey } = productResponse;
 
-  logger.info("Send info to admin");
+  logger.info("PUBLISH: SYNCING");
   const fetchOptions = {
     method: "POST",
     headers: {
@@ -68,15 +69,15 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   );
 
   await Promise.all([productsSync, storesSync]);
-  logger.info("Saving in history");
+  logger.info("PUBLISH: HISTORY");
   await saveStoresInHistory(vendorId, accountId);
   await saveProductsInHistory(vendorId, accountId);
 
-  logger.info("Switch to publish");
-  await updateStatus(vendorId, accountId, "products");
-  await updateStatus(vendorId, accountId, "stores");
+  logger.info("PUBLISH: UPDATING STATUS");
+  await updateStatusProducts(vendorId, accountId);
+  await updateStatusStores(vendorId, accountId);
 
-  logger.info("Publish sync finished");
+  logger.info("PUBLISH: FINISHED");
   return {
     statusCode: 200,
     body: JSON.stringify({

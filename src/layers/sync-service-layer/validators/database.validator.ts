@@ -200,6 +200,7 @@ export const dbProductValidator = productValidator
     tags: true
   })
   .extend({
+    hash: z.string().nullable(),
     version: z.string(),
     status: statusValidator,
     measure: z.string().nullable(),

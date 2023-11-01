@@ -19,9 +19,10 @@ export const fetchDraftStores = async (accountId: string, vendorId: string) => {
 
 export const findProduct = async (productId: string) => {
   const dbClient = await connectToDatabase();
-  const product = await dbClient
-    .collection("products")
-    .findOne({ productId, status: "DRAFT" });
+  const product = await dbClient.collection("products").findOne({
+    productId,
+    $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }]
+  });
 
   return product as unknown as DbProduct;
 };

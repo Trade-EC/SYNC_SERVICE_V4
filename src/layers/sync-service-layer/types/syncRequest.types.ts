@@ -5,4 +5,5 @@ export interface SyncRequest {
   channelId?: string;
   storesId?: string;
   status: "PENDING" | "ERROR" | "SUCCESS";
+  hash?: string;
 }

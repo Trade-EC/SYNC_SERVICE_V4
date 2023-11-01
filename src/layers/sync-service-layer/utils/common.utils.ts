@@ -1,5 +1,5 @@
 import { SendMessageBatchRequestEntry } from "@aws-sdk/client-sqs";
-import { chunk } from "lodash";
+import { chunk, sortBy } from "lodash";
 
 import { sqsClient } from "../configs/config";
 import CONSTANTS from "../configs/constants";
@@ -36,4 +36,13 @@ export const sqsChunkEntries = async (
   });
 
   return await Promise.all(promises);
+};
+
+export const sortObjectByKeys = <T extends Record<string, any>>(obj: T) => {
+  const sortedObj = {} as any;
+  const sortedKeys = sortBy(Object.keys(obj));
+  sortedKeys.forEach(key => {
+    sortedObj[key] = obj[key];
+  });
+  return sortedObj as T;
 };
