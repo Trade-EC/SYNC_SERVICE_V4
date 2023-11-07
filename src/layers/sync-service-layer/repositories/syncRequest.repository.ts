@@ -1,6 +1,12 @@
 import { SyncRequest } from "../types/syncRequest.types";
 import { connectToDatabase } from "../utils/mongo.utils";
 
+/**
+ *
+ * @param syncRequest
+ * @description Fetch sync request
+ * @returns {Promise<SyncRequest>}
+ */
 export const fetchSyncRequest = async (syncRequest: SyncRequest) => {
   const dbClient = await connectToDatabase();
   const dbSyncRequest = await dbClient
@@ -10,6 +16,13 @@ export const fetchSyncRequest = async (syncRequest: SyncRequest) => {
   return dbSyncRequest;
 };
 
+/**
+ *
+ * @param syncRequest
+ * @param upsert
+ * @description Save sync request
+ * @returns {void}
+ */
 export const saveSyncRequest = async (
   syncRequest: SyncRequest,
   upsert = true

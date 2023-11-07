@@ -4,6 +4,16 @@ import { SyncProductRecord } from "/opt/nodejs/types/common.types";
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
 
+/**
+ *
+ * @param product
+ * @param storesId
+ * @param vendorId
+ * @param channelId
+ * @param listName
+ * @description Create or update product
+ * @returns @link SendMessageBatchRequestEntry[]
+ */
 export const createOrUpdateProduct = async (
   product: DbProduct,
   storesId: string[],
@@ -41,6 +51,14 @@ export const createOrUpdateProduct = async (
   return createdProduct;
 };
 
+/**
+ *
+ * @param SyncProductRecord register
+ * @param source
+ * @param string listHash
+ * @description Verify if sync list is success
+ * @returns {Promise<void>}
+ */
 export const verifyCompletedList = async (
   register: SyncProductRecord,
   source: "LIST" | "PRODUCTS",

@@ -18,6 +18,14 @@ import sha1 from "/opt/nodejs/node_modules/sha1";
 
 const kfcAccounts = ["1", "9"];
 
+/**
+ *
+ * @param listInfo
+ * @param accountId
+ * @param hash
+ * @description Sync list
+ * @returns {Promise<SendMessageBatchRequestEntry[]>}
+ */
 export const syncList = async (
   listInfo: Lists,
   accountId: string,
@@ -72,6 +80,12 @@ export const syncList = async (
   return sqsMessages;
 };
 
+/**
+ *
+ * @param event
+ * @description Validate lists service
+ * @returns {Promise<{statusCode: number, body: string}>}
+ */
 export const validateListsService = async (event: APIGatewayProxyEvent) => {
   logger.info("LISTS VALIDATE: INIT");
   const { body, headers } = event;

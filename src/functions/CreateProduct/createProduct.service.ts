@@ -11,6 +11,12 @@ import { SyncProductRecord } from "/opt/nodejs/types/common.types";
 import sha1 from "/opt/nodejs/node_modules/sha1";
 import { sortObjectByKeys } from "/opt/nodejs/utils/common.utils";
 
+/**
+ *
+ * @param props {@link CreateProductProps}
+ * @description Create product
+ * @returns void
+ */
 export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId, listHash } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;

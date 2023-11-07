@@ -1,6 +1,13 @@
 import { DbProduct } from "../types/products.types";
 import { connectToDatabase } from "../utils/mongo.utils";
 
+/**
+ *
+ * @param accountId
+ * @param vendorId
+ * @description Fetch draft stores
+ * @returns {Promise<DbProduct[]>}
+ */
 export const fetchDraftStores = async (accountId: string, vendorId: string) => {
   const dbClient = await connectToDatabase();
   const stores = await dbClient
@@ -17,6 +24,12 @@ export const fetchDraftStores = async (accountId: string, vendorId: string) => {
   return stores;
 };
 
+/**
+ *
+ * @param productId
+ * @description Find product by id
+ * @returns {Promise<DbProduct>}
+ */
 export const findProduct = async (productId: string) => {
   const dbClient = await connectToDatabase();
   const product = await dbClient.collection("products").findOne({

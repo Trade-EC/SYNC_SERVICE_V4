@@ -6,6 +6,12 @@ import { getAwsImageProps } from "/opt/nodejs/utils/images.utils";
 import { s3Client } from "/opt/nodejs/configs/config";
 import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
 
+/**
+ *
+ * @param image {@link Image}
+ * @description Create or update image
+ * @returns void
+ */
 export const createOrUpdateImages = async (image: Partial<Image>) => {
   const { externalUrl, name } = image;
   const dbClient = await connectToDatabase();
@@ -15,6 +21,13 @@ export const createOrUpdateImages = async (image: Partial<Image>) => {
   return image;
 };
 
+/**
+ *
+ * @param url
+ * @param imageCategory
+ * @description Save image in s3
+ * @returns void
+ */
 export const saveImage = async (
   url: string,
   imageCategory: string

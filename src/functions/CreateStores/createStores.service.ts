@@ -8,6 +8,13 @@ import { createOrUpdateStores } from "./createStores.repository";
 import { storeTransformer } from "./createStores.transform";
 import { ChannelsAndStores } from "./createStores.types";
 
+/**
+ *
+ * @param channelsAndStores
+ * @param accountId
+ * @description Create or update stores in database
+ * @returns void
+ */
 export const syncStoresService = async (
   channelsAndStores: ChannelsAndStores,
   accountId: string

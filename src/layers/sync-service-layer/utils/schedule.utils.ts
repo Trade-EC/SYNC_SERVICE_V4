@@ -1,6 +1,12 @@
 import { Schedule, ScheduleByChannel } from "../types/common.types";
 import { SchemaSchedule } from "../types/common.types";
 
+/**
+ *
+ * @param hour
+ * @description Get hour in seconds
+ * @returns number
+ */
 export const getHourInSeconds = (hour: string) => {
   const initHour = new Date(`01/01/2001 00:00`);
   const targetHour = new Date(`01/01/2001 ${hour}`);
@@ -10,6 +16,14 @@ export const getHourInSeconds = (hour: string) => {
   return diff / 1000;
 };
 
+/**
+ *
+ * @param schedules
+ * @param channels
+ * @param storeId
+ * @description Transform store schedules into SchemaSchedule
+ * @returns {SchemaSchedule[]}
+ */
 export const transformStoreSchedules = (
   schedules: Schedule[],
   channels: string[],
@@ -34,6 +48,13 @@ export const transformStoreSchedules = (
   return newSchedules;
 };
 
+/**
+ *
+ * @param scheduleByChannel
+ * @param storeId
+ * @description Transform store schedules by channel into SchemaSchedule
+ * @returns SchemaSchedule[]
+ */
 export const transformStoreSchedulesByChannel = (
   scheduleByChannel: ScheduleByChannel[],
   storeId: string
@@ -58,6 +79,14 @@ export const transformStoreSchedulesByChannel = (
   return newSchedules;
 };
 
+/**
+ *
+ * @param schedules
+ * @param storesId
+ * @param channelId
+ * @description Transform schedules into SchemaSchedule
+ * @returns {SchemaSchedule[]}
+ */
 export const transformSchedules = (
   schedules: Schedule[],
   storesId: string[],

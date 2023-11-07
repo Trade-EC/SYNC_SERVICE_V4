@@ -17,6 +17,13 @@ import sha1 from "/opt/nodejs/node_modules/sha1";
 
 const kfcAccounts = ["1", "9"];
 
+/**
+ *
+ * @param listInfo {@link Lists}
+ * @param accountId
+ * @description Sync products
+ * @returns void
+ */
 export const syncProducts = async (listInfo: Lists, accountId: string) => {
   const { categories, list, modifierGroups, products } = listInfo;
   const { channelId, storeId, vendorId, listName, listId } = list;
@@ -55,6 +62,12 @@ export const syncProducts = async (listInfo: Lists, accountId: string) => {
   return sqsMessages;
 };
 
+/**
+ *
+ * @param event {@link APIGatewayProxyEvent}
+ * @description Validate products
+ * @returns void
+ */
 export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   logger.info("PRODUCTS VALIDATE: INIT");
   const { body, headers } = event;

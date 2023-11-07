@@ -6,6 +6,12 @@ import { ImageSync } from "./syncImages.types";
 import { fetchImage } from "/opt/nodejs/repositories/images.repository";
 import { logger } from "/opt/nodejs/configs/observability.config";
 
+/**
+ *
+ * @param event {@link SQSEvent}
+ * @description Image service to create or update images in database and s3
+ * @returns void
+ */
 export const syncImagesService = async (event: SQSEvent) => {
   const { Records } = event;
   const imagePromises = Records.map(async record => {

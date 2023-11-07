@@ -4,6 +4,11 @@ import { listValidator } from "/opt/nodejs/validators/lists.validator";
 import { modifierGroupValidator } from "/opt/nodejs/validators/lists.validator";
 import { productValidator } from "/opt/nodejs/validators/lists.validator";
 
+/**
+ *
+ * @description Validate lists
+ * @returns {Promise<void>}
+ */
 export const listsValidator = z
   .object({
     list: listValidator,

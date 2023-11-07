@@ -6,6 +6,13 @@ import { publishSyncService } from "./publishSync.service";
 import { handleError } from "/opt/nodejs/utils/error.utils";
 import { logger } from "/opt/nodejs/configs/observability.config";
 
+/**
+ *
+ * @param event
+ * @param context
+ * @description Lambda handler
+ * @returns APIGatewayProxyResult
+ */
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
   context: Context

@@ -4,6 +4,13 @@ import { createProductService } from "./createProduct.service";
 
 import { logger } from "/opt/nodejs/configs/observability.config";
 
+/**
+ *
+ * @param SQSEvent event
+ * @param Context context
+ * @description Lambda handler
+ * @returns {Promise<void>}
+ */
 export const lambdaHandler = async (event: SQSEvent, context: Context) => {
   context.callbackWaitsForEmptyEventLoop = false;
   try {

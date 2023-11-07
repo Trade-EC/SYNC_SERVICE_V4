@@ -9,6 +9,16 @@ import { PriceInfo, TaxesInfo } from "/opt/nodejs/types/lists.types";
 import { TransformProductsProps } from "/opt/nodejs/types/lists.types";
 import { transformSchedules } from "/opt/nodejs/utils/schedule.utils";
 
+/**
+ *
+ * @param categories
+ * @param productId
+ * @param storesId
+ * @param channelId
+ * @param vendorId
+ * @description Transform categories by product into DbCategory
+ * @returns {Promise<DbCategory[]>}
+ */
 export const transformCategoriesByProduct = async (
   categories: Category[],
   productId: string,
@@ -27,6 +37,17 @@ export const transformCategoriesByProduct = async (
   return Promise.all(categoriesByProductPromises);
 };
 
+/**
+ *
+ * @param category
+ * @param storesId
+ * @param channelId
+ * @param vendorId
+ * @param productId
+ * @param parentId
+ * @description Transform category into DbCategory
+ * @returns {Promise<DbCategory>}
+ */
 export const transformCategory = async (
   category: Category,
   storesId: string[],
@@ -83,6 +104,13 @@ export const transformCategory = async (
   return newCategory;
 };
 
+/**
+ *
+ * @param price
+ * @param taxesInfo
+ * @description Calculate taxes and gross price
+ * @returns {{grossPrice: number, taxes: {name: string, percentage: number}[]}}
+ */
 const getTaxesAndGrossPrice = (
   price: number,
   taxesInfo: TaxesInfo | undefined
@@ -109,6 +137,13 @@ const getTaxesAndGrossPrice = (
   return { grossPrice, taxes };
 };
 
+/**
+ *
+ * @param priceInfo
+ * @param taxesInfo
+ * @description Transform prices into DbProduct["prices"]
+ * @returns {DbProduct["prices"]}
+ */
 export const transformPrices = (
   priceInfo: PriceInfo,
   taxesInfo: TaxesInfo | undefined
@@ -168,6 +203,12 @@ export const transformPrices = (
   return productPrice;
 };
 
+/**
+ *
+ * @param modifierGroup
+ * @description Transform modifier group into DbQuestion
+ * @returns DbQuestion
+ */
 export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
   const { modifier, modifierId, maxOptions } = modifierGroup;
   const { minOptions } = modifierGroup; // type is not using
@@ -185,6 +226,12 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
   return question;
 };
 
+/**
+ *
+ * @param props {@link TransformProductsProps}
+ * @description Transform product into DbProduct
+ * @returns DbProduct
+ */
 export const transformProduct = async (props: TransformProductsProps) => {
   const { product, channelId, storesId, vendorId, modifierGroups } = props;
   const { categories, accountId } = props;
@@ -339,6 +386,14 @@ export const transformProduct = async (props: TransformProductsProps) => {
   return newProduct;
 };
 
+/**
+ *
+ * @param dbEntities
+ * @param newEntities
+ * @param vendorIdStoreIdChannelId
+ * @description Merge entities
+ * @returns {any}
+ */
 export const mergeEntity = (
   dbEntities: any,
   newEntities: any,

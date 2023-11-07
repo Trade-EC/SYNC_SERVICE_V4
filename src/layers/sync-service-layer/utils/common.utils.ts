@@ -6,9 +6,18 @@ import CONSTANTS from "../configs/constants";
 import { DbProduct } from "../types/products.types";
 
 const { SQS_MAX_BATCH_SIZE } = CONSTANTS.GENERAL;
-
+/**
+ * @description Check if value is undefined
+ * @param value
+ * @returns {boolean}
+ */
 export const isUndefined = (value: any) => typeof value === "undefined";
 
+/**
+ * @description Normalize product type
+ * @param productType
+ * @returns string
+ */
 export const normalizeProductType = (productType: DbProduct["type"]) => {
   switch (productType) {
     case "COMPLEMENTO":
@@ -22,6 +31,11 @@ export const normalizeProductType = (productType: DbProduct["type"]) => {
   }
 };
 
+/**
+ * @description Chunk entries to SQS max batch size and send them
+ * @param entries
+ * @returns Promise<PromiseResult<SendMessageBatchResult, AWSError>[]>
+ */
 export const sqsChunkEntries = async (
   entries: SendMessageBatchRequestEntry[]
 ) => {
@@ -38,6 +52,11 @@ export const sqsChunkEntries = async (
   return await Promise.all(promises);
 };
 
+/**
+ * @description Sort object by keys
+ * @param {T} obj
+ * @returns {T}
+ */
 export const sortObjectByKeys = <T extends Record<string, any>>(obj: T) => {
   const sortedObj = {} as any;
   const sortedKeys = sortBy(Object.keys(obj));

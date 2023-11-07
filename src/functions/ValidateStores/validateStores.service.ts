@@ -15,6 +15,12 @@ import { ChannelsAndStores } from "./validateStores.types";
 
 const kfcAccounts = ["1", "9"];
 
+/**
+ *
+ * @param event
+ * @description Validate stores service
+ * @returns {Promise<{statusCode: number, body: string}>}
+ */
 export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   logger.info("STORE VALIDATE: INIT");
   const { body, headers, requestContext } = event;

@@ -6,6 +6,13 @@ import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
 
 const { BUCKET } = CONSTANTS.GENERAL;
 
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Save stores in history collection
+ * @returns void
+ */
 export const saveProductsInHistory = async (
   vendorId: string,
   accountId: string
@@ -30,6 +37,13 @@ export const saveProductsInHistory = async (
   return response;
 };
 
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Save stores in history collection
+ * @returns void
+ */
 export const saveStoresInHistory = async (
   vendorId: string,
   accountId: string
@@ -54,6 +68,13 @@ export const saveStoresInHistory = async (
   return response;
 };
 
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Fetch stores by vendorId, accountId and status DRAFT
+ * @returns DBStore[]
+ */
 export const fetchStores = async (vendorId: string, accountId: string) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
@@ -64,6 +85,13 @@ export const fetchStores = async (vendorId: string, accountId: string) => {
   return response;
 };
 
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Fetch products by vendorId, accountId and status DRAFT
+ * @returns DBStore[]
+ */
 export const fetchProducts = async (vendorId: string, accountId: string) => {
   const dbClient = await connectToDatabase();
   const response = dbClient
@@ -96,6 +124,14 @@ export const fetchProducts = async (vendorId: string, accountId: string) => {
   return response;
 };
 
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @param stores
+ * @description Save stores in S3
+ * @returns void
+ */
 export const saveStoresInS3 = async (
   vendorId: string,
   accountId: string,
@@ -153,6 +189,13 @@ export const saveProductsInS3 = async (
   };
 };
 
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Update status stores in stores collection
+ * @returns void
+ */
 export const updateStatusStores = async (
   vendorId: string,
   accountId: string
@@ -168,6 +211,13 @@ export const updateStatusStores = async (
   return response;
 };
 
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Update status products in products collection
+ * @returns void
+ */
 export const updateStatusProducts = async (
   vendorId: string,
   accountId: string

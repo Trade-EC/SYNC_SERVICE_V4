@@ -3,6 +3,14 @@ import { DBStore, Store } from "./createStores.types";
 import { transformStoreSchedules } from "/opt/nodejs/utils/schedule.utils";
 import { transformStoreSchedulesByChannel } from "/opt/nodejs/utils/schedule.utils";
 
+/**
+ *
+ * @param store request store
+ * @param accountId
+ * @param vendorId
+ * @description Transform store into DBStore
+ * @returns DBStore
+ */
 export const storeTransformer = (
   store: Store,
   accountId: string,

@@ -3,6 +3,12 @@ import { transformList } from "/opt/nodejs/transforms/kfcLists.transform";
 import { transformProducts } from "/opt/nodejs/transforms/kfcLists.transform";
 import { transformCategories } from "/opt/nodejs/transforms/kfcLists.transform";
 
+/**
+ *
+ * @param modifierGroups
+ * @description Transform modifier groups
+ * @returns void
+ */
 export const transformModifierGroups = (modifierGroups: any[]) => {
   const transformedModifierGroups = modifierGroups?.map(modifierGroup => {
     const { name, type, modifier, optionId, position } = modifierGroup;
@@ -46,6 +52,13 @@ export const transformModifierGroups = (modifierGroups: any[]) => {
   return newModifierGroups;
 };
 
+/**
+ *
+ * @param lists
+ * @param validator
+ * @description Transform KFC products
+ * @returns void
+ */
 export const transformKFCProducts = <T extends z.Schema<any, any>>(
   lists: any,
   validator: T

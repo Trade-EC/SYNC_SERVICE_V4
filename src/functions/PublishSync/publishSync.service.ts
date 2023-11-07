@@ -15,6 +15,12 @@ import CONSTANTS from "/opt/nodejs/configs/constants";
 
 const { BUCKET } = CONSTANTS.GENERAL;
 
+/**
+ *
+ * @param event
+ * @description Publish sync, save in S3 and in history collection
+ * @returns void
+ */
 export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");

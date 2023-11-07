@@ -10,7 +10,7 @@ export async function lambdaHandler(event: SQSEvent, context: Context) {
   try {
     const { Records } = event;
     const [record] = Records;
-    logger.info("creating stores", { record });
+    logger.info("STORE:", { record });
     const { body: bodyRecord } = record ?? {};
     const props: CreateStoresProps = JSON.parse(bodyRecord ?? "");
     const { body, headers } = props;
@@ -18,7 +18,7 @@ export async function lambdaHandler(event: SQSEvent, context: Context) {
     const response = await syncStoresService(body, accountId);
     return { statusCode: 200, body: JSON.stringify(response) };
   } catch (error) {
-    logger.error("creating stores error", { error });
+    logger.error("STORE ERROR:", { error });
     return error;
   }
 }

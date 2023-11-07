@@ -9,6 +9,10 @@ const MONGODB_URI =
 
 let cachedDbClient: Db | null = null;
 
+/**
+ * @description Connect to MongoDB
+ * @returns Db
+ */
 export async function connectToDatabase() {
   if (cachedDbClient) {
     return cachedDbClient;

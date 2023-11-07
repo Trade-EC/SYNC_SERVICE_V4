@@ -1,6 +1,11 @@
 import { sqsClient } from "../configs/config";
 import { fetchImage } from "../repositories/images.repository";
 
+/**
+ * @description Get AWS directory
+ * @param imageCategory
+ * @returns string
+ */
 export const getAwsDirectory = (imageCategory: string) => {
   switch (imageCategory) {
     case "product":
@@ -16,6 +21,13 @@ export const getAwsDirectory = (imageCategory: string) => {
   }
 };
 
+/**
+ *
+ * @param url
+ * @param imageCategory
+ * @description Handle image
+ * @returns {Promise<{bucket: string, cloudFrontUrl: string, key: string, name: string, url: string}>}
+ */
 export const imageHandler = async (url: string, imageCategory: string) => {
   const image = await fetchImage(url, imageCategory);
   const imageProps = getAwsImageProps(url, imageCategory);
@@ -30,6 +42,12 @@ export const imageHandler = async (url: string, imageCategory: string) => {
   return response;
 };
 
+/**
+ * @description Get AWS image props
+ * @param url
+ * @param imageCategory
+ * @returns bucket: string, cloudFrontUrl: string, key: string, name: string, url: string
+ */
 export const getAwsImageProps = (url: string, imageCategory: string) => {
   const name = url.split("/").pop();
   const directory = getAwsDirectory(imageCategory);
