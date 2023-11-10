@@ -237,7 +237,7 @@ Resources:
             Queue: !GetAtt ProductSyncSQS.Arn
             BatchSize: 3
             ScalingConfig:
-               MaximumConcurrency: 30
+               MaximumConcurrency: 20
       Policies:
         - Statement:
             - Effect: Allow
@@ -269,7 +269,7 @@ Resources:
           Properties:
             Queue: !GetAtt SyncImagesSQS.Arn
             ScalingConfig:
-               MaximumConcurrency: 10
+               MaximumConcurrency: 5
       Policies:
         - Statement:
             - Effect: Allow
@@ -309,6 +309,58 @@ Resources:
               Action:
                 - s3:*
               Resource: "arn:aws:s3:::syncservicev4.admin.dev/*"
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  PublishWebhook:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/PublishWebhook/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /publish-webhook
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  SyncSummary:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/SyncSummary/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /sync-summary
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

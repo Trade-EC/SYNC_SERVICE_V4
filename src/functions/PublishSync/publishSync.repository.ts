@@ -72,6 +72,28 @@ export const saveStoresInHistory = async (
  *
  * @param vendorId
  * @param accountId
+ * @description Save publish request in publishRequest collection
+ * @returns void
+ */
+export const savePublishRequest = async (
+  vendorId: string,
+  accountId: string
+) => {
+  const dbClient = await connectToDatabase();
+  const response = await dbClient.collection("publishRequest").insertOne({
+    vendorId,
+    accountId,
+    status: "PENDING",
+    createdAt: new Date()
+  });
+
+  return response;
+};
+
+/**
+ *
+ * @param vendorId
+ * @param accountId
  * @description Fetch stores by vendorId, accountId and status DRAFT
  * @returns DBStore[]
  */

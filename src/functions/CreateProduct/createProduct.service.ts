@@ -49,7 +49,9 @@ export const createProductService = async (props: CreateProductProps) => {
 
   if (!productDB) {
     const hash = sha1(JSON.stringify(orderedTransformProduct));
+    const version = new Date().getTime();
     orderedTransformProduct.hash = hash;
+    orderedTransformProduct.version = version;
     logger.info("PRODUCT: CREATE", { product: orderedTransformProduct });
     await createOrUpdateProduct(
       orderedTransformProduct,
@@ -110,7 +112,9 @@ export const createProductService = async (props: CreateProductProps) => {
   orderedTransformProduct.questions = mergedQuestions;
   orderedTransformProduct.images = mergedImages;
   const newHash = sha1(JSON.stringify(orderedTransformProduct));
+  const version = new Date().getTime();
   orderedTransformProduct.hash = newHash;
+  orderedTransformProduct.version = version;
   const { hash } = productDB;
   if (hash === newHash) {
     logger.info("HASH COMPARE:", { hash, newHash });

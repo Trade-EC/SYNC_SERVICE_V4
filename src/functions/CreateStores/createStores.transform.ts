@@ -19,6 +19,7 @@ export const storeTransformer = (
   const { storeId, name, contactInfo, locationInfo, schedules } = store;
   const { schedulesByChannel, storeChannels, deliveryInfo } = store;
   const { services, active, default: isDefault, featured } = store;
+  const { storeCode } = store;
   const transformedSchedules = schedules
     ? transformStoreSchedules(schedules, storeChannels, storeId)
     : [];
@@ -29,7 +30,7 @@ export const storeTransformer = (
   const newStore = {
     storeId,
     status: "DRAFT" as const,
-    version: "2023-07-01-1",
+    version: new Date().getTime(),
     storeName: name,
     maxOrderAmount: 0,
     address: contactInfo.address,
@@ -62,7 +63,8 @@ export const storeTransformer = (
       lon: locationInfo.longitude
     },
     additionalInfo: {
-      externalId: storeId
+      externalId: storeId,
+      external_code: storeCode
     },
     city: {
       id: "",

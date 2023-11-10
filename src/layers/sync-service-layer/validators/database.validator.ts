@@ -59,7 +59,7 @@ export const dbServicesValidator = z.object({
 export const dbStoreValidator = z.object({
   storeId: z.string(),
   status: statusValidator,
-  version: z.string(),
+  version: z.number(),
   storeName: z.string(),
   address: z.string(),
   latitude: z.number(),
@@ -201,7 +201,7 @@ export const dbProductValidator = productValidator
   })
   .extend({
     hash: z.string().nullable(),
-    version: z.string(),
+    version: z.number().nullable(),
     status: statusValidator,
     measure: z.string().nullable(),
     stock: z.number().nullable(),

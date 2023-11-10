@@ -5,6 +5,9 @@ import { Upload } from "/opt/nodejs/node_modules/@aws-sdk/lib-storage";
 import { getAwsImageProps } from "/opt/nodejs/utils/images.utils";
 import { s3Client } from "/opt/nodejs/configs/config";
 import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
+import CONSTANTS from "/opt/nodejs/configs/constants";
+
+const { CLOUDFRONT_URL } = CONSTANTS;
 
 /**
  *
@@ -52,7 +55,7 @@ export const saveImage = async (
   if (!Location) throw new Error("file location not found");
 
   return {
-    cloudFrontUrl: "https://d32dna7apnunfh.cloudfront.net",
+    cloudFrontUrl: CLOUDFRONT_URL,
     bucket,
     key,
     name: category,

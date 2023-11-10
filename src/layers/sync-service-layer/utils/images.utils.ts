@@ -1,5 +1,8 @@
 import { sqsClient } from "../configs/config";
+import CONSTANTS from "../configs/constants";
 import { fetchImage } from "../repositories/images.repository";
+
+const { CLOUDFRONT_URL } = CONSTANTS;
 
 /**
  * @description Get AWS directory
@@ -59,7 +62,7 @@ export const getAwsImageProps = (url: string, imageCategory: string) => {
     key: Key,
     url: `https://s3.us-east-2.amazonaws.com/${Bucket}/${Key}`,
     category: imageCategory,
-    cloudFrontUrl: "https://d32dna7apnunfh.cloudfront.net",
+    cloudFrontUrl: CLOUDFRONT_URL,
     name: imageCategory,
     externalUrl: url
   };

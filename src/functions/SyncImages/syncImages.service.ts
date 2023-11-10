@@ -20,13 +20,14 @@ export const syncImagesService = async (event: SQSEvent) => {
     const { externalUrl = "", name } = imageInfo;
     logger.appendKeys({ externalUrl, name });
 
-    logger.info("Querying", { externalUrl, name });
+    logger.info("IMAGE: QUERYING", { externalUrl, name });
     const dbImage = await fetchImage(externalUrl, name);
     if (dbImage) return;
     await createOrUpdateImages({ externalUrl, name, status: "PROCESSING" });
-    logger.info("Creating image", { imageInfo });
+    logger.info("IMAGE: CREATING", { imageInfo });
     const image = await saveImage(externalUrl, name);
     await createOrUpdateImages(image);
+    logger.info("IMAGE: FINISHING");
   });
 
   await Promise.all(imagePromises);

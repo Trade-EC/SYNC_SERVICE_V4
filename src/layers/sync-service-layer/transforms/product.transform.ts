@@ -57,7 +57,7 @@ export const transformCategory = async (
   parentId?: string
 ) => {
   const { name, productCategoryId, schedules, images } = category;
-  const { featured, productListing } = category;
+  const { featured, productListing, displayInList } = category;
   const productInCategory = productListing.find(
     listing => listing.productId === productId
   );
@@ -96,7 +96,7 @@ export const transformCategory = async (
     available: true,
     active: true,
     position: position ? position : 0,
-    displayInMenu: "YES",
+    displayInMenu: displayInList ? "YES" : "NO",
     vendorIdStoreIdChannelId: storesId.map(
       storeId => `${vendorId}#${storeId}#${channelId}`
     )
@@ -301,7 +301,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     hash: null,
     productId: `${accountId}#${productId}`,
     status: "DRAFT",
-    version: "2023-10-06-1",
+    version: null,
     name,
     description,
     type: normalizeProductType(type),

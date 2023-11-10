@@ -1,6 +1,10 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import { fetchProducts, fetchStores } from "./publishSync.repository";
+import {
+  fetchProducts,
+  fetchStores,
+  savePublishRequest
+} from "./publishSync.repository";
 import { updateStatusProducts } from "./publishSync.repository";
 import { updateStatusStores } from "./publishSync.repository";
 import { saveStoresInHistory } from "./publishSync.repository";
@@ -30,7 +34,9 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   logger.appendKeys({ vendorId, accountId });
   logger.info("PUBLISH: INIT");
 
-  if (!accountId || !vendorId) throw new Error("Missing required fields");
+  if (!accountId || !vendorId) {
+    throw new Error("Missing required fields accountId or vendorId");
+  }
 
   logger.info("PUBLISH: FETCHING DATA");
   const stores = await fetchStores(vendorId, accountId);
@@ -82,6 +88,9 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   logger.info("PUBLISH: UPDATING STATUS");
   await updateStatusProducts(vendorId, accountId);
   await updateStatusStores(vendorId, accountId);
+
+  logger.info("PUBLISH: SAVING PUBLISH REQUEST");
+  await savePublishRequest(vendorId, accountId);
 
   logger.info("PUBLISH: FINISHED");
   return {
