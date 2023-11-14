@@ -97,9 +97,9 @@ export const transformCategory = async (
     active: true,
     position: position ? position : 0,
     displayInMenu: displayInList ? "YES" : "NO",
-    vendorIdStoreIdChannelId: storesId.map(
-      storeId => `${vendorId}#${storeId}#${channelId}`
-    )
+    vendorIdStoreIdChannelId: storesId
+      .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+      .sort()
   };
   return newCategory;
 };
@@ -317,18 +317,18 @@ export const transformProduct = async (props: TransformProductsProps) => {
     },
     images:
       newImages?.map(image => ({
-        vendorIdStoreIdChannelId: storesId.map(
-          storeId => `${vendorId}#${storeId}#${channelId}`
-        ),
+        vendorIdStoreIdChannelId: storesId
+          .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+          .sort(),
         ...image
       })) ?? [],
     additionalInfo: additionalInfo ? additionalInfo : null,
     tags: tags ? tags : [],
     prices: [
       {
-        vendorIdStoreIdChannelId: storesId.map(
-          storeId => `${vendorId}#${storeId}#${channelId}`
-        ),
+        vendorIdStoreIdChannelId: storesId
+          .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+          .sort(),
         prices: transformPrices(priceInfo, taxInfo)
       }
     ],
@@ -342,9 +342,9 @@ export const transformProduct = async (props: TransformProductsProps) => {
     maxAmountForSale: 0,
     statuses: [
       {
-        vendorIdStoreIdChannelId: storesId.map(
-          storeId => `${vendorId}#${storeId}#${channelId}`
-        ),
+        vendorIdStoreIdChannelId: storesId
+          .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+          .sort(),
         availability: true,
         isVisible: true,
         maxInCart: null,
@@ -358,9 +358,9 @@ export const transformProduct = async (props: TransformProductsProps) => {
     questions:
       questions?.map(question => {
         return {
-          vendorIdStoreIdChannelId: storesId.map(
-            storeId => `${vendorId}#${storeId}#${channelId}`
-          ),
+          vendorIdStoreIdChannelId: storesId
+            .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+            .sort(),
           ...question
         };
       }) ?? [],
@@ -369,9 +369,9 @@ export const transformProduct = async (props: TransformProductsProps) => {
     standardTime: standardTime || schedules ? "YES" : "NO", // Si me llegan schedules standardTime YES si no NO
     schedules: schedules
       ? transformSchedules(schedules, storesId, channelId).map(schedule => ({
-          vendorIdStoreIdChannelId: storesId.map(
-            storeId => `${vendorId}#${storeId}#${channelId}`
-          ),
+          vendorIdStoreIdChannelId: storesId
+            .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+            .sort(),
           ...schedule
         }))
       : [],
@@ -415,21 +415,23 @@ export const mergeEntity = (
 
   for (const entity of newEntities) {
     const { vendorIdStoreIdChannelId: ids, ...restNewEntity } = entity;
-    const foundPriceIndex = temporalEntitiesCleaned.findIndex(
+    const foundEntityIndex = temporalEntitiesCleaned.findIndex(
       (dbEntity: any) => {
         const { vendorIdStoreIdChannelId, ...restDbEntity } = dbEntity;
         return isEqual(restDbEntity, restNewEntity);
       }
     );
 
-    if (foundPriceIndex === -1) {
+    if (foundEntityIndex === -1) {
       temporalEntitiesCleaned.push(entity);
       continue;
     }
 
-    temporalEntitiesCleaned[foundPriceIndex].vendorIdStoreIdChannelId.push(
+    temporalEntitiesCleaned[foundEntityIndex].vendorIdStoreIdChannelId.push(
       ...vendorIdStoreIdChannelId
     );
+    temporalEntitiesCleaned[foundEntityIndex].vendorIdStoreIdChannelId =
+      temporalEntitiesCleaned[foundEntityIndex].vendorIdStoreIdChannelId.sort();
   }
 
   return temporalEntitiesCleaned;

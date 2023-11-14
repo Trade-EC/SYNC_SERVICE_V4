@@ -1,10 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import {
-  fetchProducts,
-  fetchStores,
-  savePublishRequest
-} from "./publishSync.repository";
+import { fetchProducts, fetchStores } from "./publishSync.repository";
+import { savePublishRequest } from "./publishSync.repository";
 import { updateStatusProducts } from "./publishSync.repository";
 import { updateStatusStores } from "./publishSync.repository";
 import { saveStoresInHistory } from "./publishSync.repository";
@@ -96,8 +93,8 @@ export const publishSyncService = async (event: APIGatewayProxyEvent) => {
   return {
     statusCode: 200,
     body: JSON.stringify({
-      stores: storeResponse,
-      products: productResponse
+      stores: [],
+      products: []
     })
   };
 };

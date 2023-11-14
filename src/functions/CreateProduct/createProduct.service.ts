@@ -117,7 +117,6 @@ export const createProductService = async (props: CreateProductProps) => {
   orderedTransformProduct.version = version;
   const { hash } = productDB;
   if (hash === newHash) {
-    logger.info("HASH COMPARE:", { hash, newHash });
     logger.info("PRODUCT: NO CHANGES");
     await verifyCompletedList(syncProductRequest, source, listHash);
     logger.info("PRODUCT: FINISHED");
