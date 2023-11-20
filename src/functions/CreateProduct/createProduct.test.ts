@@ -11,12 +11,10 @@ mockClient(sqsClient);
 
 describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {
-    const sqsSpy = jest.spyOn(sqsClient, "sendMessage");
     const ctx = context();
-    ctx.done();
     const event: SQSEvent = productSQSEvent;
-    await lambdaHandler(event, ctx);
+    const result = await lambdaHandler(event, ctx);
 
-    expect(sqsSpy).toBeCalled();
+    expect(result.batchItemFailures).toEqual([]);
   });
 });

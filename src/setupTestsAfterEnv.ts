@@ -6,10 +6,14 @@ jest.mock("mongodb", () => {
     MongoClient: jest.fn(() => ({
       db: jest.fn(() => ({
         collection: jest.fn(() => ({
+          find: jest.fn(() => ({
+            toArray: jest.fn(() => [])
+          })),
           findOne: jest.fn(),
           insertOne: jest.fn(),
-          updateOne: jest.fn(),
-          bulkWrite: jest.fn()
+          updateOne: jest.fn(() => ({ modifiedCount: 1 })),
+          bulkWrite: jest.fn(),
+          deleteMany: jest.fn()
         }))
       }))
     }))

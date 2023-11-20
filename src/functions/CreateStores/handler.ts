@@ -1,24 +1,28 @@
-import { Context, SQSEvent } from "aws-lambda";
+import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 
 import { syncStoresService } from "./createStores.service";
 import { CreateStoresProps } from "./createStores.types";
 
 import { logger } from "/opt/nodejs/configs/observability.config";
 
-export async function lambdaHandler(event: SQSEvent, context: Context) {
+export async function lambdaHandler(
+  event: SQSEvent,
+  context: Context
+): Promise<SQSBatchResponse> {
   context.callbackWaitsForEmptyEventLoop = false;
+  const response: SQSBatchResponse = { batchItemFailures: [] };
+  const { Records } = event;
+  const [record] = Records;
+  logger.info("STORE:", { record });
   try {
-    const { Records } = event;
-    const [record] = Records;
-    logger.info("STORE:", { record });
     const { body: bodyRecord } = record ?? {};
     const props: CreateStoresProps = JSON.parse(bodyRecord ?? "");
     const { body, headers } = props;
     const { accountId } = headers;
-    const response = await syncStoresService(body, accountId);
-    return { statusCode: 200, body: JSON.stringify(response) };
+    await syncStoresService(body, accountId);
   } catch (error) {
     logger.error("STORE ERROR:", { error });
-    return error;
+    response.batchItemFailures.push({ itemIdentifier: record.messageId });
   }
+  return response;
 }

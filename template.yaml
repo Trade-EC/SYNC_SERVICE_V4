@@ -33,9 +33,17 @@ Resources:
     Properties:
       QueueName: SyncImagesSQS
       VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SyncImagesDLQ.Arn
+        maxReceiveCount: 3
       Tags:
         - Key: Name
           Value: SyncImagesSQS
+  
+  SyncImagesDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: SyncImagesDLQ
 
   StoresSyncSQS:
     Type: AWS::SQS::Queue
@@ -44,10 +52,20 @@ Resources:
       ContentBasedDeduplication: true
       FifoQueue: true
       VisibilityTimeout: 300
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt StoresSyncDLQ.Arn
+        maxReceiveCount: 3
       Tags:
         - Key: Name
           Value: StoresSyncSQS
-  
+
+  StoresSyncDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: StoresSyncDLQ.fifo
+      ContentBasedDeduplication: true
+      FifoQueue: true
+
   ProductSyncSQS:
     Type: AWS::SQS::Queue
     Properties:
@@ -55,9 +73,19 @@ Resources:
       ContentBasedDeduplication: true
       FifoQueue: true
       VisibilityTimeout: 300
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ProductSyncDLQ.Arn
+        maxReceiveCount: 3
       Tags:
         - Key: Name
           Value: ProductSyncSQS
+
+  ProductSyncDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ProductSyncDLQ.fifo
+      ContentBasedDeduplication: true
+      FifoQueue: true
 
   # API Gateway
   SyncServiceV4Api:
@@ -145,6 +173,7 @@ Resources:
           Type: SQS
           Properties:
             Queue: !GetAtt StoresSyncSQS.Arn
+            BatchSize: 1
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

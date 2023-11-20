@@ -1,4 +1,4 @@
-import { Context, SQSEvent } from "aws-lambda";
+import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 
 import { createProductService } from "./createProduct.service";
 
@@ -13,17 +13,20 @@ import { logger } from "/opt/nodejs/configs/observability.config";
  */
 export const lambdaHandler = async (event: SQSEvent, context: Context) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  try {
-    const { Records } = event;
-    const recordPromises = Records.map(async record => {
+  const { Records } = event;
+  const response: SQSBatchResponse = { batchItemFailures: [] };
+  const recordPromises = Records.map(async record => {
+    try {
       const { body: bodyRecord } = record ?? {};
       const props = JSON.parse(bodyRecord ?? "");
-
       await createProductService(props);
-    });
-    await Promise.all(recordPromises);
-  } catch (error) {
-    logger.error("creating product error", { error });
-    return error;
-  }
+    } catch (error) {
+      logger.error("PRODUCT: ERROR", { error });
+      response.batchItemFailures.push({ itemIdentifier: record.messageId });
+      return error;
+    }
+  });
+  await Promise.all(recordPromises);
+
+  return response;
 };

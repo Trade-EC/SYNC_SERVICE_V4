@@ -10,6 +10,6 @@ describe("Unit test for app handler", function () {
     const event: SQSEvent = storeEvent;
     const result = await lambdaHandler(event, ctx);
 
-    expect(result.statusCode).toEqual(200);
+    expect(result.batchItemFailures).toEqual([]);
   });
 });
