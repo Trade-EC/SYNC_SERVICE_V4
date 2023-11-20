@@ -1,5 +1,7 @@
 import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
 
+import { PublishValidatorProps } from "./publishWebhook.types";
+
 /**
  *
  * @param vendorId
@@ -7,18 +9,18 @@ import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
  * @description Save publish request in publishRequest collection
  * @returns void
  */
-export const savePublishRequest = async (
-  vendorId: string,
-  accountId: string,
-  status: "ERROR" | "SUCCESS"
-) => {
+export const savePublishRequest = async (props: PublishValidatorProps) => {
+  const { vendorId, accountId, status, type } = props;
   const dbClient = await connectToDatabase();
-  const response = await dbClient
-    .collection("publishRequest")
-    .updateOne(
-      { vendorId, accountId, status: "PENDING" },
-      { $set: { updatedAt: new Date(), status } }
-    );
+  const response = await dbClient.collection("publishRequest").updateOne(
+    {
+      vendorId,
+      accountId,
+      $or: [{ status: "PENDING" }, { status: "ERROR" }],
+      type
+    },
+    { $set: { updatedAt: new Date(), status } }
+  );
 
   return response;
 };

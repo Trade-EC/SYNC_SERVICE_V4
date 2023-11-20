@@ -32,8 +32,8 @@ export const createOrUpdateProduct = async (
     { upsert: true }
   );
 
-  const storesPromises = storesId.map(storeId => {
-    return dbClient.collection("stores").updateOne(
+  const storesPromises = storesId.map(async storeId => {
+    const updateResult = await dbClient.collection("stores").updateOne(
       { storeId, $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }] },
       {
         $addToSet: {
@@ -45,6 +45,12 @@ export const createOrUpdateProduct = async (
         }
       }
     );
+
+    if (updateResult.modifiedCount === 0) return;
+
+    await dbClient
+      .collection("stores")
+      .updateOne({ storeId }, { $set: { status: "DRAFT" } });
   });
 
   await Promise.all(storesPromises);

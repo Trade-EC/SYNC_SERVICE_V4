@@ -293,7 +293,7 @@ Resources:
       CodeUri: src/functions/PublishSync/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
-      MemorySize: 512
+      MemorySize: 1024
       Architectures:
         - x86_64
       Events:
@@ -359,6 +359,60 @@ Resources:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /sync-summary
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchStoresByIdByVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/FetchStoresByVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /stores/{storeId}
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchStoresByVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/FetchStoresByVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /stores
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties

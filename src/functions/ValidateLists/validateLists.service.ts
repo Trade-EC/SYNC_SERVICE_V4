@@ -3,6 +3,7 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { createSyncRecords } from "./validateLists.repository";
 import { transformKFCList } from "./validateLists.transform";
 import { listsValidator } from "./validateLists.validator";
+import { queryParamsValidator } from "./validateLists.validator";
 import { Lists } from "./validateLists.types";
 
 import { headersValidator } from "/opt/nodejs/validators/common.validator";
@@ -11,10 +12,9 @@ import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repositor
 import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
 import { logger } from "/opt/nodejs/configs/observability.config";
 import { fetchDraftStores } from "/opt/nodejs/repositories/common.repository";
-import { SendMessageBatchRequestEntry } from "/opt/nodejs/node_modules/@aws-sdk/client-sqs";
-import { sqsChunkEntries } from "/opt/nodejs/utils/common.utils";
 //@ts-ignore
 import sha1 from "/opt/nodejs/node_modules/sha1";
+import { sqsClient } from "/opt/nodejs/configs/config";
 
 const kfcAccounts = ["1", "9"];
 
@@ -29,7 +29,8 @@ const kfcAccounts = ["1", "9"];
 export const syncList = async (
   listInfo: Lists,
   accountId: string,
-  hash: string
+  listHash: string,
+  syncAll = false
 ) => {
   const { categories, list, modifierGroups, products } = listInfo;
   const { channelId, storeId, vendorId, listName, listId } = list;
@@ -55,29 +56,27 @@ export const syncList = async (
       status: "PENDING" as const
     };
   });
-
+  logger.info("LISTS VALIDATE: CREATING SYNC LIST RECORDS");
   await createSyncRecords(syncProducts);
 
-  logger.info("Creating list initiating");
-  const Entries = products.map((product, index) => {
+  const productsPromises = products.map((product, index) => {
     const isLast = products.length - 1 === index;
-    const { productId, name } = product;
+    const { productId } = product;
     const body1 = { product, storesId, channelId, accountId, vendorId };
     const body2 = { modifierGroups, categories, listName, listId };
     const body3 = { isLast, storeId };
     const body = { ...body1, ...body2, ...body3, source: "LIST" };
-    const messageBody = { vendorIdStoreIdChannelId, body, listHash: hash };
-    return {
-      Id: sha1(`${vendorId}-${accountId}-${productId}-${name}`),
+    const messageBody = { vendorIdStoreIdChannelId, body, listHash, syncAll };
+
+    return sqsClient.sendMessage({
+      QueueUrl: process.env.SYNC_PRODUCT_SQS_URL ?? "",
       MessageBody: JSON.stringify(messageBody),
       MessageGroupId: `${vendorId}-${accountId}-${productId}`
-    } as SendMessageBatchRequestEntry;
+    });
   });
 
-  logger.info("Send product to CreateProduct function");
-  const sqsMessages = await sqsChunkEntries(Entries);
-
-  return sqsMessages;
+  logger.info("LISTS VALIDATE: SEND TO SQS");
+  return await Promise.all(productsPromises);
 };
 
 /**
@@ -88,7 +87,9 @@ export const syncList = async (
  */
 export const validateListsService = async (event: APIGatewayProxyEvent) => {
   logger.info("LISTS VALIDATE: INIT");
-  const { body, headers } = event;
+  const { body, headers, queryStringParameters } = event;
+  const { type } = queryParamsValidator.parse(queryStringParameters ?? {});
+  const syncAll = type === "ALL";
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
   let listInfo;
@@ -121,8 +122,8 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     };
   }
   await saveSyncRequest(syncRequest);
-  logger.info("LISTS VALIDATE: SEND TO SQS");
-  await syncList(listInfo, accountId, hash);
+  logger.info("LISTS VALIDATE: TRANSFORMING LIST");
+  await syncList(listInfo, accountId, hash, syncAll);
 
   logger.info("LISTS VALIDATE: FINISHED");
   return {

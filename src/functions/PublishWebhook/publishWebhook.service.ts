@@ -1,5 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
+import { logger } from "/opt/nodejs/configs/observability.config";
+
 import { savePublishRequest } from "./publishWebhook.repository";
 import { publishWebhookValidator } from "./publishWebhook.validator";
 
@@ -13,8 +15,9 @@ export const publishWebhookService = async (event: APIGatewayProxyEvent) => {
   const { body } = event;
   const parsedBody = JSON.parse(body ?? "");
   const info = publishWebhookValidator.parse(parsedBody);
-  const { vendorId, accountId, status } = info;
+  logger.appendKeys(info);
+  logger.info("PUBLISH WEBHOOK: INIT");
 
-  const response = savePublishRequest(vendorId, accountId, status);
+  const response = savePublishRequest(info);
   return response;
 };

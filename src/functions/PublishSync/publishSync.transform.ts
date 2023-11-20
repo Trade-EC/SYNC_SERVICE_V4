@@ -16,7 +16,7 @@ export const transformQuestions = (
       );
 
       if (!product) {
-        logger.info("product answer not found", { productId });
+        logger.info("PUBLISH: ANSWER NOT FOUND", { productId });
         return answer;
       }
 

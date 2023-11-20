@@ -18,14 +18,14 @@ import { sortObjectByKeys } from "/opt/nodejs/utils/common.utils";
  * @returns void
  */
 export const createProductService = async (props: CreateProductProps) => {
-  const { body, vendorIdStoreIdChannelId, listHash } = props;
+  const { body, vendorIdStoreIdChannelId, listHash, syncAll } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
   const { storesId, vendorId, listName, listId, isLast, storeId } = body;
   const { source } = body;
   const { productId } = product;
   const dbProductId = `${accountId}#${productId}`;
-  logger.appendKeys({ vendorId, accountId, productId, listId, isLast });
-  logger.info("PRODUCT: INIT");
+  const lambdaInfo = { vendorId, accountId, productId, listId, isLast };
+  logger.info("PRODUCT: INIT", lambdaInfo);
   const productDB = await findProduct(dbProductId);
   const transformedProduct = await transformProduct({
     product,
@@ -52,7 +52,10 @@ export const createProductService = async (props: CreateProductProps) => {
     const version = new Date().getTime();
     orderedTransformProduct.hash = hash;
     orderedTransformProduct.version = version;
-    logger.info("PRODUCT: CREATE", { product: orderedTransformProduct });
+    logger.info("PRODUCT: CREATE", {
+      ...lambdaInfo,
+      product: orderedTransformProduct
+    });
     await createOrUpdateProduct(
       orderedTransformProduct,
       storesId,
@@ -61,11 +64,11 @@ export const createProductService = async (props: CreateProductProps) => {
       listName
     );
     await verifyCompletedList(syncProductRequest, source, listHash);
-    logger.info("PRODUCT: FINISHED");
+    logger.info("PRODUCT: FINISHED", lambdaInfo);
     return;
   }
 
-  logger.info("PRODUCT: MERGE");
+  logger.info("PRODUCT: MERGE", lambdaInfo);
   const { categories: dbCategories, prices: dbPrices } = productDB;
   const { statuses: dbStatuses, schedules: dbSchedules } = productDB;
   const { questions: dbQuestions, images: dbImages } = productDB;
@@ -116,14 +119,17 @@ export const createProductService = async (props: CreateProductProps) => {
   orderedTransformProduct.hash = newHash;
   orderedTransformProduct.version = version;
   const { hash } = productDB;
-  if (hash === newHash) {
-    logger.info("PRODUCT: NO CHANGES");
+  if (hash === newHash && !syncAll) {
+    logger.info("PRODUCT: NO CHANGES", lambdaInfo);
     await verifyCompletedList(syncProductRequest, source, listHash);
-    logger.info("PRODUCT: FINISHED");
+    logger.info("PRODUCT: FINISHED", lambdaInfo);
     return;
   }
 
-  logger.info("PRODUCT: STORE", { product: orderedTransformProduct });
+  logger.info("PRODUCT: STORE", {
+    ...lambdaInfo,
+    product: orderedTransformProduct
+  });
   await createOrUpdateProduct(
     orderedTransformProduct,
     storesId,
@@ -131,8 +137,8 @@ export const createProductService = async (props: CreateProductProps) => {
     channelId,
     listName
   );
-  logger.info("PRODUCT: VERIFY COMPLETED LIST");
+  logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
   await verifyCompletedList(syncProductRequest, source, listHash);
-  logger.info("PRODUCT: FINISHED");
+  logger.info("PRODUCT: FINISHED", lambdaInfo);
   return;
 };

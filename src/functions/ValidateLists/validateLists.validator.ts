@@ -90,3 +90,7 @@ export const listsValidator = z
       });
     }
   });
+
+export const queryParamsValidator = z.object({
+  type: z.enum(["INCREMENTAL", "ALL"]).optional()
+});
