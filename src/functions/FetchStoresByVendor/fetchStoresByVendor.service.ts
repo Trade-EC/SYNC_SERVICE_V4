@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import { headersValidator } from "/opt/nodejs/validators/common.validator";
+import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
 import { fetchStoresByVendorRepository } from "./fetchStoresByVendor.repository";
 

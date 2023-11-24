@@ -14,7 +14,7 @@ const config: Config = {
   coverageProvider: "v8",
   testMatch: ["**/*.test.ts"],
   moduleNameMapper: {
-    "^/opt/nodejs/(.*)$": "<rootDir>/src/layers/sync-service-layer/$1"
+    "^/opt/nodejs/(.*)$": "<rootDir>/src/layers/$1"
   },
   setupFilesAfterEnv: ["./src/setupTestsAfterEnv.ts"],
   moduleDirectories: [

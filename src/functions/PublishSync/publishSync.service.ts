@@ -10,9 +10,9 @@ import { saveProductsInS3, saveStoresInS3 } from "./publishSync.repository";
 import { transformQuestions } from "./publishSync.transform";
 import { publishSyncValidator } from "./publishSync.validator";
 
-import { headersValidator } from "/opt/nodejs/validators/common.validator";
-import { logger } from "/opt/nodejs/configs/observability.config";
-import CONSTANTS from "/opt/nodejs/configs/constants";
+import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import CONSTANTS from "/opt/nodejs/sync-service-layer/configs/constants";
 
 const { BUCKET } = CONSTANTS.GENERAL;
 

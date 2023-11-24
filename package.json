@@ -13,7 +13,7 @@
     "format": "prettier -w './**/*.ts'",
     "check-types": "tsc",
     "test": "yarn check-types && yarn unit",
-    "build": "yarn build:layer && sam build",
+    "build": "yarn build:transform-layer && yarn build:layer && sam build",
     "validate": "sam validate",
     "start:local": "yarn build && sam local start-api",
     "deploy": "yarn validate && yarn clear:build && yarn build --no-cached && sam deploy --guided",
@@ -21,7 +21,8 @@
     "clear:build": "rm -rf .aws-sam && rm -rf src/layers/**/build && rm -rf src/functions/**/build",
     "clear:modules": "rm -rf node_modules && rm -rf src/functions/**/node_modules && rm -rf src/layers/**/node_modules",
     "prepare": "npx husky install",
-    "build:layer": "esbuild src/layers/sync-service-layer/**/*.ts --bundle --platform=node --outdir=./src/layers/sync-service-layer/build --format=cjs --minify --target=es2020 --sourcemap && cp -R src/layers/sync-service-layer/node_modules src/layers/sync-service-layer/build/"
+    "build:layer": "esbuild src/layers/sync-service-layer/**/*.ts --bundle --platform=node --outdir=./src/layers/sync-service-layer/build/sync-service-layer --format=cjs --minify --target=es2020 --sourcemap && cp -R src/layers/sync-service-layer/node_modules src/layers/sync-service-layer/build/sync-service-layer",
+    "build:transform-layer": "esbuild src/layers/transforms-layer/**/*.ts --bundle --platform=node --outdir=./src/layers/transforms-layer/build/transforms-layer --format=cjs --minify --target=es2020 --sourcemap"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",

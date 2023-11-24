@@ -1,8 +1,9 @@
-import { WithId, Document } from "/opt/nodejs/node_modules/mongodb/mongodb";
-import CONSTANTS from "/opt/nodejs/configs/constants";
-import { s3Client } from "/opt/nodejs/configs/config";
-import { Upload } from "/opt/nodejs/node_modules/@aws-sdk/lib-storage";
-import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
+import { Document } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
+import { WithId } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
+import CONSTANTS from "/opt/nodejs/sync-service-layer/configs/constants";
+import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
+import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
+import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
 const { BUCKET } = CONSTANTS.GENERAL;
 

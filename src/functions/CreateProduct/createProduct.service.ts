@@ -2,14 +2,14 @@ import { createOrUpdateProduct } from "./createProduct.repository";
 import { verifyCompletedList } from "./createProduct.repository";
 import { CreateProductProps } from "./createProduct.types";
 
-import { findProduct } from "/opt/nodejs/repositories/common.repository";
-import { transformProduct } from "/opt/nodejs/transforms/product.transform";
-import { mergeEntity } from "/opt/nodejs/transforms/product.transform";
-import { logger } from "/opt/nodejs/configs/observability.config";
-import { SyncProductRecord } from "/opt/nodejs/types/common.types";
+import { findProduct } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
+import { transformProduct } from "/opt/nodejs/sync-service-layer/transforms/product.transform";
+import { mergeEntity } from "/opt/nodejs/sync-service-layer/transforms/product.transform";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { SyncProductRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
 // @ts-ignore
-import sha1 from "/opt/nodejs/node_modules/sha1";
-import { sortObjectByKeys } from "/opt/nodejs/utils/common.utils";
+import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
+import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 
 /**
  *

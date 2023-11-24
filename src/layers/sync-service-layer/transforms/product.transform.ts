@@ -4,10 +4,12 @@ import { DbCategory, DbProduct, DbQuestion } from "../types/products.types";
 import { isUndefined, normalizeProductType } from "../utils/common.utils";
 import { imageHandler } from "../utils/images.utils";
 
-import { Category, ModifierGroup } from "/opt/nodejs/types/lists.types";
-import { PriceInfo, TaxesInfo } from "/opt/nodejs/types/lists.types";
-import { TransformProductsProps } from "/opt/nodejs/types/lists.types";
-import { transformSchedules } from "/opt/nodejs/utils/schedule.utils";
+import { Category } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { PriceInfo } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { ModifierGroup } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { TaxesInfo } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { TransformProductsProps } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { transformSchedules } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
 
 /**
  *

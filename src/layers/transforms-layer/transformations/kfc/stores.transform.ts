@@ -1,31 +1,3 @@
-import { z } from "zod";
-
-export const transformKFCStores = <T extends z.Schema<any, any>>(
-  channelsAndStores: any,
-  validator: T
-) => {
-  const transformedChannelsAndStores = channelsAndStores;
-
-  if (!transformedChannelsAndStores.vendorId) {
-    transformedChannelsAndStores.vendorId =
-      channelsAndStores.stores[0].vendorId;
-  }
-
-  const { stores, channels, vendorId } = transformedChannelsAndStores;
-
-  transformedChannelsAndStores.vendorId = String(vendorId);
-  transformedChannelsAndStores.stores = transformStores(stores);
-  transformedChannelsAndStores.channels = transformChannels(channels);
-
-  const validationResult = validator.safeParse(transformedChannelsAndStores);
-
-  if (!validationResult.success) {
-    throw new Error(JSON.stringify(validationResult.error, null, 2));
-  }
-
-  return transformedChannelsAndStores;
-};
-
 const transformStores = (stores: any[]) => {
   return stores.map((store: any) => {
     if (!store.deafult) {
@@ -115,4 +87,21 @@ const transformStoreServices = (store: any) => {
     }));
   }
   return store;
+};
+
+export const transformKFCStores = (channelsAndStores: any) => {
+  const transformedChannelsAndStores = channelsAndStores;
+
+  if (!transformedChannelsAndStores.vendorId) {
+    transformedChannelsAndStores.vendorId =
+      channelsAndStores.stores[0].vendorId;
+  }
+
+  const { stores, channels, vendorId } = transformedChannelsAndStores;
+
+  transformedChannelsAndStores.vendorId = String(vendorId);
+  transformedChannelsAndStores.stores = transformStores(stores);
+  transformedChannelsAndStores.channels = transformChannels(channels);
+
+  return transformedChannelsAndStores;
 };

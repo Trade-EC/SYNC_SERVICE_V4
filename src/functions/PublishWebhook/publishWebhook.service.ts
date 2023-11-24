@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 import { savePublishRequest } from "./publishWebhook.repository";
 import { publishWebhookValidator } from "./publishWebhook.validator";

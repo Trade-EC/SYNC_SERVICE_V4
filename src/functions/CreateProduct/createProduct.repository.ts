@@ -1,8 +1,8 @@
-import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
-import { DbProduct } from "/opt/nodejs/types/products.types";
-import { SyncProductRecord } from "/opt/nodejs/types/common.types";
-import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
+import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
+import { DbProduct } from "/opt/nodejs/sync-service-layer/types/products.types";
+import { SyncProductRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
+import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
+import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 
 /**
  *

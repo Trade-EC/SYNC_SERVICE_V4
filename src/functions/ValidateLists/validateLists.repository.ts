@@ -1,5 +1,5 @@
-import { SyncProductRecord } from "/opt/nodejs/types/common.types";
-import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
+import { SyncProductRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
+import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
 /**
  *

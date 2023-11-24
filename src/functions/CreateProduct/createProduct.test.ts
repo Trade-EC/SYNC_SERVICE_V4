@@ -5,7 +5,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { lambdaHandler } from "./handler";
 import * as productSQSEvent from "../../events/product.sqs.json";
 
-import { sqsClient } from "/opt/nodejs/configs/config";
+import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 mockClient(sqsClient);
 

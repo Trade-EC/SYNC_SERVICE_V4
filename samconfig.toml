@@ -21,6 +21,7 @@ s3_prefix = "sync-service-v4"
 region = "us-east-2"
 parameter_overrides = "StageName=\"dev\""
 image_repositories = []
+disable_rollback = true
 
 [default.package.parameters]
 resolve_s3 = true

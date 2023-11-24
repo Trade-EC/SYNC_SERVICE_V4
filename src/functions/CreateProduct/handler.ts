@@ -2,7 +2,8 @@ import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 
 import { createProductService } from "./createProduct.service";
 
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
 
 /**
  *
@@ -11,8 +12,9 @@ import { logger } from "/opt/nodejs/configs/observability.config";
  * @description Lambda handler
  * @returns {Promise<void>}
  */
-export const lambdaHandler = async (event: SQSEvent, context: Context) => {
+const handler = async (event: SQSEvent, context: Context) => {
   context.callbackWaitsForEmptyEventLoop = false;
+
   const { Records } = event;
   const response: SQSBatchResponse = { batchItemFailures: [] };
   const recordPromises = Records.map(async record => {
@@ -30,3 +32,5 @@ export const lambdaHandler = async (event: SQSEvent, context: Context) => {
 
   return response;
 };
+
+export const lambdaHandler = middyWrapper(handler);

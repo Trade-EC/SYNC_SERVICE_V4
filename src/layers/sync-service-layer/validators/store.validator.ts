@@ -1,8 +1,8 @@
-import { z } from "/opt/nodejs/node_modules/zod";
-import { taxesValidator } from "/opt/nodejs/validators/common.validator";
-import { schedulesByChannelValidator } from "/opt/nodejs/validators/common.validator";
-import { scheduleValidator } from "/opt/nodejs/validators/common.validator";
-import { numberString } from "/opt/nodejs/validators/custom.validator";
+import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
+import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { schedulesByChannelValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { scheduleValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { numberString } from "/opt/nodejs/sync-service-layer/validators/custom.validator";
 
 export const channelValidator = z.object({
   active: z.boolean(),

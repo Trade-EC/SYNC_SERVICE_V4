@@ -1,6 +1,6 @@
 import { DBStore } from "./createStores.types";
 
-import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
+import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
 /**
  * @param stores DbStores to create or update

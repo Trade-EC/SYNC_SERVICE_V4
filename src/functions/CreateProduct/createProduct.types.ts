@@ -1,4 +1,4 @@
-import { TransformProductsProps } from "/opt/nodejs/types/lists.types";
+import { TransformProductsProps } from "/opt/nodejs/sync-service-layer/types/lists.types";
 
 export interface CreateProductsBody extends TransformProductsProps {
   listName: string;

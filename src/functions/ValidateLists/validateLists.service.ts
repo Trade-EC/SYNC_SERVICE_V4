@@ -1,22 +1,19 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { createSyncRecords } from "./validateLists.repository";
-import { transformKFCList } from "./validateLists.transform";
-import { listsValidator } from "./validateLists.validator";
 import { queryParamsValidator } from "./validateLists.validator";
 import { Lists } from "./validateLists.types";
 
-import { headersValidator } from "/opt/nodejs/validators/common.validator";
-import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
-import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-import { logger } from "/opt/nodejs/configs/observability.config";
-import { fetchDraftStores } from "/opt/nodejs/repositories/common.repository";
+import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
+import { fetchSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
+import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { fetchDraftStores } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
 //@ts-ignore
-import sha1 from "/opt/nodejs/node_modules/sha1";
-import { sqsClient } from "/opt/nodejs/configs/config";
-
-const kfcAccounts = ["1", "9"];
+import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
+import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { validateLists } from "/opt/nodejs/transforms-layer/validators/lists.validator";
 
 /**
  *
@@ -92,12 +89,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   const syncAll = type === "ALL";
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
-  let listInfo;
-  if (kfcAccounts.includes(accountId)) {
-    listInfo = transformKFCList(parsedBody, listsValidator) as Lists;
-  } else {
-    listInfo = listsValidator.parse(parsedBody);
-  }
+  const listInfo = validateLists(parsedBody, accountId);
   const { list } = listInfo;
   const { storeId, vendorId, channelId, listId } = list;
   logger.appendKeys({ vendorId, accountId, listId, storeId });

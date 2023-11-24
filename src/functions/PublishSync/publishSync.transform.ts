@@ -1,4 +1,4 @@
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 export const transformQuestions = (
   questions: any[],

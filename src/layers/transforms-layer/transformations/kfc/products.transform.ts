@@ -1,7 +1,6 @@
-import { z } from "/opt/nodejs/node_modules/zod";
-import { transformList } from "/opt/nodejs/transforms/kfcLists.transform";
-import { transformProducts } from "/opt/nodejs/transforms/kfcLists.transform";
-import { transformCategories } from "/opt/nodejs/transforms/kfcLists.transform";
+import { transformCategories } from "./lists.transform";
+import { transformList } from "./lists.transform";
+import { transformProducts } from "./lists.transform";
 
 /**
  *
@@ -52,17 +51,7 @@ export const transformModifierGroups = (modifierGroups: any[]) => {
   return newModifierGroups;
 };
 
-/**
- *
- * @param lists
- * @param validator
- * @description Transform KFC products
- * @returns void
- */
-export const transformKFCProducts = <T extends z.Schema<any, any>>(
-  lists: any,
-  validator: T
-) => {
+export const transformKFCProducts = (lists: any) => {
   let transformedLists = lists;
 
   if (lists.length) {
@@ -79,11 +68,6 @@ export const transformKFCProducts = <T extends z.Schema<any, any>>(
   transformedLists.products = transformProducts(products);
   transformedLists.categories = transformCategories(categories);
   transformedLists.modifierGroups = transformModifierGroups(modifierGroups);
-
-  const validationResult = validator.safeParse(transformedLists);
-  if (!validationResult.success) {
-    throw new Error(validationResult.error.message);
-  }
 
   return transformedLists;
 };

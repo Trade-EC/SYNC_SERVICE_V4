@@ -1,19 +1,14 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import { headersValidator } from "/opt/nodejs/validators/common.validator";
-import { transformKFCStores } from "/opt/nodejs/transforms/kfcStore.transform";
-import { sqsClient } from "/opt/nodejs/configs/config";
-import { fetchSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
-import { channelsAndStoresValidator } from "/opt/nodejs/validators/store.validator";
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { fetchSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
+import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
+import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { validateStores } from "/opt/nodejs/transforms-layer/validators/store.validator";
 // @ts-ignore
-import sha1 from "/opt/nodejs/node_modules/sha1";
-
-import { ChannelsAndStores } from "./validateStores.types";
-
-const kfcAccounts = ["1", "9"];
+import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 
 /**
  *
@@ -23,19 +18,10 @@ const kfcAccounts = ["1", "9"];
  */
 export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   logger.info("STORE VALIDATE: INIT");
-  const { body, headers, requestContext } = event;
-  const { requestId: xArtisnTraceId } = requestContext;
+  const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
-  let channelsAndStores;
-  if (kfcAccounts.includes(accountId)) {
-    channelsAndStores = transformKFCStores(
-      parsedBody,
-      channelsAndStoresValidator
-    ) as ChannelsAndStores;
-  } else {
-    channelsAndStores = channelsAndStoresValidator.parse(parsedBody);
-  }
+  const channelsAndStores = validateStores(parsedBody, accountId);
   const { vendorId } = channelsAndStores;
   logger.appendKeys({ vendorId, accountId });
   logger.info("STORE VALIDATE: VALIDATING");
@@ -64,7 +50,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",
     MessageBody: JSON.stringify({
       body: channelsAndStores,
-      headers: { ...newHeaders, xArtisnTraceId }
+      headers: { ...newHeaders }
     }),
     MessageGroupId: `${vendorId}-${accountId}`
   });

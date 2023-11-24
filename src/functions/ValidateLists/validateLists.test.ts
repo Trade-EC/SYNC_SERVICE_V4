@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import context from "aws-lambda-mock-context";
 import { mockClient } from "aws-sdk-client-mock";
 
-import { sqsClient } from "/opt/nodejs/configs/config";
+import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 import { lambdaHandler } from "./handler";
 import * as listsEvent from "../../events/lists.gateway.json";

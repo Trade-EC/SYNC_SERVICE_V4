@@ -3,13 +3,15 @@ import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 import { syncStoresService } from "./createStores.service";
 import { CreateStoresProps } from "./createStores.types";
 
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
 
-export async function lambdaHandler(
+const handler = async (
   event: SQSEvent,
   context: Context
-): Promise<SQSBatchResponse> {
+): Promise<SQSBatchResponse> => {
   context.callbackWaitsForEmptyEventLoop = false;
+
   const response: SQSBatchResponse = { batchItemFailures: [] };
   const { Records } = event;
   const [record] = Records;
@@ -24,5 +26,8 @@ export async function lambdaHandler(
     logger.error("STORE ERROR:", { error });
     response.batchItemFailures.push({ itemIdentifier: record.messageId });
   }
+
   return response;
-}
+};
+
+export const lambdaHandler = middyWrapper(handler);

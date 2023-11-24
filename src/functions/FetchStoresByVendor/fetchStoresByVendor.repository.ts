@@ -1,4 +1,4 @@
-import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
+import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
 export const fetchStoresByVendorRepository = async (
   accountId: string,

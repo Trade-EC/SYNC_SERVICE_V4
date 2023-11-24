@@ -1,8 +1,8 @@
-import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
+import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 // @ts-ignore
-import sha1 from "/opt/nodejs/node_modules/sha1";
+import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 
 import { createOrUpdateStores } from "./createStores.repository";
 import { storeTransformer } from "./createStores.transform";

@@ -1,7 +1,7 @@
 import { DBStore, Store } from "./createStores.types";
 
-import { transformStoreSchedules } from "/opt/nodejs/utils/schedule.utils";
-import { transformStoreSchedulesByChannel } from "/opt/nodejs/utils/schedule.utils";
+import { transformStoreSchedules } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
+import { transformStoreSchedulesByChannel } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
 
 /**
  *

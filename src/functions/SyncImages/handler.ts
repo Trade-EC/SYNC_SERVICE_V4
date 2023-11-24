@@ -2,6 +2,8 @@ import { Context, SQSEvent } from "aws-lambda";
 
 import { syncImagesService } from "./syncImages.service";
 
+import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
+
 /**
  *
  * @param event {@link SQSEvent}
@@ -9,7 +11,12 @@ import { syncImagesService } from "./syncImages.service";
  * @description Lambda handler
  * @returns void
  */
-export const lambdaHandler = async (event: SQSEvent, context: Context) => {
+const handler = async (event: SQSEvent, context: Context) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  return await syncImagesService(event);
+
+  const response = await syncImagesService(event);
+
+  return response;
 };
+
+export const lambdaHandler = middyWrapper(handler);
