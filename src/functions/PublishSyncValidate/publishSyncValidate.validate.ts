@@ -1,5 +1,5 @@
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
 
-export const publishSyncValidator = z.object({
+export const publishSyncValidateValidator = z.object({
   vendorId: z.string()
 });

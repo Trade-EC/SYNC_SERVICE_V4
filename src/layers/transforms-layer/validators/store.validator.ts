@@ -7,6 +7,7 @@ export const validateStores = (channelsAndStores: any, accountId: string) => {
   let channelsAndStoresTransformed;
   switch (true) {
     case kfcAccounts.includes(accountId):
+      // TODO: validador custom de KFC
       channelsAndStoresTransformed = transformKFCStores(channelsAndStores);
       break;
     default:

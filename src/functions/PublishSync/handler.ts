@@ -1,9 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { SQSEvent, SQSBatchResponse } from "aws-lambda";
 import { Context } from "aws-lambda";
 
 import { publishSyncService } from "./publishSync.service";
 
-import { handleError } from "/opt/nodejs/sync-service-layer/utils/error.utils";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
 
@@ -15,18 +14,25 @@ import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
  * @returns APIGatewayProxyResult
  */
 const handler = async (
-  event: APIGatewayProxyEvent,
+  event: SQSEvent,
   context: Context
-): Promise<APIGatewayProxyResult> => {
+): Promise<SQSBatchResponse> => {
   context.callbackWaitsForEmptyEventLoop = false;
+  const { Records } = event;
+  const response: SQSBatchResponse = { batchItemFailures: [] };
+  const recordPromises = Records.map(async record => {
+    try {
+      const { body: bodyRecord } = record;
+      const props = JSON.parse(bodyRecord ?? "");
+      await publishSyncService(props);
+    } catch (e) {
+      response.batchItemFailures.push({ itemIdentifier: record.messageId });
+      logger.error("error", { response });
+      return e;
+    }
+  });
 
-  let response;
-  try {
-    response = await publishSyncService(event);
-  } catch (e) {
-    response = handleError(e);
-    logger.error("error", { response });
-  }
+  await Promise.all(recordPromises);
 
   return response;
 };

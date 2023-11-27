@@ -29,8 +29,9 @@ export const storeTransformer = (
 
   const newStore = {
     storeId,
+    version: null,
+    hash: null,
     status: "DRAFT" as const,
-    version: new Date().getTime(),
     storeName: name,
     maxOrderAmount: 0,
     address: contactInfo.address,
@@ -80,5 +81,6 @@ export const storeTransformer = (
       id: accountId
     }
   };
+
   return newStore;
 };

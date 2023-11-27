@@ -1,5 +1,3 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
-
 import { fetchProducts, fetchStores } from "./publishSync.repository";
 import { savePublishRequest } from "./publishSync.repository";
 import { updateStatusProducts } from "./publishSync.repository";
@@ -8,9 +6,8 @@ import { saveStoresInHistory } from "./publishSync.repository";
 import { saveProductsInHistory } from "./publishSync.repository";
 import { saveProductsInS3, saveStoresInS3 } from "./publishSync.repository";
 import { transformQuestions } from "./publishSync.transform";
-import { publishSyncValidator } from "./publishSync.validator";
+import { PublishSyncServiceProps } from "./publishSync.types";
 
-import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import CONSTANTS from "/opt/nodejs/sync-service-layer/configs/constants";
 
@@ -45,7 +42,7 @@ export const publishStores = async (vendorId: string, accountId: string) => {
   logger.info("PUBLISH STORES: UPDATING STATUS", { type: "STORES" });
   await updateStatusStores(vendorId, accountId);
   logger.info("PUBLISH STORES: SAVING PUBLISH REQUEST", { type: "STORES" });
-  await savePublishRequest(vendorId, accountId, "PRODUCTS");
+  await savePublishRequest(vendorId, accountId, "STORES");
   return storeResponse;
 };
 
@@ -94,30 +91,15 @@ export const publishProducts = async (vendorId: string, accountId: string) => {
  * @description Publish sync, save in S3 and in history collection
  * @returns void
  */
-export const publishSyncService = async (event: APIGatewayProxyEvent) => {
-  const { body, headers } = event;
-  const parsedBody = JSON.parse(body ?? "");
-  const { account: accountId } = headersValidator.parse(headers);
-  const info = publishSyncValidator.parse(parsedBody);
-  const { vendorId } = info;
+export const publishSyncService = async (props: PublishSyncServiceProps) => {
+  const { vendorId, accountId } = props;
   logger.appendKeys({ vendorId, accountId });
   logger.info("PUBLISH: INIT");
 
-  if (!accountId || !vendorId) {
-    throw new Error("Missing required fields accountId or vendorId");
-  }
-
-  const [storeResponse, productResponse] = await Promise.all([
+  await Promise.all([
     publishStores(vendorId, accountId),
     publishProducts(vendorId, accountId)
   ]);
 
   logger.info("PUBLISH: FINISHED");
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      stores: storeResponse,
-      products: productResponse
-    })
-  };
 };

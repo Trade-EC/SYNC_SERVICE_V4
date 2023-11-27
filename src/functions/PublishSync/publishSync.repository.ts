@@ -14,7 +14,7 @@ const { BUCKET } = CONSTANTS.GENERAL;
  * @description Save stores in history collection
  * @returns void
  */
-export const saveProductsInHistory = async (
+export const saveStoresInHistory = async (
   vendorId: string,
   accountId: string
 ) => {
@@ -45,7 +45,7 @@ export const saveProductsInHistory = async (
  * @description Save stores in history collection
  * @returns void
  */
-export const saveStoresInHistory = async (
+export const saveProductsInHistory = async (
   vendorId: string,
   accountId: string
 ) => {

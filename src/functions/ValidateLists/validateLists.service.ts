@@ -68,7 +68,7 @@ export const syncList = async (
     return sqsClient.sendMessage({
       QueueUrl: process.env.SYNC_PRODUCT_SQS_URL ?? "",
       MessageBody: JSON.stringify(messageBody),
-      MessageGroupId: `${vendorId}-${accountId}-${productId}`
+      MessageGroupId: `${accountId}-${vendorId}-${productId}`
     });
   });
 

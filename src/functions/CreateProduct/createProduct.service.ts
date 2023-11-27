@@ -63,6 +63,7 @@ export const createProductService = async (props: CreateProductProps) => {
       channelId,
       listName
     );
+    logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
     await verifyCompletedList(syncProductRequest, source, listHash);
     logger.info("PRODUCT: FINISHED", lambdaInfo);
     return;
@@ -121,12 +122,13 @@ export const createProductService = async (props: CreateProductProps) => {
   const { hash } = productDB;
   if (hash === newHash && !syncAll) {
     logger.info("PRODUCT: NO CHANGES", lambdaInfo);
+    logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
     await verifyCompletedList(syncProductRequest, source, listHash);
     logger.info("PRODUCT: FINISHED", lambdaInfo);
     return;
   }
 
-  logger.info("PRODUCT: STORE", {
+  logger.info("PRODUCT: UPDATE", {
     ...lambdaInfo,
     product: orderedTransformProduct
   });

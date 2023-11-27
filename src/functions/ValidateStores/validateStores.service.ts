@@ -10,6 +10,45 @@ import { validateStores } from "/opt/nodejs/transforms-layer/validators/store.va
 // @ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 
+import { createSyncStoresRecords } from "./validateStores.repository";
+import { ChannelsAndStores } from "./validateStores.types";
+
+export const syncStores = async (
+  channelsAndStores: ChannelsAndStores,
+  accountId: string,
+  storeHash: string,
+  syncAll = false
+) => {
+  const { stores, vendorId } = channelsAndStores;
+  const syncProducts = stores.map(store => {
+    const { storeId } = store;
+    return {
+      storeId: `${accountId}#${storeId}`,
+      accountId,
+      vendorId,
+      status: "PENDING" as const
+    };
+  });
+  logger.info("STORE VALIDATE: CREATING SYNC STORE RECORDS");
+  await createSyncStoresRecords(syncProducts);
+
+  const productsPromises = stores.map(async (store, index) => {
+    const isLast = stores.length - 1 === index;
+    const { storeId } = store;
+    const body = { store, accountId, vendorId, isLast, storeId };
+    const messageBody = { body, storeHash, syncAll };
+
+    await sqsClient.sendMessage({
+      QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",
+      MessageBody: JSON.stringify(messageBody),
+      MessageGroupId: `${accountId}-${vendorId}-${storeId}`
+    });
+  });
+
+  logger.info("STORE VALIDATE: SEND TO SQS");
+  return await Promise.all(productsPromises);
+};
+
 /**
  *
  * @param event

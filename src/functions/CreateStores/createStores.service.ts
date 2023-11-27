@@ -4,38 +4,66 @@ import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.con
 // @ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 
-import { createOrUpdateStores } from "./createStores.repository";
+import { createOrUpdateStores, findStore } from "./createStores.repository";
+import { verifyCompletedStore } from "./createStores.repository";
 import { storeTransformer } from "./createStores.transform";
-import { ChannelsAndStores } from "./createStores.types";
+import { CreateStoreProps } from "./createStores.types";
+
+import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import { SyncStoreRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
 
 /**
  *
- * @param channelsAndStores
- * @param accountId
+ * @param props {@link CreateProductProps}
  * @description Create or update stores in database
  * @returns void
  */
-export const syncStoresService = async (
-  channelsAndStores: ChannelsAndStores,
-  accountId: string
-) => {
-  const { stores, vendorId } = channelsAndStores;
+export const syncStoresService = async (props: CreateStoreProps) => {
+  const { body, storeHash, syncAll } = props;
+  const { accountId, isLast, store, vendorId } = body;
+  const { storeId } = store;
   logger.appendKeys({ vendorId, accountId });
   logger.info("STORE: INIT");
-  const syncStores = stores.map(store =>
-    storeTransformer(store, accountId, vendorId)
-  );
-  logger.info("STORE: CREATE", { syncStores });
-  const hash = sha1(JSON.stringify(channelsAndStores));
-  const newStores = await createOrUpdateStores(syncStores);
-  const syncRequest: SyncRequest = {
+  const storeDB = await findStore(storeId);
+  const transformedStore = storeTransformer(store, accountId, vendorId);
+  const orderedTransformStore = sortObjectByKeys(transformedStore);
+  const syncStoreRequest: SyncStoreRecord = {
     accountId,
     status: "SUCCESS",
-    type: "CHANNELS_STORES",
     vendorId,
-    hash
+    storeId
   };
-  await saveSyncRequest(syncRequest);
+
+  if (!storeDB) {
+    const hash = sha1(JSON.stringify(orderedTransformStore));
+    const version = new Date().getTime();
+    orderedTransformStore.hash = hash;
+    orderedTransformStore.version = version;
+    logger.info("STORE: CREATE", { store: orderedTransformStore });
+    await createOrUpdateStores(orderedTransformStore);
+    logger.info("STORE: VERIFY COMPLETED STORE");
+    await verifyCompletedStore(syncStoreRequest, storeHash);
+    logger.info("STORE: FINISHED");
+    return;
+  }
+
+  const newHash = sha1(JSON.stringify(orderedTransformStore));
+  const version = new Date().getTime();
+  orderedTransformStore.hash = newHash;
+  orderedTransformStore.version = version;
+  const { hash } = storeDB;
+  if (hash === newHash && !syncAll) {
+    logger.info("STORE: NO CHANGES");
+    logger.info("STORE: VERIFY COMPLETED STORE");
+    await verifyCompletedStore(syncStoreRequest, storeHash);
+    logger.info("STORE: FINISHED");
+    return;
+  }
+
+  logger.info("STORE: UPDATE", { store: orderedTransformStore });
+  await createOrUpdateStores(orderedTransformStore);
+  logger.info("STORE: VERIFY COMPLETED STORE");
+  await verifyCompletedStore(syncStoreRequest, storeHash);
   logger.info("STORE: FINISHED");
-  return newStores;
+  return;
 };

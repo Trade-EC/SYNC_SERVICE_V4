@@ -59,7 +59,8 @@ export const dbServicesValidator = z.object({
 export const dbStoreValidator = z.object({
   storeId: z.string(),
   status: statusValidator,
-  version: z.number(),
+  hash: z.string().nullable(),
+  version: z.number().nullable(),
   storeName: z.string(),
   address: z.string(),
   latitude: z.number(),
