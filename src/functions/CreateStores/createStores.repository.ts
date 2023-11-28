@@ -64,15 +64,12 @@ export const verifyCompletedStore = async (
     const syncRequest: SyncRequest = {
       accountId,
       status: "SUCCESS",
-      storesId: storeId,
       vendorId,
       hash: storeHash,
       type: "CHANNELS_STORES"
     };
 
     await saveSyncRequest(syncRequest, false);
-    await dbClient
-      .collection("syncLists")
-      .deleteMany({ accountId, storeId, vendorId });
+    await dbClient.collection("syncStores").deleteMany({ accountId, vendorId });
   }
 };

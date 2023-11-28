@@ -32,10 +32,9 @@ export const syncStores = async (
   logger.info("STORE VALIDATE: CREATING SYNC STORE RECORDS");
   await createSyncStoresRecords(syncProducts);
 
-  const productsPromises = stores.map(async (store, index) => {
-    const isLast = stores.length - 1 === index;
+  const productsPromises = stores.map(async store => {
     const { storeId } = store;
-    const body = { store, accountId, vendorId, isLast, storeId };
+    const body = { store, accountId, vendorId, storeId };
     const messageBody = { body, storeHash, syncAll };
 
     await sqsClient.sendMessage({
@@ -82,17 +81,10 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     };
   }
   await saveSyncRequest(syncRequest);
-  const newHeaders = { accountId };
 
-  logger.info("STORE VALIDATE: SEND TO SQS");
-  await sqsClient.sendMessage({
-    QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",
-    MessageBody: JSON.stringify({
-      body: channelsAndStores,
-      headers: { ...newHeaders }
-    }),
-    MessageGroupId: `${vendorId}-${accountId}`
-  });
+  logger.info("STORE VALIDATE: TRANSFORMING STORES");
+  // TODO: implement syncAll
+  await syncStores(channelsAndStores, accountId, hash);
 
   logger.info("STORE VALIDATE: FINISHED");
   return {

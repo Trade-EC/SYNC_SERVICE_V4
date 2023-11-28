@@ -1,5 +1,3 @@
-import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
-import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 // @ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
@@ -20,7 +18,7 @@ import { SyncStoreRecord } from "/opt/nodejs/sync-service-layer/types/common.typ
  */
 export const syncStoresService = async (props: CreateStoreProps) => {
   const { body, storeHash, syncAll } = props;
-  const { accountId, isLast, store, vendorId } = body;
+  const { accountId, store, vendorId } = body;
   const { storeId } = store;
   logger.appendKeys({ vendorId, accountId });
   logger.info("STORE: INIT");
@@ -31,7 +29,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
     accountId,
     status: "SUCCESS",
     vendorId,
-    storeId
+    storeId: `${accountId}#${storeId}`
   };
 
   if (!storeDB) {

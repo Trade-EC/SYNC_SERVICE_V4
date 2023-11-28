@@ -28,7 +28,7 @@ export const storeTransformer = (
     : [];
 
   const newStore = {
-    storeId,
+    storeId: `${accountId}#${storeId}`,
     version: null,
     hash: null,
     status: "DRAFT" as const,
