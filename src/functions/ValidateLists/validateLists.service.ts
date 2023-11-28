@@ -1,14 +1,14 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import { createSyncRecords } from "./validateLists.repository";
-import { queryParamsValidator } from "./validateLists.validator";
 import { Lists } from "./validateLists.types";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { productsQueryParamsValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 import { fetchSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
 import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { createSyncRecords } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
 import { fetchDraftStores } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
 //@ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
@@ -85,7 +85,9 @@ export const syncList = async (
 export const validateListsService = async (event: APIGatewayProxyEvent) => {
   logger.info("LISTS VALIDATE: INIT");
   const { body, headers, queryStringParameters } = event;
-  const { type } = queryParamsValidator.parse(queryStringParameters ?? {});
+  const { type } = productsQueryParamsValidator.parse(
+    queryStringParameters ?? {}
+  );
   const syncAll = type === "ALL";
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);

@@ -11,9 +11,10 @@ const handler = async (
   event: APIGatewayProxyEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
   let response;
   try {
-    context.callbackWaitsForEmptyEventLoop = false;
     response = await validateProductsService(event);
   } catch (e) {
     const error = handleError(e);

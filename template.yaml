@@ -135,6 +135,11 @@ Resources:
             Principal: '*'
             Action: 's3:GetObject'
             Resource: !Sub arn:aws:s3:::${SyncServiceV4Bucket}/*
+
+  SyncServiceV4LogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "syncservicev4.sync.${StageName}"
             
   #Lambdas
   LayerSyncService:
@@ -184,6 +189,11 @@ Resources:
               Action:
                 - sqs:SendMessage
               Resource: !GetAtt StoresSyncSQS.Arn 
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -245,7 +255,12 @@ Resources:
             - Effect: Allow
               Action:
                 - sqs:SendMessage
-              Resource: !GetAtt ProductSyncSQS.Arn 
+              Resource: !GetAtt ProductSyncSQS.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -279,6 +294,11 @@ Resources:
               Action:
                 - sqs:SendMessage
               Resource: !GetAtt ProductSyncSQS.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

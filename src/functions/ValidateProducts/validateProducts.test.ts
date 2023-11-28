@@ -16,7 +16,7 @@ afterAll(() => {
 
 describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {
-    const sqsSpy = jest.spyOn(sqsClient, "sendMessageBatch");
+    const sqsSpy = jest.spyOn(sqsClient, "sendMessage");
     const ctx = context();
     ctx.done();
     const event: APIGatewayProxyEvent = productsEvent;

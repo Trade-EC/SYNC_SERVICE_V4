@@ -1,6 +1,6 @@
 const transformStores = (stores: any[]) => {
   return stores.map((store: any) => {
-    if (!store.deafult) {
+    if (!store.default) {
       store.default = false;
     }
     store.storeId = String(store.storeId);

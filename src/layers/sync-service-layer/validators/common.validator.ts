@@ -40,3 +40,7 @@ export const schedulesByChannelValidator = z.object({
 export const headersValidator = z.object({
   account: z.string()
 });
+
+export const productsQueryParamsValidator = z.object({
+  type: z.enum(["INCREMENTAL", "ALL"]).optional()
+});

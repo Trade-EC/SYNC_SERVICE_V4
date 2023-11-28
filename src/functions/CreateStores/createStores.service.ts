@@ -20,16 +20,17 @@ export const syncStoresService = async (props: CreateStoreProps) => {
   const { body, storeHash, syncAll } = props;
   const { accountId, store, vendorId } = body;
   const { storeId } = store;
+  const dbStoreId = `${accountId}#${storeId}`;
   logger.appendKeys({ vendorId, accountId });
   logger.info("STORE: INIT");
-  const storeDB = await findStore(storeId);
+  const storeDB = await findStore(dbStoreId);
   const transformedStore = storeTransformer(store, accountId, vendorId);
   const orderedTransformStore = sortObjectByKeys(transformedStore);
   const syncStoreRequest: SyncStoreRecord = {
     accountId,
     status: "SUCCESS",
     vendorId,
-    storeId: `${accountId}#${storeId}`
+    storeId: dbStoreId
   };
 
   if (!storeDB) {
@@ -49,6 +50,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
   const version = new Date().getTime();
   orderedTransformStore.hash = newHash;
   orderedTransformStore.version = version;
+  orderedTransformStore.catalogues = syncAll ? [] : storeDB.catalogues;
   const { hash } = storeDB;
   if (hash === newHash && !syncAll) {
     logger.info("STORE: NO CHANGES");
