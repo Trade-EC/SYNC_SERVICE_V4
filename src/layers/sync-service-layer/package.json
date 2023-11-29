@@ -17,6 +17,7 @@
     "@aws-sdk/client-sqs": "^3.454.0",
     "@aws-sdk/lib-storage": "^3.454.0",
     "@middy/core": "4.x",
+    "dayjs": "^1.11.10",
     "lodash": "^4.17.21",
     "mongodb": "^6.0.0",
     "sha1": "^1.1.1",

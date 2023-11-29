@@ -14,6 +14,8 @@ import { fetchDraftStores } from "/opt/nodejs/sync-service-layer/repositories/co
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 import { validateProducts } from "/opt/nodejs/transforms-layer/validators/products.validator";
 import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 
 /**
  *
@@ -96,6 +98,8 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   logger.appendKeys({ vendorId, accountId, listId, storeId });
   logger.info("PRODUCTS VALIDATE: VALIDATING");
   const hash = sha1(JSON.stringify(parsedBody));
+  const s3Path = generateSyncS3Path(accountId, vendorId, "PRODUCTS");
+  await createFileS3(s3Path, listInfo);
   const syncRequest: SyncRequest = {
     accountId,
     channelId,

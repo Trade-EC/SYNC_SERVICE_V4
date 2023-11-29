@@ -6,4 +6,7 @@ export interface SyncRequest {
   storesId?: string;
   status: "PENDING" | "ERROR" | "SUCCESS";
   hash?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  s3Path?: string;
 }

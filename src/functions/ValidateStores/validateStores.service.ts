@@ -7,6 +7,8 @@ import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syn
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { validateStores } from "/opt/nodejs/transforms-layer/validators/store.validator";
+import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 // @ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 
@@ -64,12 +66,17 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   logger.appendKeys({ vendorId, accountId });
   logger.info("STORE VALIDATE: VALIDATING");
   const hash = sha1(JSON.stringify(channelsAndStores));
+  const s3Path = generateSyncS3Path(accountId, vendorId, "CHANNELS_STORES");
+  await createFileS3(s3Path, channelsAndStores);
+
   const syncRequest: SyncRequest = {
     accountId,
     status: "PENDING",
     type: "CHANNELS_STORES",
     vendorId,
-    hash
+    hash,
+    createdAt: new Date().toISOString(),
+    s3Path: generateSyncS3Path(accountId, vendorId, "CHANNELS_STORES")
   };
   const dbSyncRequest = await fetchSyncRequest(syncRequest);
   if (dbSyncRequest) {
@@ -80,6 +87,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
       })
     };
   }
+
   await saveSyncRequest(syncRequest);
 
   logger.info("STORE VALIDATE: TRANSFORMING STORES");

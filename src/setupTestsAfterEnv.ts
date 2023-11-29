@@ -27,3 +27,13 @@ jest.mock("@aws-sdk/client-lambda", () => {
     }))
   };
 });
+
+jest.mock("@aws-sdk/lib-storage", () => ({
+  Upload: jest.fn(() => ({
+    done: jest.fn(() => ({
+      $metadata: {
+        httpStatusCode: 200
+      }
+    }))
+  }))
+}));

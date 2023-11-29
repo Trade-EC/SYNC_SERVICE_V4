@@ -5,7 +5,7 @@ import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
-const { BUCKET } = CONSTANTS.GENERAL;
+const { ADMIN_BUCKET } = CONSTANTS.GENERAL;
 
 /**
  *
@@ -162,7 +162,7 @@ export const saveStoresInS3 = async (
 ) => {
   const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
   const storesInput = {
-    Bucket: BUCKET,
+    Bucket: ADMIN_BUCKET,
     Key: storesKey,
     Body: Buffer.from(JSON.stringify(stores))
   };
@@ -175,7 +175,7 @@ export const saveStoresInS3 = async (
   const { httpStatusCode } = metadata;
   if (httpStatusCode !== 200) throw new Error("Upload stores failed");
   return {
-    bucket: BUCKET,
+    bucket: ADMIN_BUCKET,
     key: storesKey,
     status: "DONE"
   };
@@ -189,7 +189,7 @@ export const saveProductsInS3 = async (
   const productsKey = `sync/${accountId}/${vendorId}/products.json`;
 
   const productsInput = {
-    Bucket: BUCKET,
+    Bucket: ADMIN_BUCKET,
     Key: productsKey,
     Body: Buffer.from(JSON.stringify(products))
   };
@@ -206,7 +206,7 @@ export const saveProductsInS3 = async (
     throw new Error("Upload stores failed");
 
   return {
-    Bucket: BUCKET,
+    Bucket: ADMIN_BUCKET,
     key: productsKey,
     status: "DONE"
   };

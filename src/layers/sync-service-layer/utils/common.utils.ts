@@ -1,4 +1,5 @@
 import { SendMessageBatchRequestEntry } from "@aws-sdk/client-sqs";
+import dayjs from "dayjs";
 import { chunk, sortBy } from "lodash";
 
 import { sqsClient } from "../configs/config";
@@ -64,4 +65,22 @@ export const sortObjectByKeys = <T extends Record<string, any>>(obj: T) => {
     sortedObj[key] = obj[key];
   });
   return sortedObj as T;
+};
+
+export const generateSyncS3Path = (
+  accountId: string,
+  vendorId: string,
+  type: "LISTS" | "CHANNELS_STORES" | "PRODUCTS"
+) => {
+  const base = `${accountId}/${vendorId}`;
+  switch (type) {
+    case "LISTS":
+      return base + `/lists/${dayjs().format("YYYY-MM-DD-HH:mm:ss")}.json`;
+    case "CHANNELS_STORES":
+      return (
+        base + `/channels_stores/${dayjs().format("YYYY-MM-DD-HH:mm:ss")}.json`
+      );
+    case "PRODUCTS":
+      return base + `/products/${dayjs().format("YYYY-MM-DD-HH:mm:ss")}.json`;
+  }
 };
