@@ -19,7 +19,8 @@ export const createOrUpdateProduct = async (
   storesId: string[],
   vendorId: string,
   channelId: string,
-  listName: string
+  listName: string,
+  accountId: string
 ) => {
   const dbClient = await connectToDatabase();
   const { productId } = product;
@@ -33,8 +34,12 @@ export const createOrUpdateProduct = async (
   );
 
   const storesPromises = storesId.map(async storeId => {
+    const dbStoreId = `${accountId}#${storeId}`;
     const updateResult = await dbClient.collection("stores").updateOne(
-      { storeId, $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }] },
+      {
+        storeId: dbStoreId,
+        $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }]
+      },
       {
         $addToSet: {
           catalogues: {
@@ -50,7 +55,7 @@ export const createOrUpdateProduct = async (
 
     await dbClient
       .collection("stores")
-      .updateOne({ storeId }, { $set: { status: "DRAFT" } });
+      .updateOne({ storeId: dbStoreId }, { $set: { status: "DRAFT" } });
   });
 
   await Promise.all(storesPromises);

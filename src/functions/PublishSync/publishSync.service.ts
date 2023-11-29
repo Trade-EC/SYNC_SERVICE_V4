@@ -11,7 +11,7 @@ import { PublishSyncServiceProps } from "./publishSync.types";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import CONSTANTS from "/opt/nodejs/sync-service-layer/configs/constants";
 
-const { ADMIN_BUCKET } = CONSTANTS.GENERAL;
+const { SYNC_BUCKET } = CONSTANTS.GENERAL;
 
 const fetchOptions = {
   method: "POST",
@@ -34,7 +34,7 @@ export const publishStores = async (vendorId: string, accountId: string) => {
   const { key: storesKey } = storeResponse;
   logger.info("PUBLISH STORES: SYNCING", { type: "STORES" });
   await fetch(
-    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${ADMIN_BUCKET}&key=${storesKey}`,
+    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${SYNC_BUCKET}&key=${storesKey}`,
     fetchOptions
   );
   logger.info("PUBLISH STORES: HISTORY", { type: "STORES" });
@@ -73,7 +73,7 @@ export const publishProducts = async (vendorId: string, accountId: string) => {
   const { key: productsKey } = productResponse;
   logger.info("PUBLISH PRODUCTS: SYNCING", { type: "PRODUCTS" });
   await fetch(
-    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${ADMIN_BUCKET}&key=${productsKey}`,
+    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${SYNC_BUCKET}&key=${productsKey}`,
     fetchOptions
   );
   logger.info("PUBLISH PRODUCTS: HISTORY", { type: "PRODUCTS" });

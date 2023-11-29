@@ -72,7 +72,7 @@ export const generateSyncS3Path = (
   vendorId: string,
   type: "LISTS" | "CHANNELS_STORES" | "PRODUCTS"
 ) => {
-  const base = `${accountId}/${vendorId}`;
+  const base = `requests/${accountId}/${vendorId}`;
   switch (type) {
     case "LISTS":
       return base + `/lists/${dayjs().format("YYYY-MM-DD-HH:mm:ss")}.json`;

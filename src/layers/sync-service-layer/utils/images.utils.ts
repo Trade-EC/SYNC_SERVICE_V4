@@ -2,7 +2,8 @@ import { sqsClient } from "../configs/config";
 import CONSTANTS from "../configs/constants";
 import { fetchImage } from "../repositories/images.repository";
 
-const { CLOUDFRONT_URL } = CONSTANTS;
+const { CLOUDFRONT_URL, GENERAL } = CONSTANTS;
+const { ADMIN_BUCKET } = GENERAL;
 
 /**
  * @description Get AWS directory
@@ -55,12 +56,11 @@ export const getAwsImageProps = (url: string, imageCategory: string) => {
   const name = url.split("/").pop();
   const directory = getAwsDirectory(imageCategory);
   const Key = `${directory}${name}`;
-  const Bucket = "syncservicev4.admin.dev";
 
   return {
-    bucket: Bucket,
+    bucket: ADMIN_BUCKET,
     key: Key,
-    url: `https://s3.us-east-2.amazonaws.com/${Bucket}/${Key}`,
+    url: `https://s3.us-east-2.amazonaws.com/${ADMIN_BUCKET}/${Key}`,
     category: imageCategory,
     cloudFrontUrl: CLOUDFRONT_URL,
     name: imageCategory,

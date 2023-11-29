@@ -18,6 +18,7 @@ Globals:
         SYNC_STORES_SQS_URL: !Ref StoresSyncSQS
         SYNC_PRODUCT_SQS_URL: !Ref ProductSyncSQS
         SYNC_PUBLISH_SQS_URL: !Ref PublishSyncSQS
+        APIVersion: "v3"
 
 Parameters:
   StageName:
@@ -166,45 +167,6 @@ Resources:
     Metadata:
       BuildMethod: nodejs18.x
 
-  ValidateStores:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/ValidateStores/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Tracing: Active
-      Architectures:
-        - x86_64
-      MemorySize: 256
-      Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /channels-stores
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt StoresSyncSQS.Arn 
-        - Statement:
-            - Effect: Allow
-              Action:
-                - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
   CreateStores:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -222,83 +184,6 @@ Resources:
             BatchSize: 5
             ScalingConfig:
                MaximumConcurrency: 20
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
-  ValidateLists:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/ValidateLists/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Tracing: Active
-      Architectures:
-        - x86_64
-      MemorySize: 256
-      Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /lists
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt ProductSyncSQS.Arn
-        - Statement:
-            - Effect: Allow
-              Action:
-                - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
-  ValidateProducts:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/ValidateProducts/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Tracing: Active
-      Architectures:
-        - x86_64
-      Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /products
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt ProductSyncSQS.Arn
-        - Statement:
-            - Effect: Allow
-              Action:
-                - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -380,39 +265,6 @@ Resources:
         External:
           - "/opt/nodejs/*"
 
-  PublishSyncValidate:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/PublishSyncValidate/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Tracing: Active
-      Architectures:
-        - x86_64
-      Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /publish-sync
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt PublishSyncSQS.Arn 
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
   PublishSync:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -436,7 +288,41 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.admin.dev/*"
+              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  # Gateways Lambdas
+  PublishSyncValidate:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/PublishSyncValidate/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/publish-sync"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt PublishSyncSQS.Arn 
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -461,7 +347,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /publish-webhook
+            Path: "/publish-webhook"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -488,7 +374,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /sync-summary
+            Path: "/sync-summary"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -516,7 +402,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /stores/{storeId}
+            Path: "/stores/{storeId}"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -544,9 +430,125 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /stores
+            Path: "/stores"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ValidateLists:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/ValidateLists/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/lists"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt ProductSyncSQS.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ValidateProducts:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/ValidateProducts/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/products"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt ProductSyncSQS.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ValidateStores:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/ValidateStores/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/channels-stores"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt StoresSyncSQS.Arn 
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

@@ -61,7 +61,8 @@ export const createProductService = async (props: CreateProductProps) => {
       storesId,
       vendorId,
       channelId,
-      listName
+      listName,
+      accountId
     );
     logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
     await verifyCompletedList(syncProductRequest, source, listHash);
@@ -137,7 +138,8 @@ export const createProductService = async (props: CreateProductProps) => {
     storesId,
     vendorId,
     channelId,
-    listName
+    listName,
+    accountId
   );
   logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
   await verifyCompletedList(syncProductRequest, source, listHash);
