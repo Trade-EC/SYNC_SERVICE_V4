@@ -100,15 +100,20 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   logger.info("LISTS VALIDATE: VALIDATING");
   const hash = sha1(JSON.stringify(parsedBody));
   const s3Path = generateSyncS3Path(accountId, vendorId, "LISTS");
-  await createFileS3(s3Path, listInfo);
+  const { Location } = await createFileS3(s3Path, listInfo);
   const syncRequest: SyncRequest = {
     accountId,
-    channelId,
     status: "PENDING",
-    storesId: storeId,
     type: "LIST",
     vendorId,
-    hash
+    hash,
+    createdAt: new Date().toISOString(),
+    metadata: {
+      channelId,
+      storesId: storeId,
+      listId
+    },
+    s3Path: Location
   };
   const dbSyncRequest = await fetchSyncRequest(syncRequest);
   if (dbSyncRequest) {

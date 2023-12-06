@@ -18,7 +18,6 @@ Globals:
         SYNC_STORES_SQS_URL: !Ref StoresSyncSQS
         SYNC_PRODUCT_SQS_URL: !Ref ProductSyncSQS
         SYNC_PUBLISH_SQS_URL: !Ref PublishSyncSQS
-        APIVersion: "v3"
 
 Parameters:
   StageName:
@@ -116,6 +115,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref StageName
+      TracingEnabled: true
 
   # S3 Buckets
   SyncServiceV4Bucket:
@@ -314,7 +314,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/publish-sync"
+            Path: "/api/v3/publish-sync"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
       Policies:
@@ -347,7 +347,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/publish-webhook"
+            Path: "/api/v3/publish-webhook"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -374,7 +374,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/sync-summary"
+            Path: "/api/v3/sync-summary"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -402,7 +402,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/stores/{storeId}"
+            Path: "/api/v3/stores/{storeId}"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -430,7 +430,63 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/stores"
+            Path: "/api/v3/stores"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchProductsByIdByVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/FetchProductsByVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v3/products/{productId}"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchProductsByVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/FetchProductsByVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v3/products"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -458,7 +514,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/lists"
+            Path: "/api/v3/lists"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
       Policies:
@@ -496,7 +552,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/products"
+            Path: "/api/v3/products"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
       Policies:
@@ -535,7 +591,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/channels-stores"
+            Path: "/api/v3/channels-stores"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
       Policies:

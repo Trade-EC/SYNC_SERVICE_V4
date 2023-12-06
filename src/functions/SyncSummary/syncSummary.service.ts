@@ -3,6 +3,8 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { fetchSyncLists } from "./syncSummary.repository";
 import { syncSummaryValidator } from "./syncSummary.validator";
 
+import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+
 /**
  *
  * @param event
@@ -10,10 +12,11 @@ import { syncSummaryValidator } from "./syncSummary.validator";
  * @returns void
  */
 export const syncSummaryService = async (event: APIGatewayProxyEvent) => {
-  const { queryStringParameters } = event;
+  const { queryStringParameters, headers } = event;
+  const { account: accountId } = headersValidator.parse(headers);
   const params = syncSummaryValidator.parse(queryStringParameters);
-  const { vendorId, accountId, channelId } = params;
-  const response = await fetchSyncLists(vendorId, accountId, channelId);
+  const { vendorId, channelId, listId } = params;
+  const response = await fetchSyncLists(vendorId, accountId, channelId, listId);
 
   return { statusCode: 200, body: JSON.stringify(response) };
 };

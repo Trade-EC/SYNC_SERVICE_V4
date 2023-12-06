@@ -10,12 +10,25 @@ import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.ut
 export const fetchSyncLists = async (
   vendorId: string,
   accountId: string,
-  channelId: string
+  channelId: string,
+  listId?: string
 ) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
     .collection("syncRequests")
-    .find({ vendorId, channelId, accountId, type: "LIST" })
+    .find(
+      {
+        vendorId,
+        accountId,
+        "metadata.channelId": channelId,
+        "metadata.listId": listId,
+        type: "LIST"
+      },
+      { ignoreUndefined: true }
+    )
+    .sort({ createdAt: -1 })
+    .limit(5)
     .toArray();
+
   return response;
 };

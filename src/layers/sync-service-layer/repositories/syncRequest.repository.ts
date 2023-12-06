@@ -33,7 +33,7 @@ export const saveSyncRequest = async (
     .updateOne(
       { ...syncRequest, status: "PENDING" },
       { $set: { ...syncRequest } },
-      { upsert }
+      { upsert, ignoreUndefined: true }
     );
 
   return dbSyncRequest;

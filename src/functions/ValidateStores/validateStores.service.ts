@@ -67,7 +67,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   logger.info("STORE VALIDATE: VALIDATING");
   const hash = sha1(JSON.stringify(channelsAndStores));
   const s3Path = generateSyncS3Path(accountId, vendorId, "CHANNELS_STORES");
-  await createFileS3(s3Path, channelsAndStores);
+  const { Location } = await createFileS3(s3Path, channelsAndStores);
 
   const syncRequest: SyncRequest = {
     accountId,
@@ -76,7 +76,8 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     vendorId,
     hash,
     createdAt: new Date().toISOString(),
-    s3Path: generateSyncS3Path(accountId, vendorId, "CHANNELS_STORES")
+    s3Path: Location,
+    metadata: {}
   };
   const dbSyncRequest = await fetchSyncRequest(syncRequest);
   if (dbSyncRequest) {

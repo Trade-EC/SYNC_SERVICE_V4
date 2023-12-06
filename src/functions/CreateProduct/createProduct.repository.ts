@@ -95,12 +95,15 @@ export const verifyCompletedList = async (
   if (allSuccess) {
     const syncRequest: SyncRequest = {
       accountId,
-      channelId,
       status: "SUCCESS",
-      storesId: storeId,
       type: source,
       vendorId,
-      hash: listHash
+      hash: listHash,
+      metadata: {
+        channelId,
+        storesId: storeId,
+        listId
+      }
     };
 
     await saveSyncRequest(syncRequest, false);

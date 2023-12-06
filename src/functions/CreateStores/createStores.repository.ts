@@ -66,7 +66,8 @@ export const verifyCompletedStore = async (
       status: "SUCCESS",
       vendorId,
       hash: storeHash,
-      type: "CHANNELS_STORES"
+      type: "CHANNELS_STORES",
+      metadata: {}
     };
 
     await saveSyncRequest(syncRequest, false);

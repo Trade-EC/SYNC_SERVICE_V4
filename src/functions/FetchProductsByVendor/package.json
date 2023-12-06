@@ -1,7 +1,7 @@
 {
-    "name": "fetch-stores-by-vendor",
+    "name": "fetch-products-by-vendor",
     "version": "1.0.0",
-    "description": "Lambda function to fetch stores by vendor",
+    "description": "Lambda function to fetch products by vendor",
     "main": "index.js",
     "license": "MIT",
     "scripts": {

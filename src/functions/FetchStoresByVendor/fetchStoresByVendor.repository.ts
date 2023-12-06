@@ -10,7 +10,11 @@ export const fetchStoresByVendorRepository = async (
   return dbClient
     .collection("stores")
     .find(
-      { "vendor.id": vendorId, storeId, "account.id": accountId },
+      {
+        "vendor.id": vendorId,
+        storeId: storeId ? `${accountId}#${storeId}` : undefined,
+        "account.id": accountId
+      },
       { ignoreUndefined: true }
     )
     .toArray();
