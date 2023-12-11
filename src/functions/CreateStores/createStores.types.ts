@@ -9,7 +9,6 @@ export type ChannelsAndStores = z.infer<typeof channelsAndStoresValidator>;
 export type DBStore = z.infer<typeof dbStoreValidator>;
 
 export interface CreateStoreBody {
-  isLast: boolean;
   store: Store;
   accountId: string;
   vendorId: string;

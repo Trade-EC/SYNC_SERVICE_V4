@@ -1,33 +1,34 @@
+import { faker } from "@faker-js/faker";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import context from "aws-lambda-mock-context";
-import { mockClient } from "aws-sdk-client-mock";
-
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 import { lambdaHandler } from "./handler";
-import { buildListRequest } from "../../builders/lists/lists.builders";
 import * as gatewayEvent from "../../events/gateway.json";
 
-const sqsMockClient = mockClient(sqsClient);
-const mockList = buildListRequest();
+import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
+
+const accountId = faker.string.uuid();
+const vendorId = faker.string.uuid();
+const channelId = faker.string.uuid();
+const listId = faker.string.uuid();
 
 afterAll(() => {
-  sqsMockClient.reset();
   jest.resetAllMocks();
 });
 
 describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {
-    const sqsSpy = jest.spyOn(sqsClient, "sendMessage");
     const ctx = context();
     ctx.done();
     const event: APIGatewayProxyEvent = {
       ...gatewayEvent,
-      body: JSON.stringify(mockList)
+      headers: { account: accountId },
+      queryStringParameters: { vendorId, channelId, listId }
     };
     const result = await lambdaHandler(event, ctx);
-
-    expect(sqsSpy).toBeCalled();
+    const dbClient = await connectToDatabase();
+    const spy = jest.spyOn(dbClient, "collection");
+    expect(spy).toBeCalledWith("syncRequests");
     expect(result.statusCode).toEqual(200);
   });
 });

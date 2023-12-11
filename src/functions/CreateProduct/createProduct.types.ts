@@ -4,7 +4,6 @@ export interface CreateProductsBody extends TransformProductsProps {
   listName: string;
   listId: string;
   source: "LIST" | "PRODUCTS";
-  isLast: boolean;
   storeId: string;
 }
 

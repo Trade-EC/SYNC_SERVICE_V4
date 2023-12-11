@@ -7,6 +7,14 @@ jest.mock("mongodb", () => {
       db: jest.fn(() => ({
         collection: jest.fn(() => ({
           find: jest.fn(() => ({
+            sort: jest.fn(() => ({
+              limit: jest.fn(() => ({
+                toArray: jest.fn(() => [])
+              }))
+            })),
+            toArray: jest.fn(() => [])
+          })),
+          aggregate: jest.fn(() => ({
             toArray: jest.fn(() => [])
           })),
           findOne: jest.fn(),
@@ -33,7 +41,8 @@ jest.mock("@aws-sdk/lib-storage", () => ({
     done: jest.fn(() => ({
       $metadata: {
         httpStatusCode: 200
-      }
+      },
+      Location: "location"
     }))
   }))
 }));

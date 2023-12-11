@@ -5,7 +5,8 @@ import { mockClient } from "aws-sdk-client-mock";
 import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 import { lambdaHandler } from "./handler";
-import * as storeEvent from "../../events/stores.gateway.json";
+import { buildChannelsAndStores } from "../../builders/stores/stores.builders";
+import * as gatewayEvent from "../../events/gateway.json";
 
 const sqsMockClient = mockClient(sqsClient);
 
@@ -19,7 +20,10 @@ describe("Unit test for app handler", function () {
     const sqsSpy = jest.spyOn(sqsClient, "sendMessage");
     const ctx = context();
     ctx.done();
-    const event: APIGatewayProxyEvent = storeEvent;
+    const event: APIGatewayProxyEvent = {
+      ...gatewayEvent,
+      body: JSON.stringify(buildChannelsAndStores())
+    };
     const result = await lambdaHandler(event, ctx);
 
     expect(sqsSpy).toBeCalled();

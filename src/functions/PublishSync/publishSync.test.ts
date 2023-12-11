@@ -2,23 +2,17 @@ import { faker } from "@faker-js/faker";
 import { SQSEvent } from "aws-lambda";
 import context from "aws-lambda-mock-context";
 
-import { CreateStoreProps } from "./createStores.types";
 import { lambdaHandler } from "./handler";
-import { buildStore } from "../../builders/stores/stores.builders";
+import { PublishSyncServiceProps } from "./publishSync.types";
 import * as sqsEvent from "../../events/sqs.json";
 
 describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {
     const ctx = context();
     ctx.done();
-    const body: CreateStoreProps = {
-      storeHash: faker.string.alphanumeric(40),
-      syncAll: faker.datatype.boolean(),
-      body: {
-        accountId: faker.string.uuid(),
-        store: buildStore(),
-        vendorId: faker.string.uuid()
-      }
+    const body: PublishSyncServiceProps = {
+      accountId: faker.string.uuid(),
+      vendorId: faker.string.uuid()
     };
     const event: SQSEvent = sqsEvent;
     event.Records[0].body = JSON.stringify(body);

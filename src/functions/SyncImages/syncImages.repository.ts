@@ -38,7 +38,7 @@ export const saveImage = async (
   const rawImage = await fetch(url);
   const imageProps = getAwsImageProps(url, imageCategory);
   const { bucket, key, name, url: s3Url, category } = imageProps;
-  if (!rawImage.body || !name) throw new Error("Image not found");
+  if (!rawImage?.body || !name) throw new Error("Image not found");
   const input = {
     Bucket: bucket,
     Key: key,

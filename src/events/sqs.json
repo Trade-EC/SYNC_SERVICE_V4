@@ -1,0 +1,24 @@
+{
+  "Records": [
+    {
+      "messageId": "a949ded8-e387-4541-a243-44dd3f394c20",
+      "receiptHandle": "AQEBeVN2APuLrRewSLCAiM8KSDN61cXJFcCEH1f1UVrQ43IF2OxJX7fxe+pZMsyExoHRqOAjrVTd2lII9+RV0I/wMBHTkyy+VpWQ2x3OdEmnHJjQqN0zQ6fNZ/3sct4pIcJH9n9RhE6XEfRGF+PlcOrHTKUO6sH63rpEnvi1G1zSF6rNU9dlEv7TupYP9dk/KXDNnqgcp7NeRgMUCxPD3/w0mtwYlODWFM7xEwgO8vzRETxVNcnPsXeXZW9MO6O2Plk5TYYXnPP4r53+ERiYXgOPaw==",
+      "body": "Replace Body",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "AWSTraceHeader": "Root=1-6532bee1-7763fd604f0ba37b7ee4dcd7;Parent=1091d335077a550d;Sampled=0;Lineage=89f31974:0",
+        "SentTimestamp": "1697824486990",
+        "SequenceNumber": "18881387142378992128",
+        "MessageGroupId": "10-1",
+        "SenderId": "AROA4YRKNIM2ZAONI2G2J:sync-service-v4-ValidateStores-C2ZdBkmurB16",
+        "MessageDeduplicationId": "6b2545f0e13bbc32311477ec8ad344f2a693a5e4deedb1e3fc92109e99bd2f0b",
+        "ApproximateFirstReceiveTimestamp": "1697824486990"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "43846973576558f60feb2a7749ab664b",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-east-2:877336019765:StoresSyncSQS.fifo",
+      "awsRegion": "us-east-2"
+    }
+  ]
+}

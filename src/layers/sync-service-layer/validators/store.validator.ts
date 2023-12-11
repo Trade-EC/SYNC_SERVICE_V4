@@ -2,7 +2,7 @@ import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
 import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { schedulesByChannelValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { scheduleValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
-import { numberString } from "/opt/nodejs/sync-service-layer/validators/custom.validator";
+import { numberStringValidator } from "/opt/nodejs/sync-service-layer/validators/custom.validator";
 
 export const channelValidator = z.object({
   active: z.boolean(),
@@ -22,7 +22,7 @@ export const storeContactValidator = z.object({
 });
 
 export const storeDeliveryValidator = z.object({
-  deliveryTimeValue: z.number().int().or(numberString),
+  deliveryTimeValue: z.number().int().or(numberStringValidator),
   deliveryTimeUnit: z.enum(["min", "hour"]),
   minimumOrder: z.number(),
   shippingCost: z.number(),
@@ -31,8 +31,8 @@ export const storeDeliveryValidator = z.object({
 
 export const storeLocationValidator = z.object({
   city: z.string(),
-  latitude: numberString,
-  longitude: numberString
+  latitude: numberStringValidator,
+  longitude: numberStringValidator
 });
 
 export const storeValidator = z.object({
@@ -49,7 +49,7 @@ export const storeValidator = z.object({
   schedulesByChannel: z.array(schedulesByChannelValidator).optional(),
   taxesInfo: taxesValidator.optional(),
   contactInfo: storeContactValidator,
-  deliveryInfo: storeDeliveryValidator.deepPartial().optional(),
+  deliveryInfo: storeDeliveryValidator.optional(),
   locationInfo: storeLocationValidator,
   paymentMethodInfo: z.record(z.string().min(1), z.any()).optional(),
   schedules: z.array(scheduleValidator).optional()

@@ -21,7 +21,7 @@
     "lodash": "^4.17.21",
     "mongodb": "^6.0.0",
     "sha1": "^1.1.1",
-    "zod": "^3.22.2"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.126",

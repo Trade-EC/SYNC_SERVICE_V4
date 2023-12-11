@@ -20,11 +20,11 @@ import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.ut
 export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId, listHash, syncAll } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
-  const { storesId, vendorId, listName, listId, isLast, storeId } = body;
+  const { storesId, vendorId, listName, listId, storeId } = body;
   const { source } = body;
   const { productId } = product;
   const dbProductId = `${accountId}#${productId}`;
-  const lambdaInfo = { vendorId, accountId, productId, listId, isLast };
+  const lambdaInfo = { vendorId, accountId, productId, listId };
   logger.info("PRODUCT: INIT", lambdaInfo);
   const productDB = await findProduct(dbProductId);
   const transformedProduct = await transformProduct({
