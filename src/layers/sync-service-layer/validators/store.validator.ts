@@ -22,11 +22,11 @@ export const storeContactValidator = z.object({
 });
 
 export const storeDeliveryValidator = z.object({
-  deliveryTimeValue: z.number().int().or(numberStringValidator),
-  deliveryTimeUnit: z.enum(["min", "hour"]),
-  minimumOrder: z.number(),
-  shippingCost: z.number(),
-  cookTime: z.number().int()
+  deliveryTimeValue: z.number().int().or(numberStringValidator).optional(),
+  deliveryTimeUnit: z.enum(["min", "hour"]).optional(),
+  minimumOrder: z.number().optional(),
+  shippingCost: z.number().optional(),
+  cookTime: z.number().int().optional()
 });
 
 export const storeLocationValidator = z.object({
@@ -61,45 +61,53 @@ export const scheduledActivitiesValidator = z.object({
   scheduledInactiveStatus: z.date().optional()
 });
 
-export const channelsAndStoresValidator = z
-  .object({
-    vendorId: z.string(),
-    stores: z.array(storeValidator),
-    channels: z.array(channelValidator),
-    scheduledActivities: z.array(scheduledActivitiesValidator).optional()
-  })
-  .superRefine((schema, ctx) => {
-    const { channels, stores } = schema;
+export const channelsAndStoresValidatorRaw = z.object({
+  vendorId: z.string(),
+  stores: z.array(storeValidator),
+  channels: z.array(channelValidator),
+  scheduledActivities: z.array(scheduledActivitiesValidator).optional()
+});
 
-    const channelsId = channels.map(channel => channel.channelId);
+export type ChannelsAndStores = z.infer<typeof channelsAndStoresValidatorRaw>;
 
-    stores.forEach((store, index) => {
-      const channelsFound = store.storeChannels.filter(storeChannel =>
-        channelsId.includes(storeChannel)
-      );
+export const channelAndStoresRefine = (
+  schema: ChannelsAndStores,
+  ctx: z.RefinementCtx
+) => {
+  const { channels, stores } = schema;
 
-      if (channelsFound.length !== store.storeChannels.length) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["stores", index, "storeChannels"],
-          message: "StoreChannels not match with channels array"
-        });
-      }
+  const channelsId = channels.map(channel => channel.channelId);
 
-      const channelsInSchedules = store.schedulesByChannel?.map(
-        scheduleChannel => scheduleChannel.channelId
-      );
+  stores.forEach((store, index) => {
+    const channelsFound = store.storeChannels.filter(storeChannel =>
+      channelsId.includes(storeChannel)
+    );
 
-      const scheduleChannelsFound = channelsInSchedules?.filter(
-        channelInSchedule => channelsId.includes(channelInSchedule)
-      );
+    if (channelsFound.length !== store.storeChannels.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["stores", index, "storeChannels"],
+        message: "StoreChannels not match with channels array"
+      });
+    }
 
-      if (channelsInSchedules?.length !== scheduleChannelsFound?.length) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["stores", index, "schedulesByChannel"],
-          message: "SchedulesByChannel not match with channels array"
-        });
-      }
-    });
+    const channelsInSchedules = store.schedulesByChannel?.map(
+      scheduleChannel => scheduleChannel.channelId
+    );
+
+    const scheduleChannelsFound = channelsInSchedules?.filter(
+      channelInSchedule => channelsId.includes(channelInSchedule)
+    );
+
+    if (channelsInSchedules?.length !== scheduleChannelsFound?.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["stores", index, "schedulesByChannel"],
+        message: "SchedulesByChannel not match with channels array"
+      });
+    }
   });
+};
+
+export const channelsAndStoresValidator =
+  channelsAndStoresValidatorRaw.superRefine(channelAndStoresRefine);

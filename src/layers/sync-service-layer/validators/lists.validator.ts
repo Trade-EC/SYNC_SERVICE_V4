@@ -80,8 +80,6 @@ export const listValidator = z.object({
   vendorId: z.string().max(100),
   storeId: z.string().or(z.literal("replicate_in_all")),
   channelId: z.string().max(100),
-  ecommerceChannelId: z.string().optional(),
-  channelReferenceName: z.string().optional(),
   schedules: z.array(scheduleValidator).optional()
 });
 

@@ -61,6 +61,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
+  // const { Account: accountId = "0" } = headers;
   const channelsAndStores = validateStores(parsedBody, accountId);
   const { vendorId } = channelsAndStores;
   logger.appendKeys({ vendorId, accountId });
