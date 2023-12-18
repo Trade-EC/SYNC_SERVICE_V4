@@ -1,7 +1,5 @@
-import {
-  modifierOptionValidator,
-  productsValidator
-} from "/opt/nodejs/sync-service-layer/validators/lists.validator";
+import { modifierOptionValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
+import { productsValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { productValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { productPriceInfoValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { baseCategoryValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
@@ -11,15 +9,18 @@ import { productListingValidator } from "/opt/nodejs/sync-service-layer/validato
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
 import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
+import { kfcPreprocessArray } from "./kfc-common.validator";
+
 const kfcListValidator = z.object({
   vendorId: z.number(),
+  storeId: z.number().int().or(z.string()),
   ecommerceChannelId: z.string().optional(),
   channelReferenceName: z.string().optional(),
-  stores: z.string().nullable(),
+  stores: z.string().nullable().optional(),
   replicateInAll: z.coerce.boolean().optional()
 });
 
-const kfcProductValidator = z.object({
+const kfcProductListValidator = z.object({
   active: z.boolean().optional(),
   productId: z.number().int(),
   priceInfo: productPriceInfoValidator.array(),
@@ -27,6 +28,13 @@ const kfcProductValidator = z.object({
   tags: z.string().optional(),
   upselling: z.string().optional()
 });
+
+const kfcProductValidator = kfcProductListValidator.merge(
+  z.object({
+    taxInfo: taxesValidator.array().optional(),
+    priceInfo: productPriceInfoValidator
+  })
+);
 
 const kfcProductListingValidator = z.object({
   productId: z.number().int()
@@ -57,22 +65,40 @@ const kfcModifierGroupOptionValidator = z.object({
 });
 
 const kfcModifierGroupValidator = z.object({
-  modifierOptions: modifierOptionValidator
-    .merge(kfcModifierGroupOptionValidator)
+  modifierOptions: kfcPreprocessArray(
+    modifierOptionValidator.merge(kfcModifierGroupOptionValidator).array()
+  )
+});
+
+const kfcProductModifierGroupValidator = z.object({
+  name: z.string(),
+  optionId: z.string(),
+  productId: z.number().int()
+});
+
+// -KFC PRODUCTS VALIDATOR
+export const kfcProductsValidator = z.object({
+  list: listValidator.merge(kfcListValidator),
+  products: productValidator.merge(kfcProductValidator).array(),
+  categories: kfcCategoryValidator.array(),
+  modifierGroups: modifierGroupValidator
+    .omit({ modifierOptions: true })
+    .merge(kfcProductModifierGroupValidator)
     .array()
 });
 
-const kfcProductsValidator = z.object({
+const kfcListsValidator = z.object({
   list: listValidator.merge(kfcListValidator).array(),
-  products: productValidator.merge(kfcProductValidator).array(),
+  products: productValidator.merge(kfcProductListValidator).array(),
   categories: kfcCategoryValidator.array(),
   modifierGroups: modifierGroupValidator
     .merge(kfcModifierGroupValidator)
     .array()
 });
 
+// -KFC LIST VALIDATOR
 export const kfcListsValidatorMerge = productsValidator
-  .merge(kfcProductsValidator)
+  .merge(kfcListsValidator)
   .superRefine((schema, ctx) => {
     const { products, categories, modifierGroups } = schema;
 

@@ -314,7 +314,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/publish-sync"
+            Path: "/api/v4/publish-sync"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
       Policies:
@@ -347,7 +347,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/publish-webhook"
+            Path: "/api/v4/publish-webhook"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -374,7 +374,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/sync-summary"
+            Path: "/api/v4/sync-summary"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -402,7 +402,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/stores/{storeId}"
+            Path: "/api/v4/stores/{storeId}"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -430,7 +430,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/stores"
+            Path: "/api/v4/stores"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -458,7 +458,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/products/{productId}"
+            Path: "/api/v4/products/{productId}"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -486,7 +486,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/products"
+            Path: "/api/v4/products"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
@@ -514,7 +514,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/lists"
+            Path: "/api/v4/lists"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
       Policies:
@@ -552,7 +552,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/products"
+            Path: "/api/v4/products"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
       Policies:
@@ -591,7 +591,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v3/channels-stores"
+            Path: "/api/v4/channels-stores"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
       Policies:

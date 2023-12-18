@@ -98,6 +98,7 @@ export const channelAndStoresRefine = (
   });
 };
 
+// -KFC STORES VALIDATOR
 export const kfcChannelsAndStoresValidatorMerge = channelsAndStoresValidatorRaw
   .merge(kfcChannelsAndStoresValidator)
   .superRefine(channelAndStoresRefine);

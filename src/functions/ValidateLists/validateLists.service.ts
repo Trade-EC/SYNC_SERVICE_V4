@@ -93,6 +93,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   const syncAll = type === "ALL";
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
+  // const { Account: accountId = "0" } = headers;
   const listInfo = validateLists(parsedBody, accountId);
   const { list } = listInfo;
   const { storeId, vendorId, channelId, listId } = list;
