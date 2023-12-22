@@ -85,13 +85,14 @@ export const dbStoreValidator = z.object({
   timezone: z.string().nullable(),
   schedules: z.array(dbScheduleValidator),
   location: locationValidator,
-  country: z.any().nullable(),
+  country: idValidator.nullable(),
   vendor: idValidator,
   accounts: z.array(accountValidator),
   account: idValidator,
   city: dbCityValidator,
   services: z.array(dbServicesValidator),
-  additionalInfo: z.object({ externalId: z.string() })
+  additionalInfo: z.record(z.string().min(1), z.any()).optional(),
+  shippingCostId: z.string().nullable()
 });
 
 // ------------------------------------------ list
@@ -229,3 +230,23 @@ export const dbProductValidator = productValidator
     isPriceVip: z.boolean(),
     suggestedPrice: z.number()
   });
+
+// ------------------------------------------ shippingCost
+
+export const dbShippingCostValidator = z.object({
+  shippingCostId: z.string(),
+  name: z.string(),
+  amount: z.number(),
+  symbol: z.string(),
+  vendorIdStoreIdChannelId: z.array(z.string()),
+  grossPrice: z.number(),
+  netPrice: z.number(),
+  subtotalBeforeTaxes: z.number(),
+  taxes: z.array(z.any()),
+  taxTotal: z.number(),
+  discounts: z.array(z.any()),
+  discountTotal: z.number(),
+  total: z.number(),
+  account: z.object({ accountId: z.string() }),
+  vendor: z.object({ id: z.string() })
+});

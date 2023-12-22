@@ -46,7 +46,7 @@ export const syncProducts = async (
   const syncProducts = products.map(product => {
     const { productId } = product;
     return {
-      productId: `${accountId}#${productId}`,
+      productId: `${accountId}#${vendorId}#${productId}`,
       accountId,
       listId,
       channelId,

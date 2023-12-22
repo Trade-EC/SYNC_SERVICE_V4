@@ -301,7 +301,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
 
   const newProduct: DbProduct = {
     hash: null,
-    productId: `${accountId}#${productId}`,
+    productId: `${accountId}#${vendorId}#${productId}`,
     status: "DRAFT",
     version: null,
     name,

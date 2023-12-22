@@ -17,13 +17,19 @@ Globals:
         SYNC_IMAGES_SQS_URL: !Ref SyncImagesSQS
         SYNC_STORES_SQS_URL: !Ref StoresSyncSQS
         SYNC_PRODUCT_SQS_URL: !Ref ProductSyncSQS
+        SYNC_SHIPPING_COST_SQS_URL: !Ref ShippingCostSyncSQS
         SYNC_PUBLISH_SQS_URL: !Ref PublishSyncSQS
+    VpcConfig:
+      SecurityGroupIds:
+        - sg-080312893df07b75d
+      SubnetIds:
+        - subnet-0f9d5eddc689fcd8d
 
 Parameters:
   StageName:
     Type: String
     Default: dev
-    Description: (Required) Enter Dev | Prod. Default is Dev.
+    Description: (Required) Enter dev | prod. Default is Dev.
     AllowedValues:
       - dev
       - prod
@@ -89,6 +95,27 @@ Resources:
       ContentBasedDeduplication: true
       FifoQueue: true
 
+  ShippingCostSyncSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ShippingCostSyncSQS.fifo
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      VisibilityTimeout: 300
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ShippingCostSyncDLQ.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Name
+          Value: ShippingCostSyncSQS
+
+  ShippingCostSyncDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ShippingCostSyncDLQ.fifo
+      ContentBasedDeduplication: true
+      FifoQueue: true
+
   PublishSyncSQS:
     Type: AWS::SQS::Queue
     Properties:
@@ -116,6 +143,19 @@ Resources:
     Properties:
       StageName: !Ref StageName
       TracingEnabled: true
+      Auth:
+        ResourcePolicy:
+          CustomStatements:
+            [{
+              Effect: "Allow",
+              Action: "execute-api:Invoke",
+              Resource: ["execute-api:/*/*/*"],
+              Principal: "*",
+            }]
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds: 
+          - "vpce-0eb8ec9b48e73b9f9"
 
   # S3 Buckets
   SyncServiceV4Bucket:
@@ -184,6 +224,12 @@ Resources:
             BatchSize: 5
             ScalingConfig:
                MaximumConcurrency: 20
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt ShippingCostSyncSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -248,6 +294,35 @@ Resources:
             BatchSize: 8
             ScalingConfig:
                MaximumConcurrency: 5
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  CreateShippingCost:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/CreateShippingCost/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      MemorySize: 256
+      Architectures:
+        - x86_64
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ShippingCostSyncSQS.Arn
+            BatchSize: 3
+            ScalingConfig:
+               MaximumConcurrency: 2
       Policies:
         - Statement:
             - Effect: Allow

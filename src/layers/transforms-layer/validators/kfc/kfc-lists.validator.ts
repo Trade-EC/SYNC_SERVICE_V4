@@ -155,7 +155,7 @@ export const kfcListsValidatorMerge = productsValidator
 
     const productInModifierSet = new Set<number>();
     modifierGroups.forEach(modifierGroup =>
-      modifierGroup.modifierOptions.forEach(modifierOption => {
+      modifierGroup.modifierOptions.forEach((modifierOption: any) => {
         productInModifierSet.add(modifierOption.productId);
       })
     );

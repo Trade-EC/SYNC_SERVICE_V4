@@ -25,7 +25,7 @@ export const syncStores = async (
   const syncProducts = stores.map(store => {
     const { storeId } = store;
     return {
-      storeId: `${accountId}#${storeId}`,
+      storeId: `${accountId}#${vendorId}#${storeId}`,
       accountId,
       vendorId,
       status: "PENDING" as const
@@ -60,7 +60,8 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   logger.info("STORE VALIDATE: INIT");
   const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
-  const { account: accountId } = headersValidator.parse(headers);
+  const headersValidate = headersValidator.parse(headers);
+  const { account: accountId } = headersValidate;
   // const { Account: accountId = "0" } = headers;
   const channelsAndStores = validateStores(parsedBody, accountId);
   const { vendorId } = channelsAndStores;

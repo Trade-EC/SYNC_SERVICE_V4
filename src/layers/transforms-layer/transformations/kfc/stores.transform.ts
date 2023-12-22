@@ -14,9 +14,6 @@ const transformStores = (stores: any[]) => {
     if (store.taxesInfo && store.taxesInfo.length > 0) {
       store.taxesInfo = store.taxesInfo[0];
     }
-    if (store.deliveryInfo && store.deliveryInfo.length > 0) {
-      store.deliveryInfo = store.deliveryInfo[0];
-    }
     store = transformStoresDeliveryInfo(store);
     if (store.contactInfo && store.contactInfo.length > 0) {
       store.contactInfo = store.contactInfo[0];
@@ -46,7 +43,7 @@ const transformChannels = (channels: any[]) => {
 };
 
 const transformStoresDeliveryInfo = (store: any) => {
-  if (store.deliveryInfo[0] && store.deliveryInfo[0].length) {
+  if (store.deliveryInfo?.[0] && Array.isArray(store.deliveryInfo[0])) {
     delete store.deliveryInfo;
   } else {
     store.deliveryInfo = store.deliveryInfo[0];

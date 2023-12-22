@@ -26,7 +26,8 @@ export const storeDeliveryValidator = z.object({
   deliveryTimeUnit: z.enum(["min", "hour"]).optional(),
   minimumOrder: z.number().optional(),
   shippingCost: z.number().optional(),
-  cookTime: z.number().int().optional()
+  cookTime: z.number().int().optional(),
+  deliveryId: z.number().int().optional()
 });
 
 export const storeLocationValidator = z.object({

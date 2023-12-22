@@ -108,6 +108,16 @@ export const fetchStores = async (vendorId: string, accountId: string) => {
   return response;
 };
 
+export const findShippingCost = async (vendorId: string, accountId: string) => {
+  const dbClient = await connectToDatabase();
+  const shippingCost = await dbClient
+    .collection("shippingCost")
+    .find({ "vendor.id": vendorId, "account.id": accountId })
+    .toArray();
+
+  return shippingCost;
+};
+
 /**
  *
  * @param vendorId
@@ -117,7 +127,7 @@ export const fetchStores = async (vendorId: string, accountId: string) => {
  */
 export const fetchProducts = async (vendorId: string, accountId: string) => {
   const dbClient = await connectToDatabase();
-  const response = dbClient
+  const response = await dbClient
     .collection("products")
     .aggregate([
       {
@@ -151,66 +161,91 @@ export const fetchProducts = async (vendorId: string, accountId: string) => {
  *
  * @param vendorId
  * @param accountId
- * @param stores
- * @description Save stores in S3
+ * @param documents
+ * @description Save documents in S3
  * @returns void
  */
-export const saveStoresInS3 = async (
-  vendorId: string,
-  accountId: string,
-  stores: WithId<Document>[]
+export const saveDocumentsInS3 = async (
+  documents: WithId<Document>[],
+  s3Url: string
 ) => {
-  const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
-  const storesInput = {
+  // const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
+  const documentInput = {
     Bucket: SYNC_BUCKET,
-    Key: storesKey,
-    Body: Buffer.from(JSON.stringify(stores))
+    Key: s3Url,
+    Body: Buffer.from(JSON.stringify(documents))
   };
-  const uploadStores = new Upload({
+  const uploadDocuments = new Upload({
     client: s3Client,
-    params: storesInput
+    params: documentInput
   });
-  const responseStores = await uploadStores.done();
-  const { $metadata: metadata } = responseStores;
+  const responseDocuments = await uploadDocuments.done();
+  const { $metadata: metadata } = responseDocuments;
   const { httpStatusCode } = metadata;
   if (httpStatusCode !== 200) throw new Error("Upload stores failed");
   return {
     bucket: SYNC_BUCKET,
-    key: storesKey,
+    key: s3Url,
     status: "DONE"
   };
 };
 
-export const saveProductsInS3 = async (
-  vendorId: string,
-  accountId: string,
-  products: any
-) => {
-  const productsKey = `sync/${accountId}/${vendorId}/products.json`;
+// export const saveShippingCostInS3 = async (
+//   vendorId: string,
+//   accountId: string,
+//   shippingCost: WithId<Document>[]
+// ) => {
+//   const storesKey = `sync/${accountId}/${vendorId}/shippingCost.json`;
+//   const storesInput = {
+//     Bucket: SYNC_BUCKET,
+//     Key: storesKey,
+//     Body: Buffer.from(JSON.stringify(shippingCost))
+//   };
+//   const uploadStores = new Upload({
+//     client: s3Client,
+//     params: storesInput
+//   });
+//   const responseStores = await uploadStores.done();
+//   const { $metadata: metadata } = responseStores;
+//   const { httpStatusCode } = metadata;
+//   if (httpStatusCode !== 200) throw new Error("Upload stores failed");
+//   return {
+//     bucket: SYNC_BUCKET,
+//     key: storesKey,
+//     status: "DONE"
+//   };
+// };
 
-  const productsInput = {
-    Bucket: SYNC_BUCKET,
-    Key: productsKey,
-    Body: Buffer.from(JSON.stringify(products))
-  };
+// export const saveProductsInS3 = async (
+//   vendorId: string,
+//   accountId: string,
+//   products: any
+// ) => {
+//   const productsKey = `sync/${accountId}/${vendorId}/products.json`;
 
-  const uploadProducts = new Upload({
-    client: s3Client,
-    params: productsInput
-  });
+//   const productsInput = {
+//     Bucket: SYNC_BUCKET,
+//     Key: productsKey,
+//     Body: Buffer.from(JSON.stringify(products))
+//   };
 
-  const responseProducts = await uploadProducts.done();
+//   const uploadProducts = new Upload({
+//     client: s3Client,
+//     params: productsInput
+//   });
 
-  const { $metadata: productsMetadata } = responseProducts;
-  if (productsMetadata.httpStatusCode !== 200)
-    throw new Error("Upload stores failed");
+//   const responseProducts = await uploadProducts.done();
 
-  return {
-    Bucket: SYNC_BUCKET,
-    key: productsKey,
-    status: "DONE"
-  };
-};
+//   const { $metadata: productsMetadata } = responseProducts;
+//   if (productsMetadata.httpStatusCode !== 200)
+//     throw new Error("Upload stores failed");
+
+//   return {
+//     Bucket: SYNC_BUCKET,
+//     key: productsKey,
+//     status: "DONE"
+//   };
+// };
 
 /**
  *

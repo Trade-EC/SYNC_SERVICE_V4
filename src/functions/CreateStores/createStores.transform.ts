@@ -15,11 +15,12 @@ export const storeTransformer = (
   store: Store,
   accountId: string,
   vendorId: string
-): DBStore => {
+) => {
   const { storeId, name, contactInfo, locationInfo, schedules } = store;
   const { schedulesByChannel, storeChannels, deliveryInfo } = store;
   const { services, active, default: isDefault, featured } = store;
   const { storeCode } = store;
+  const { deliveryId } = deliveryInfo ?? {};
   const transformedSchedules = schedules
     ? transformStoreSchedules(schedules, storeChannels, storeId)
     : [];
@@ -27,8 +28,8 @@ export const storeTransformer = (
     ? transformStoreSchedulesByChannel(schedulesByChannel, storeId)
     : [];
 
-  const newStore = {
-    storeId: `${accountId}#${storeId}`,
+  const newStore: DBStore = {
+    storeId: `${accountId}#${vendorId}#${storeId}`,
     version: null,
     hash: null,
     status: "DRAFT" as const,
@@ -59,27 +60,17 @@ export const storeTransformer = (
     sponsored: !!featured, // Debería salir del vendor
     tips: [], // Salen del vendor
     timezone: null,
-    location: {
-      lat: locationInfo.latitude,
-      lon: locationInfo.longitude
-    },
-    additionalInfo: {
-      externalId: storeId,
-      external_code: storeCode
-    },
-    city: {
-      id: "",
-      name: locationInfo.city, // city
-      active: false
-    },
+    location: { lat: locationInfo.latitude, lon: locationInfo.longitude },
+    additionalInfo: { externalId: storeId, external_code: storeCode },
+    city: { id: "", name: locationInfo.city, active: false },
     country: null,
-    vendor: {
-      id: vendorId
-    },
+    vendor: { id: vendorId },
     accounts: [{ accountId }],
-    account: {
-      id: accountId
-    }
+    account: { id: accountId },
+    shippingCostId:
+      typeof deliveryId === "undefined"
+        ? `${accountId}#${vendorId}#${deliveryId}`
+        : null
   };
 
   return newStore;

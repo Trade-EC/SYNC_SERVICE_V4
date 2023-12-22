@@ -41,6 +41,11 @@ export const headersValidator = z.object({
   account: z.string()
 });
 
+export const syncHeadersValidator = z.object({
+  account: z.string(),
+  country: z.string()
+});
+
 export const productsQueryParamsValidator = z.object({
   type: z.enum(["INCREMENTAL", "ALL"]).optional()
 });
