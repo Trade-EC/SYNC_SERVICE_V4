@@ -8,10 +8,11 @@ import { connectToDatabase } from "../utils/mongo.utils";
  * @returns {Promise<SyncRequest>}
  */
 export const fetchSyncRequest = async (syncRequest: SyncRequest) => {
+  const { createdAt, s3Path, ...restFilters } = syncRequest;
   const dbClient = await connectToDatabase();
   const dbSyncRequest = await dbClient
     .collection("syncRequests")
-    .findOne({ ...syncRequest });
+    .findOne({ ...restFilters });
 
   return dbSyncRequest;
 };

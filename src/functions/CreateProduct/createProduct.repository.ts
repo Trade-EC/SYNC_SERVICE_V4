@@ -34,7 +34,7 @@ export const createOrUpdateProduct = async (
   );
 
   const storesPromises = storesId.map(async storeId => {
-    const dbStoreId = `${accountId}#${storeId}`;
+    const dbStoreId = `${accountId}#${vendorId}#${storeId}`;
     const updateResult = await dbClient.collection("stores").updateOne(
       {
         storeId: dbStoreId,
