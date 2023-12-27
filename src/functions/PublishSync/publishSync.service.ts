@@ -26,7 +26,7 @@ export const publishStores = async (vendorId: string, accountId: string) => {
   const stores = await fetchStores(vendorId, accountId);
   const shippingCosts = await findShippingCost(vendorId, accountId);
   const storesS3Url = `sync/${accountId}/${vendorId}/stores.json`;
-  const shippingCostsS3Url = `sync/${accountId}/${vendorId}/shippingCost.json`;
+  const shippingCostsS3Url = `sync/${accountId}/${vendorId}/shippingCosts.json`;
   if (stores.length === 0) {
     return {
       key: "",
@@ -39,7 +39,7 @@ export const publishStores = async (vendorId: string, accountId: string) => {
   const { key: storesKey } = storeResponse;
   logger.info("PUBLISH STORES: SYNCING", { type: "STORES" });
   await fetch(
-    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${SYNC_BUCKET}&key=${storesKey}`,
+    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/api/v4/publish?bucket=${SYNC_BUCKET}&key=${storesKey}`,
     fetchOptions
   );
   logger.info("PUBLISH STORES: HISTORY", { type: "STORES" });
@@ -81,7 +81,7 @@ export const publishProducts = async (vendorId: string, accountId: string) => {
   const { key: productsKey } = productResponse;
   logger.info("PUBLISH PRODUCTS: SYNCING", { type: "PRODUCTS" });
   await fetch(
-    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/publish?bucket=${SYNC_BUCKET}&key=${productsKey}`,
+    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/api/v4/publish?bucket=${SYNC_BUCKET}&key=${productsKey}`,
     fetchOptions
   );
   logger.info("PUBLISH PRODUCTS: HISTORY", { type: "PRODUCTS" });

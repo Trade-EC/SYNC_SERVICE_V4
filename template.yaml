@@ -24,6 +24,7 @@ Globals:
         - sg-080312893df07b75d
       SubnetIds:
         - subnet-0f9d5eddc689fcd8d
+        - subnet-0170677e6682ab84a     
 
 Parameters:
   StageName:
@@ -294,6 +295,12 @@ Resources:
             BatchSize: 8
             ScalingConfig:
                MaximumConcurrency: 5
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: "arn:aws:s3:::syncservicev4.admin.dev/*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

@@ -68,7 +68,7 @@ export const storeTransformer = (
     accounts: [{ accountId }],
     account: { id: accountId },
     shippingCostId:
-      typeof deliveryId === "undefined"
+      typeof deliveryId !== "undefined"
         ? `${accountId}#${vendorId}#${deliveryId}`
         : null
   };

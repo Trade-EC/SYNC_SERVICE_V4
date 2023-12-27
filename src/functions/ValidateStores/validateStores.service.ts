@@ -47,7 +47,9 @@ export const syncStores = async (
   });
 
   logger.info("STORE VALIDATE: SEND TO SQS");
-  return await Promise.all(productsPromises);
+  const promises = await Promise.all(productsPromises);
+
+  return promises;
 };
 
 /**
