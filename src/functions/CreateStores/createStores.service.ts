@@ -24,7 +24,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
   const { accountId, store, vendorId } = body;
   const { storeId, deliveryInfo, storeChannels } = store;
   const { deliveryId, shippingCost } = deliveryInfo ?? {};
-  const dbStoreId = `${accountId}#${vendorId}#${storeId}`;
+  const dbStoreId = `${accountId}.${vendorId}.${storeId}`;
   logger.appendKeys({ vendorId, accountId });
   logger.info("STORE: INIT");
   const storeDB = await findStore(dbStoreId);

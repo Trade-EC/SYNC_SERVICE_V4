@@ -29,7 +29,7 @@ export const storeTransformer = (
     : [];
 
   const newStore: DBStore = {
-    storeId: `${accountId}#${vendorId}#${storeId}`,
+    storeId: `${accountId}.${vendorId}.${storeId}`,
     version: null,
     hash: null,
     status: "DRAFT" as const,
@@ -69,7 +69,7 @@ export const storeTransformer = (
     account: { id: accountId },
     shippingCostId:
       typeof deliveryId !== "undefined"
-        ? `${accountId}#${vendorId}#${deliveryId}`
+        ? `${accountId}.${vendorId}.${deliveryId}`
         : null
   };
 

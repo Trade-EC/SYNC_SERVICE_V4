@@ -41,12 +41,12 @@ export const syncList = async (
     storesId = storeId.split(",");
   }
   const vendorIdStoreIdChannelId = storesId.map(
-    storeId => `${vendorId}#${storeId}#${channelId}`
+    storeId => `${vendorId}.${storeId}.${channelId}`
   );
   const syncProducts = products.map(product => {
     const { productId } = product;
     return {
-      productId: `${accountId}#${vendorId}#${productId}`,
+      productId: `${accountId}.${vendorId}.${productId}`,
       accountId,
       listId,
       channelId,

@@ -35,7 +35,7 @@ export const transformStoreSchedules = (
       const { day, startDate, endDate } = schedule;
       const newSchedule = {
         day,
-        catalogueId: `${storeId}#${channel}`,
+        catalogueId: `${storeId}.${channel}`,
         from: getHourInSeconds(schedule.startTime),
         to: getHourInSeconds(schedule.endTime),
         startDate,
@@ -66,7 +66,7 @@ export const transformStoreSchedulesByChannel = (
       const { day, startDate, endDate } = schedule;
       const newSchedule = {
         day,
-        catalogueId: `${storeId}#${channelId}`,
+        catalogueId: `${storeId}.${channelId}`,
         from: getHourInSeconds(schedule.startTime),
         to: getHourInSeconds(schedule.endTime),
         startDate,
@@ -98,7 +98,7 @@ export const transformSchedules = (
       const { day, startDate, endDate } = schedule;
       const newSchedule = {
         day,
-        catalogueId: `${storeId}#${channelId}`,
+        catalogueId: `${storeId}.${channelId}`,
         from: getHourInSeconds(schedule.startTime),
         to: getHourInSeconds(schedule.endTime),
         startDate,

@@ -12,7 +12,7 @@ export const fetchStoresByVendorRepository = async (
     .find(
       {
         "vendor.id": vendorId,
-        storeId: storeId ? `${accountId}#${vendorId}#${storeId}` : undefined,
+        storeId: storeId ? `${accountId}.${vendorId}.${storeId}` : undefined,
         "account.id": accountId
       },
       { ignoreUndefined: true }

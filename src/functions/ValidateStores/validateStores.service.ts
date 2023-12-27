@@ -25,7 +25,7 @@ export const syncStores = async (
   const syncProducts = stores.map(store => {
     const { storeId } = store;
     return {
-      storeId: `${accountId}#${vendorId}#${storeId}`,
+      storeId: `${accountId}.${vendorId}.${storeId}`,
       accountId,
       vendorId,
       status: "PENDING" as const

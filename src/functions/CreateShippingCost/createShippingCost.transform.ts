@@ -7,12 +7,12 @@ export const shippingCostTransformer = (
   const { shippingCost, deliveryId, storeChannels } = props;
   const { storeId, accountId, vendorId } = props;
   return {
-    shippingCostId: `${accountId}#${vendorId}#${deliveryId}`,
+    shippingCostId: `${accountId}.${vendorId}.${deliveryId}`,
     name: "",
     amount: 1,
     symbol: "",
     vendorIdStoreIdChannelId:
-      storeChannels?.map(channel => `${vendorId}#${storeId}#${channel}`) ?? [],
+      storeChannels?.map(channel => `${vendorId}.${storeId}.${channel}`) ?? [],
     grossPrice: 0.0,
     netPrice: shippingCost,
     subtotalBeforeTaxes: 0.0,

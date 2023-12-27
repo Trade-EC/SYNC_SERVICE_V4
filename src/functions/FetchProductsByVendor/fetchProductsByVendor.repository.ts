@@ -12,15 +12,15 @@ export const fetchProductsByVendorRepository = async (
   let statusFilter = "";
 
   if (storeId) {
-    statusFilter += `#${storeId}`;
+    statusFilter += `.${storeId}`;
   }
 
   if (channelId) {
-    statusFilter += `#${channelId}`;
+    statusFilter += `.${channelId}`;
   }
 
   if (storeId && !channelId) {
-    statusFilter = "#";
+    statusFilter = ".";
   }
 
   return dbClient
@@ -30,7 +30,7 @@ export const fetchProductsByVendorRepository = async (
         "vendor.id": vendorId,
         "account.accountId": accountId,
         productId: productId
-          ? `${accountId}#${vendorId}#${productId}`
+          ? `${accountId}.${vendorId}.${productId}`
           : undefined,
         "statuses.vendorIdStoreIdChannelId": statusFilter
           ? { $regex: statusFilter }

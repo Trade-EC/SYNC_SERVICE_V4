@@ -34,7 +34,7 @@ export const createOrUpdateProduct = async (
   );
 
   const storesPromises = storesId.map(async storeId => {
-    const dbStoreId = `${accountId}#${vendorId}#${storeId}`;
+    const dbStoreId = `${accountId}.${vendorId}.${storeId}`;
     const updateResult = await dbClient.collection("stores").updateOne(
       {
         storeId: dbStoreId,
@@ -43,7 +43,7 @@ export const createOrUpdateProduct = async (
       {
         $addToSet: {
           catalogues: {
-            catalogueId: `${vendorId}#${storeId}#${channelId}`,
+            catalogueId: `${vendorId}.${storeId}.${channelId}`,
             name: listName,
             active: true
           }

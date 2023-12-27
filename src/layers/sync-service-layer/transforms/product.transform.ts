@@ -100,7 +100,7 @@ export const transformCategory = async (
     position: position ? position : 0,
     displayInMenu: displayInList ? "YES" : "NO",
     vendorIdStoreIdChannelId: storesId
-      .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+      .map(storeId => `${vendorId}.${storeId}.${channelId}`)
       .sort()
   };
   return newCategory;
@@ -301,7 +301,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
 
   const newProduct: DbProduct = {
     hash: null,
-    productId: `${accountId}#${vendorId}#${productId}`,
+    productId: `${accountId}.${vendorId}.${productId}`,
     status: "DRAFT",
     version: null,
     name,
@@ -320,7 +320,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     images:
       newImages?.map(image => ({
         vendorIdStoreIdChannelId: storesId
-          .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+          .map(storeId => `${vendorId}.${storeId}.${channelId}`)
           .sort(),
         ...image
       })) ?? [],
@@ -329,7 +329,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     prices: [
       {
         vendorIdStoreIdChannelId: storesId
-          .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+          .map(storeId => `${vendorId}.${storeId}.${channelId}`)
           .sort(),
         prices: transformPrices(priceInfo, taxInfo)
       }
@@ -345,7 +345,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     statuses: [
       {
         vendorIdStoreIdChannelId: storesId
-          .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+          .map(storeId => `${vendorId}.${storeId}.${channelId}`)
           .sort(),
         availability: true,
         isVisible: true,
@@ -361,7 +361,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
       questions?.map(question => {
         return {
           vendorIdStoreIdChannelId: storesId
-            .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+            .map(storeId => `${vendorId}.${storeId}.${channelId}`)
             .sort(),
           ...question
         };
@@ -372,7 +372,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     schedules: schedules
       ? transformSchedules(schedules, storesId, channelId).map(schedule => ({
           vendorIdStoreIdChannelId: storesId
-            .map(storeId => `${vendorId}#${storeId}#${channelId}`)
+            .map(storeId => `${vendorId}.${storeId}.${channelId}`)
             .sort(),
           ...schedule
         }))

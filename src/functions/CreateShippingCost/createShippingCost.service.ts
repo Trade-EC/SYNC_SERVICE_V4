@@ -28,7 +28,7 @@ export const syncShippingCostService = async (
 
     dbShippingCostOld.vendorIdStoreIdChannelId =
       dbShippingCostOld.vendorIdStoreIdChannelId.filter(
-        id => !id.startsWith(`${vendorId}#${storeId}`)
+        id => !id.startsWith(`${vendorId}.${storeId}`)
       );
 
     await createOrUpdateShippingCost(dbShippingCostOld);
