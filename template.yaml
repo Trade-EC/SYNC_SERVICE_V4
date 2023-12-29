@@ -19,6 +19,21 @@ Globals:
         SYNC_PRODUCT_SQS_URL: !Ref ProductSyncSQS
         SYNC_SHIPPING_COST_SQS_URL: !Ref ShippingCostSyncSQS
         SYNC_PUBLISH_SQS_URL: !Ref PublishSyncSQS
+        SYNC_IMAGES_DLQ_URL: !Ref SyncImagesDLQ
+        SYNC_STORES_DLQ_URL: !Ref StoresSyncDLQ
+        SYNC_PRODUCT_DLQ_URL: !Ref ProductSyncDLQ
+        SYNC_SHIPPING_COST_DLQ_URL: !Ref ShippingCostSyncDLQ
+        SYNC_PUBLISH_DLQ_URL: !Ref PublishSyncDLQ
+        SYNC_IMAGES_DLQ_ARN: !GetAtt SyncImagesDLQ.Arn
+        SYNC_STORES_DLQ_ARN: !GetAtt StoresSyncDLQ.Arn
+        SYNC_PRODUCT_DLQ_ARN: !GetAtt ProductSyncDLQ.Arn
+        SYNC_SHIPPING_COST_DLQ_ARN: !GetAtt ShippingCostSyncDLQ.Arn
+        SYNC_PUBLISH_DLQ_ARN: !GetAtt PublishSyncDLQ.Arn
+        SYNC_IMAGES_SQS_ARN: !GetAtt SyncImagesSQS.Arn
+        SYNC_STORES_SQS_ARN: !GetAtt StoresSyncSQS.Arn
+        SYNC_PRODUCT_SQS_ARN: !GetAtt ProductSyncSQS.Arn
+        SYNC_SHIPPING_COST_SQS_ARN: !GetAtt ShippingCostSyncSQS.Arn
+        SYNC_PUBLISH_SQS_ARN: !GetAtt PublishSyncSQS.Arn        
     VpcConfig:
       SecurityGroupIds:
         - sg-080312893df07b75d
@@ -223,6 +238,8 @@ Resources:
           Properties:
             Queue: !GetAtt StoresSyncSQS.Arn
             BatchSize: 5
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
             ScalingConfig:
                MaximumConcurrency: 20
       Policies:
@@ -258,6 +275,8 @@ Resources:
           Properties:
             Queue: !GetAtt ProductSyncSQS.Arn
             BatchSize: 3
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
             ScalingConfig:
                MaximumConcurrency: 20
       Policies:
@@ -293,6 +312,8 @@ Resources:
           Properties:
             Queue: !GetAtt SyncImagesSQS.Arn
             BatchSize: 8
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
             ScalingConfig:
                MaximumConcurrency: 5
       Policies:
@@ -328,6 +349,8 @@ Resources:
           Properties:
             Queue: !GetAtt ShippingCostSyncSQS.Arn
             BatchSize: 3
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
             ScalingConfig:
                MaximumConcurrency: 2
       Policies:
@@ -363,6 +386,8 @@ Resources:
           Properties:
             Queue: !GetAtt PublishSyncSQS.Arn
             BatchSize: 1
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
             ScalingConfig:
                MaximumConcurrency: 2
       Policies:
@@ -687,6 +712,92 @@ Resources:
               Action:
                 - s3:*
               Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchQueueEvents:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/FetchQueueEvents/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/fetchQueue"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:*
+              Resource: 
+                - !GetAtt SyncImagesSQS.Arn
+                - !GetAtt StoresSyncSQS.Arn
+                - !GetAtt ProductSyncSQS.Arn
+                - !GetAtt ShippingCostSyncSQS.Arn
+                - !GetAtt PublishSyncSQS.Arn
+                - !GetAtt SyncImagesDLQ.Arn
+                - !GetAtt StoresSyncDLQ.Arn
+                - !GetAtt ProductSyncDLQ.Arn
+                - !GetAtt ShippingCostSyncDLQ.Arn
+                - !GetAtt PublishSyncDLQ.Arn
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ModifyQueues:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/ModifyQueues/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/modifyQueues"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:*
+              Resource: 
+                - !GetAtt SyncImagesSQS.Arn
+                - !GetAtt StoresSyncSQS.Arn
+                - !GetAtt ProductSyncSQS.Arn
+                - !GetAtt ShippingCostSyncSQS.Arn
+                - !GetAtt PublishSyncSQS.Arn
+                - !GetAtt SyncImagesDLQ.Arn
+                - !GetAtt StoresSyncDLQ.Arn
+                - !GetAtt ProductSyncDLQ.Arn
+                - !GetAtt ShippingCostSyncDLQ.Arn
+                - !GetAtt PublishSyncDLQ.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

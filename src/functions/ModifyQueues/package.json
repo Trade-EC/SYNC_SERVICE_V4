@@ -1,7 +1,7 @@
 {
-  "name": "fetch-queue-events",
+  "name": "modify-queues",
   "version": "1.0.0",
-  "description": "Lambda function to fetch queue events",
+  "description": "Lambda function to modify queues",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
