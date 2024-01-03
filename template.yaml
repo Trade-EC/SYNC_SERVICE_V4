@@ -736,7 +736,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v4/fetchQueue"
+            Path: "/api/v4/queue-events"
             Method: GET
             RestApiId: !Ref SyncServiceV4Api
       Policies:
@@ -779,7 +779,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/api/v4/modifyQueues"
+            Path: "/api/v4/modify-queue"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
       Policies:

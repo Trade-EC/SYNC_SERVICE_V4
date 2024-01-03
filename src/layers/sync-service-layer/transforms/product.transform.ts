@@ -119,22 +119,19 @@ const getTaxesAndGrossPrice = (
 ) => {
   const { taxRate, vatRatePercentage } = taxesInfo ?? {};
   const taxes = [];
-  let vat = 0;
   if (vatRatePercentage) {
     taxes.push({
-      name: "IVA",
-      percentage: vatRatePercentage
+      type: "IVA",
+      value: vatRatePercentage
     });
-    vat += vatRatePercentage;
   }
   if (taxRate) {
     taxes.push({
-      name: "OTHER",
-      percentage: taxRate
+      type: "OTROS",
+      value: taxRate
     });
-    vat += taxRate;
   }
-  const grossPrice = price * (vat / 100 + 1);
+  const grossPrice = 0;
 
   return { grossPrice, taxes };
 };
