@@ -113,10 +113,7 @@ export const transformCategory = async (
  * @description Calculate taxes and gross price
  * @returns {{grossPrice: number, taxes: {name: string, percentage: number}[]}}
  */
-const getTaxesAndGrossPrice = (
-  price: number,
-  taxesInfo: TaxesInfo | undefined
-) => {
+export const getTaxes = (taxesInfo: TaxesInfo | undefined) => {
   const { taxRate, vatRatePercentage } = taxesInfo ?? {};
   const taxes = [];
   if (vatRatePercentage) {
@@ -131,9 +128,8 @@ const getTaxesAndGrossPrice = (
       value: taxRate
     });
   }
-  const grossPrice = 0;
 
-  return { grossPrice, taxes };
+  return taxes;
 };
 
 /**
@@ -154,7 +150,8 @@ export const transformPrices = (
     category: "NORMAL",
     symbol: "",
     netPrice: price,
-    ...getTaxesAndGrossPrice(price, taxesInfo),
+    taxes: getTaxes(taxesInfo),
+    grossPrice: 0,
     discounts: [], // php -> No existe
     discountGrossPrice: 0, // php -> No existe
     discountNetPrice: 0, // php -> No existe
@@ -175,7 +172,8 @@ export const transformPrices = (
     category: "SUGGESTED",
     symbol: "",
     netPrice: suggestedPrice ?? 0,
-    ...getTaxesAndGrossPrice(suggestedPrice ?? 0, taxesInfo),
+    taxes: getTaxes(taxesInfo),
+    grossPrice: 0,
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
@@ -195,7 +193,7 @@ export const transformPrices = (
   productPrice["NORMAL"] = normal;
   productPrice["POINTS"] = !isUndefined(pointPrice) ? points : null;
   productPrice["SUGGESTED"] = !isUndefined(suggestedPrice) ? suggested : null;
-  productPrice["SUGGESTED_POINTS"] = !isUndefined(suggestedPoints)
+  productPrice["SUGGESTED_POINTS"] = !isUndefined(suggestedPointPrice)
     ? suggestedPoints
     : null;
 

@@ -11,7 +11,7 @@ export const findShippingCost = async (
   const shippingCost = await dbClient.collection("shippingCost").findOne({
     shippingCostId,
     "vendor.id": vendorId,
-    "account.id": accountId
+    "account.accountId": accountId
   });
 
   return shippingCost as unknown as DBShippingCost;
@@ -27,7 +27,7 @@ export const createOrUpdateShippingCost = async (
   return await dbClient
     .collection("shippingCost")
     .updateOne(
-      { shippingCostId, "vendor.id": vendorId, "account.id": accountId },
+      { shippingCostId, "vendor.id": vendorId, "account.accountId": accountId },
       { $set: { ...shippingCost } },
       { upsert: true }
     );

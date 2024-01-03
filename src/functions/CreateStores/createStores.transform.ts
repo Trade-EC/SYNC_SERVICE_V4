@@ -2,6 +2,7 @@ import { DBStore, Store } from "./createStores.types";
 
 import { transformStoreSchedules } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
 import { transformStoreSchedulesByChannel } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
+import { getTaxes } from "/opt/nodejs/sync-service-layer/transforms/product.transform";
 
 /**
  *
@@ -19,7 +20,7 @@ export const storeTransformer = (
   const { storeId, name, contactInfo, locationInfo, schedules } = store;
   const { schedulesByChannel, storeChannels, deliveryInfo } = store;
   const { services, active, default: isDefault, featured } = store;
-  const { storeCode } = store;
+  const { storeCode, taxesInfo } = store;
   const { deliveryId } = deliveryInfo ?? {};
   const transformedSchedules = schedules
     ? transformStoreSchedules(schedules, storeChannels, storeId)
@@ -46,6 +47,7 @@ export const storeTransformer = (
       services
         ?.map(service => ({ ...service, active: service.active === "ACTIVE" }))
         .filter(service => service.active) ?? [],
+    taxes: getTaxes(taxesInfo),
     active: active,
     isDefault,
     outOfService: false,

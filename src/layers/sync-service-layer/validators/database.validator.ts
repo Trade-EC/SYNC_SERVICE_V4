@@ -4,6 +4,11 @@ import { additionalInfoValidator } from "./common.validator";
 import { scheduleValidator } from "./common.validator";
 import { productValidator } from "./lists.validator";
 
+export const dbTaxValidator = z.object({
+  type: z.string(),
+  value: z.number()
+});
+
 // ------------------------------------------ images
 
 export const dbImageValidator = z.object({
@@ -90,6 +95,7 @@ export const dbStoreValidator = z.object({
   accounts: z.array(accountValidator),
   account: idValidator,
   city: dbCityValidator,
+  taxes: dbTaxValidator.array(),
   services: z.array(dbServicesValidator),
   additionalInfo: z.record(z.string().min(1), z.any()).optional(),
   shippingCostId: z.string().nullable()
@@ -149,6 +155,7 @@ export const dbPriceValidator = z.object({
   category: z.enum(["NORMAL", "POINTS", "SUGGESTED", "SUGGESTED_POINTS"]),
   symbol: z.string().max(5),
   grossPrice: z.number(),
+  taxes: dbTaxValidator.array(),
   netPrice: z.number(),
   discounts: z.array(z.any()),
   discountGrossPrice: z.number(),
