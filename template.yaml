@@ -407,6 +407,60 @@ Resources:
         External:
           - "/opt/nodejs/*"
 
+  PrepareProducts:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/PrepareProducts/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt ProductSyncSQS.Arn
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  PrepareStores:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/PrepareStores/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt StoresSyncSQS.Arn 
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
   # Gateways Lambdas
   PublishSyncValidate:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -613,6 +667,9 @@ Resources:
       CodeUri: src/functions/ValidateLists/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
+      Environment:
+        Variables:
+          PREPARE_PRODUCTS_LAMBDA_NAME: !Ref PrepareProducts
       Tracing: Active
       Architectures:
         - x86_64
@@ -628,8 +685,8 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
-                - sqs:SendMessage
-              Resource: !GetAtt ProductSyncSQS.Arn
+                - lambda:InvokeFunction
+              Resource: !GetAtt PrepareProducts.Arn 
         - Statement:
             - Effect: Allow
               Action:
@@ -652,6 +709,9 @@ Resources:
       CodeUri: src/functions/ValidateProducts/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
+      Environment:
+        Variables:
+          PREPARE_PRODUCTS_LAMBDA_NAME: !Ref PrepareProducts
       Tracing: Active
       Architectures:
         - x86_64
@@ -666,8 +726,8 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
-                - sqs:SendMessage
-              Resource: !GetAtt ProductSyncSQS.Arn
+                - lambda:InvokeFunction
+              Resource: !GetAtt PrepareProducts.Arn 
         - Statement:
             - Effect: Allow
               Action:
@@ -690,10 +750,12 @@ Resources:
       CodeUri: src/functions/ValidateStores/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
+      Environment:
+        Variables:
+          PREPARE_STORES_LAMBDA_NAME: !Ref PrepareStores
       Tracing: Active
       Architectures:
         - x86_64
-      MemorySize: 256
       Events:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -705,8 +767,8 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
-                - sqs:SendMessage
-              Resource: !GetAtt StoresSyncSQS.Arn 
+                - lambda:InvokeFunction
+              Resource: !GetAtt PrepareStores.Arn 
         - Statement:
             - Effect: Allow
               Action:

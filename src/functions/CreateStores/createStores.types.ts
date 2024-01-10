@@ -1,3 +1,5 @@
+import { Vendor } from "../ValidateStores/validateStores.types";
+
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
 import { dbStoreValidator } from "/opt/nodejs/sync-service-layer/validators/database.validator";
 import { storeValidator } from "/opt/nodejs/sync-service-layer/validators/store.validator";
@@ -12,6 +14,7 @@ export interface CreateStoreBody {
   store: Store;
   accountId: string;
   vendorId: string;
+  vendorChannels: Vendor["channels"];
 }
 
 export interface CreateStoreProps {

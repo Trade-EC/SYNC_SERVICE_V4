@@ -3,6 +3,7 @@ import { DBStore, Store } from "./createStores.types";
 import { transformStoreSchedules } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
 import { transformStoreSchedulesByChannel } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
 import { getTaxes } from "/opt/nodejs/sync-service-layer/transforms/product.transform";
+import { VendorChannels } from "/opt/nodejs/sync-service-layer/types/vendor.types";
 
 /**
  *
@@ -15,10 +16,12 @@ import { getTaxes } from "/opt/nodejs/sync-service-layer/transforms/product.tran
 export const storeTransformer = (
   store: Store,
   accountId: string,
-  vendorId: string
+  vendorId: string,
+  storeChannels: string[],
+  vendorChannels: VendorChannels
 ) => {
   const { storeId, name, contactInfo, locationInfo, schedules } = store;
-  const { schedulesByChannel, storeChannels, deliveryInfo } = store;
+  const { schedulesByChannel, deliveryInfo } = store;
   const { services, active, default: isDefault, featured } = store;
   const { storeCode, taxesInfo } = store;
   const { deliveryId } = deliveryInfo ?? {};
@@ -26,7 +29,11 @@ export const storeTransformer = (
     ? transformStoreSchedules(schedules, storeChannels, storeId)
     : [];
   const transformedSchedulesByChannel = schedulesByChannel
-    ? transformStoreSchedulesByChannel(schedulesByChannel, storeId)
+    ? transformStoreSchedulesByChannel(
+        schedulesByChannel,
+        storeId,
+        vendorChannels
+      )
     : [];
 
   const newStore: DBStore = {

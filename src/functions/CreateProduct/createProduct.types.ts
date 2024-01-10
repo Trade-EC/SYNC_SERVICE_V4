@@ -3,7 +3,7 @@ import { TransformProductsProps } from "/opt/nodejs/sync-service-layer/types/lis
 export interface CreateProductsBody extends TransformProductsProps {
   listName: string;
   listId: string;
-  source: "LIST" | "PRODUCTS";
+  source: "LISTS" | "PRODUCTS";
   storeId: string;
 }
 

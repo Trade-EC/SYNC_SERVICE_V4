@@ -1,7 +1,7 @@
 {
-  "name": "validate-products",
+  "name": "prepare-stores",
   "version": "1.0.0",
-  "description": "Lambda function to validate products for sync process",
+  "description": "Lambda function to prepare stores for sync process",
   "main": "index.js",
   "license": "MIT",
   "scripts": {

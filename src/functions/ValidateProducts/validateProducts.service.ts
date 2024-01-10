@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import { Lists } from "./validateProducts.types";
+import { PrepareProductsPayload } from "../PrepareProducts/prepareProducts.types";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { productsQueryParamsValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
@@ -8,74 +8,13 @@ import { fetchSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/sy
 import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
-import { createSyncRecords } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
-import { fetchDraftStores } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
 //@ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 import { validateProducts } from "/opt/nodejs/transforms-layer/validators/products.validator";
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
 import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
-
-/**
- *
- * @param listInfo {@link Lists}
- * @param accountId
- * @description Sync products
- * @returns void
- */
-export const syncProducts = async (
-  listInfo: Lists,
-  accountId: string,
-  listHash: string,
-  syncAll = false
-) => {
-  const { categories, list, modifierGroups, products } = listInfo;
-  const { channelId, storeId, vendorId, listName, listId } = list;
-  let storesId: string[];
-  if (storeId === "replicate_in_all") {
-    const dbStores = await fetchDraftStores(accountId, vendorId);
-    storesId = dbStores.map(dbStore => dbStore.storeId);
-  } else {
-    storesId = storeId.split(",");
-  }
-  const vendorIdStoreIdChannelId = storesId.map(
-    storeId => `${vendorId}.${storeId}.${channelId}`
-  );
-
-  const syncProducts = products.map(product => {
-    const { productId } = product;
-    return {
-      productId: `${accountId}.${vendorId}.${productId}`,
-      accountId,
-      listId,
-      channelId,
-      vendorId,
-      storeId,
-      status: "PENDING" as const
-    };
-  });
-  logger.info("LISTS VALIDATE: CREATING SYNC LIST RECORDS");
-  await createSyncRecords(syncProducts);
-
-  const productsPromises = products.map((product, index) => {
-    const isLast = products.length - 1 === index;
-    const { productId } = product;
-    const body1 = { product, storesId, channelId, accountId, vendorId };
-    const body2 = { modifierGroups, categories, listName, listId };
-    const body3 = { isLast, storeId };
-    const body = { ...body1, ...body2, ...body3, source: "PRODUCTS" };
-    const messageBody = { vendorIdStoreIdChannelId, body, listHash, syncAll };
-    return sqsClient.sendMessage({
-      QueueUrl: process.env.SYNC_PRODUCT_SQS_URL ?? "",
-      MessageBody: JSON.stringify(messageBody),
-      MessageGroupId: `${accountId}-${vendorId}-${productId}`
-    });
-  });
-
-  logger.info("LISTS VALIDATE: SEND TO SQS");
-  return await Promise.all(productsPromises);
-};
+import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
+import { lambdaClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 /**
  *
@@ -94,9 +33,42 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   const { account: accountId } = headersValidator.parse(headers);
   const listInfo = validateProducts(parsedBody, accountId);
   const { list } = listInfo;
-  const { storeId, vendorId, channelId, listId } = list;
+  const { storeId, vendorId, listId } = list;
   logger.appendKeys({ vendorId, accountId, listId, storeId });
   logger.info("PRODUCTS VALIDATE: VALIDATING");
+  const vendor = await fetchVendor(vendorId, accountId);
+  if (!vendor) {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({
+        message: "Vendor not found"
+      })
+    };
+  }
+  const { active } = vendor;
+  if (!active) {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({
+        message: "Vendor is not active"
+      })
+    };
+  }
+  const { channels: vendorChannels } = vendor;
+  const { channelReferenceName, channelId: listChannelId } = list;
+  const { ecommerceChannelId } = list;
+  const channel = vendorChannels.find(vendorChannel => {
+    return (
+      (vendorChannel.channelReferenceName === (channelReferenceName ?? null) ||
+        vendorChannel.ecommerceChannelId ==
+          (ecommerceChannelId?.toString() ?? null)) &&
+      vendorChannel.channelId === listChannelId
+    );
+  });
+  if (!channel) {
+    throw new Error("Channel not found");
+  }
+  const channelId = channel.ecommerceChannelId ?? channel.channelId;
   const hash = sha1(JSON.stringify(parsedBody));
   const s3Path = generateSyncS3Path(accountId, vendorId, "PRODUCTS");
   const { Location } = await createFileS3(s3Path, listInfo);
@@ -122,7 +94,21 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   await saveSyncRequest(syncRequest);
 
   logger.info("PRODUCTS VALIDATE: SEND TO SQS");
-  await syncProducts(listInfo, accountId, hash, syncAll);
+  // await syncProducts(listInfo, accountId, hash, channelId, syncAll);
+  const payload: PrepareProductsPayload = {
+    listInfo,
+    accountId,
+    listHash: hash,
+    channelId,
+    syncAll,
+    source: "PRODUCTS"
+  };
+
+  await lambdaClient.invoke({
+    FunctionName: process.env.PREPARE_PRODUCTS_LAMBDA_NAME,
+    InvocationType: "Event",
+    Payload: JSON.stringify(payload)
+  });
 
   logger.info("PRODUCTS VALIDATE: FINISHED");
   return {

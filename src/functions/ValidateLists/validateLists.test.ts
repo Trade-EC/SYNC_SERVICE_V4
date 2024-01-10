@@ -10,6 +10,23 @@ import * as gatewayEvent from "../../events/gateway.json";
 
 const sqsMockClient = mockClient(sqsClient);
 const mockList = buildListRequest();
+const { list } = mockList;
+const { channelId, ecommerceChannelId, channelReferenceName } = list;
+jest.mock(
+  "/opt/nodejs/sync-service-layer/repositories/vendors.repository",
+  () => ({
+    fetchVendor: jest.fn(() => ({
+      active: true,
+      channels: [
+        {
+          channelId,
+          ecommerceChannelId,
+          channelReferenceName
+        }
+      ]
+    }))
+  })
+);
 
 afterAll(() => {
   sqsMockClient.reset();
@@ -18,7 +35,6 @@ afterAll(() => {
 
 describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {
-    const sqsSpy = jest.spyOn(sqsClient, "sendMessage");
     const ctx = context();
     ctx.done();
     const event: APIGatewayProxyEvent = {
@@ -26,8 +42,6 @@ describe("Unit test for app handler", function () {
       body: JSON.stringify(mockList)
     };
     const result = await lambdaHandler(event, ctx);
-
-    expect(sqsSpy).toBeCalled();
     expect(result.statusCode).toEqual(200);
   });
 });

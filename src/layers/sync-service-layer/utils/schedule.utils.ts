@@ -1,5 +1,6 @@
 import { Schedule, ScheduleByChannel } from "../types/common.types";
 import { SchemaSchedule } from "../types/common.types";
+import { VendorChannels } from "../types/vendor.types";
 
 /**
  *
@@ -57,22 +58,33 @@ export const transformStoreSchedules = (
  */
 export const transformStoreSchedulesByChannel = (
   scheduleByChannel: ScheduleByChannel[],
-  storeId: string
+  storeId: string,
+  vendorChannels: VendorChannels
 ) => {
   const newSchedules: SchemaSchedule[] = [];
   scheduleByChannel.forEach(scheduleByChannel => {
-    const { channelId, schedules } = scheduleByChannel;
-    schedules.forEach(schedule => {
-      const { day, startDate, endDate } = schedule;
-      const newSchedule = {
-        day,
-        catalogueId: `${storeId}.${channelId}`,
-        from: getHourInSeconds(schedule.startTime),
-        to: getHourInSeconds(schedule.endTime),
-        startDate,
-        endDate
-      };
-      newSchedules.push(newSchedule);
+    const { channelId: scheduleChannelId, schedules } = scheduleByChannel;
+    const filterVendorChannels = vendorChannels.filter(
+      vendorChannel => vendorChannel.channelId === scheduleChannelId
+    );
+    if (!filterVendorChannels.length) {
+      throw new Error(`Channel ${scheduleChannelId} not found`);
+    }
+    filterVendorChannels.forEach(vendorChannel => {
+      const { channelId: vendorChannelId, ecommerceChannelId } = vendorChannel;
+      const channelId = ecommerceChannelId ?? vendorChannelId;
+      schedules.forEach(schedule => {
+        const { day, startDate, endDate } = schedule;
+        const newSchedule = {
+          day,
+          catalogueId: `${storeId}.${channelId}`,
+          from: getHourInSeconds(schedule.startTime),
+          to: getHourInSeconds(schedule.endTime),
+          startDate,
+          endDate
+        };
+        newSchedules.push(newSchedule);
+      });
     });
   });
 

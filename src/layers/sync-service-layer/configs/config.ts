@@ -11,4 +11,6 @@ export const s3Client = tracer.captureAWSv3Client(
   new S3Client({ region: REGION })
 );
 export const sqsClient = new SQS({ region: REGION });
-export const lambdaClient = new Lambda({ region: REGION });
+export const lambdaClient = tracer.captureAWSv3Client(
+  new Lambda({ region: REGION })
+);

@@ -33,7 +33,7 @@ export const saveSyncRequest = async (
     .collection("syncRequests")
     .updateOne(
       { ...syncRequest, status: "PENDING" },
-      { $set: { ...syncRequest } },
+      { $set: { ...syncRequest, updatedAt: new Date().toISOString() } },
       { upsert, ignoreUndefined: true }
     );
 

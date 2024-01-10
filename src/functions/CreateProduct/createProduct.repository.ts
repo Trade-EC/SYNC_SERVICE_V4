@@ -72,7 +72,7 @@ export const createOrUpdateProduct = async (
  */
 export const verifyCompletedList = async (
   register: SyncProductRecord,
-  source: "LIST" | "PRODUCTS",
+  source: "LISTS" | "PRODUCTS",
   listHash: string
 ) => {
   const { status, productId, ...registerFilter } = register;

@@ -1,5 +1,5 @@
 export interface SyncRequest {
-  type: "PRODUCTS" | "LIST" | "CHANNELS_STORES";
+  type: "PRODUCTS" | "LISTS" | "CHANNELS_STORES";
   accountId: string;
   vendorId: string;
   status: "PENDING" | "ERROR" | "SUCCESS";

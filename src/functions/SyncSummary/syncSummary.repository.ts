@@ -22,7 +22,7 @@ export const fetchSyncLists = async (
         accountId,
         "metadata.channelId": channelId,
         "metadata.listId": listId,
-        type: "LIST"
+        type: "LISTS"
       },
       { ignoreUndefined: true }
     )

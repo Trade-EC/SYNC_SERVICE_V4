@@ -21,15 +21,34 @@ import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
  */
 export const syncStoresService = async (props: CreateStoreProps) => {
   const { body, storeHash, syncAll } = props;
-  const { accountId, store, vendorId } = body;
+  const { accountId, store, vendorId, vendorChannels } = body;
   const { storeId, deliveryInfo, storeChannels } = store;
   const { deliveryId, shippingCost } = deliveryInfo ?? {};
   const dbStoreId = `${accountId}.${vendorId}.${storeId}`;
   logger.appendKeys({ vendorId, accountId });
   logger.info("STORE: INIT");
+  const vendorStoreChannels = storeChannels
+    .map(storeChannel => {
+      const filterVendorChannels = vendorChannels.filter(
+        vendorChannel => vendorChannel.channelId === storeChannel
+      );
+      const channels = filterVendorChannels.map(vendorChannel => {
+        const { ecommerceChannelId, channelId } = vendorChannel;
+        return ecommerceChannelId ?? channelId;
+      });
+      return channels;
+    })
+    .flat();
+  const uniqueVendorStoreChannels = [...new Set(vendorStoreChannels)];
   const storeDB = await findStore(dbStoreId);
   const { shippingCostId } = storeDB ?? {};
-  const transformedStore = storeTransformer(store, accountId, vendorId);
+  const transformedStore = storeTransformer(
+    store,
+    accountId,
+    vendorId,
+    uniqueVendorStoreChannels,
+    vendorChannels
+  );
   const orderedTransformStore = sortObjectByKeys(transformedStore);
   const syncStoreRequest: SyncStoreRecord = {
     accountId,
@@ -42,7 +61,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
       accountId,
       deliveryId,
       shippingCost,
-      storeChannels,
+      storeChannels: uniqueVendorStoreChannels,
       storeId,
       vendorId,
       oldShippingCostId: shippingCostId

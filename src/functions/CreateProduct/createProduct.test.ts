@@ -27,7 +27,7 @@ describe("Unit test for app handler", function () {
         listId: faker.string.uuid(),
         vendorId: faker.string.uuid(),
         listName: faker.commerce.productName(),
-        source: "LIST",
+        source: "LISTS",
         modifierGroups: genModifierGroups(),
         product: buildProduct(),
         storesId,

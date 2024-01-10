@@ -8,7 +8,9 @@ export const channelValidator = z.object({
   active: z.boolean(),
   channel: z.string(),
   channelId: z.string(),
-  additionalInfo: z.record(z.string().min(1), z.any()).optional()
+  additionalInfo: z.record(z.string().min(1), z.any()).optional(),
+  channelReferenceName: z.string().optional(),
+  ecommerceChannelId: z.number().int().optional()
 });
 
 export const storeServicesValidator = z.object({
