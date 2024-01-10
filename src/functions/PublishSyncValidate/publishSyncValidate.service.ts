@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { publishSyncValidateValidator } from "./publishSyncValidate.validate";
+import { publishSyncQueryValidator } from "./publishSyncValidate.validate";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
@@ -14,7 +15,8 @@ import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
 export const publishSyncValidateService = async (
   event: APIGatewayProxyEvent
 ) => {
-  const { headers, body } = event;
+  const { headers, body, queryStringParameters = {} } = event;
+  const { rePublish } = publishSyncQueryValidator.parse(queryStringParameters);
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
   const info = publishSyncValidateValidator.parse(parsedBody);
@@ -22,7 +24,7 @@ export const publishSyncValidateService = async (
 
   await sqsClient.sendMessage({
     QueueUrl: process.env.SYNC_PUBLISH_SQS_URL ?? "",
-    MessageBody: JSON.stringify({ vendorId, accountId }),
+    MessageBody: JSON.stringify({ vendorId, accountId, rePublish }),
     MessageGroupId: `${accountId}-${vendorId}`
   });
 

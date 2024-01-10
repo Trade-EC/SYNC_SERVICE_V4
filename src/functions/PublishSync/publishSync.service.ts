@@ -21,6 +21,13 @@ const fetchOptions = {
   }
 };
 
+export const callPublishEP = async (key: string) => {
+  await fetch(
+    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/api/v4/publish?bucket=${SYNC_BUCKET}&key=${key}`,
+    fetchOptions
+  );
+};
+
 export const publishStores = async (vendorId: string, accountId: string) => {
   logger.info("PUBLISH STORES: FETCHING DATA", { type: "STORES" });
   const stores = await fetchStores(vendorId, accountId);
@@ -38,10 +45,7 @@ export const publishStores = async (vendorId: string, accountId: string) => {
   await saveDocumentsInS3(shippingCosts, shippingCostsS3Url);
   const { key: storesKey } = storeResponse;
   logger.info("PUBLISH STORES: SYNCING", { type: "STORES" });
-  await fetch(
-    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/api/v4/publish?bucket=${SYNC_BUCKET}&key=${storesKey}`,
-    fetchOptions
-  );
+  await callPublishEP(storesKey);
   logger.info("PUBLISH STORES: HISTORY", { type: "STORES" });
   await saveStoresInHistory(vendorId, accountId);
   logger.info("PUBLISH STORES: UPDATING STATUS", { type: "STORES" });
@@ -80,10 +84,7 @@ export const publishProducts = async (vendorId: string, accountId: string) => {
   const productResponse = await saveDocumentsInS3(products, productsS3Url);
   const { key: productsKey } = productResponse;
   logger.info("PUBLISH PRODUCTS: SYNCING", { type: "PRODUCTS" });
-  await fetch(
-    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/api/v4/publish?bucket=${SYNC_BUCKET}&key=${productsKey}`,
-    fetchOptions
-  );
+  await callPublishEP(productsKey);
   logger.info("PUBLISH PRODUCTS: HISTORY", { type: "PRODUCTS" });
   await saveProductsInHistory(vendorId, accountId);
   logger.info("PUBLISH PRODUCTS: UPDATING STATUS", { type: "PRODUCTS" });
@@ -100,9 +101,18 @@ export const publishProducts = async (vendorId: string, accountId: string) => {
  * @returns void
  */
 export const publishSyncService = async (props: PublishSyncServiceProps) => {
-  const { vendorId, accountId } = props;
+  const { vendorId, accountId, rePublish } = props;
   logger.appendKeys({ vendorId, accountId });
   logger.info("PUBLISH: INIT");
+
+  if (rePublish) {
+    const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
+    const productsKey = `sync/${accountId}/${vendorId}/products.json`;
+    logger.info("PUBLISH: REPUBLISH");
+    await Promise.all([callPublishEP(storesKey), callPublishEP(productsKey)]);
+    logger.info("PUBLISH: FINISHED");
+    return;
+  }
 
   await Promise.all([
     publishStores(vendorId, accountId),
