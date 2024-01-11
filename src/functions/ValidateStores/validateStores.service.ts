@@ -13,7 +13,7 @@ import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 // @ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
-import { lambdaClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 /**
  *
@@ -86,10 +86,11 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     storeHash: hash,
     vendorChannels
   };
-  await lambdaClient.invoke({
-    FunctionName: process.env.PREPARE_STORES_LAMBDA_NAME,
-    InvocationType: "Event",
-    Payload: JSON.stringify(payload)
+
+  await sqsExtendedClient.sendMessage({
+    QueueUrl: process.env.PREPARE_STORES_SQS_URL ?? "",
+    MessageBody: JSON.stringify(payload),
+    MessageGroupId: `${accountId}-${vendorId}`
   });
 
   logger.info("STORE VALIDATE: FINISHED");

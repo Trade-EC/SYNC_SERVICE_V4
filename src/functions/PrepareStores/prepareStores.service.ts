@@ -1,7 +1,7 @@
 import { createSyncStoresRecords } from "./prepareStores.repository";
 import { PrepareStoresPayload } from "./prepareStores.types";
 
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 export const prepareStoreService = async (payload: PrepareStoresPayload) => {
@@ -25,7 +25,7 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
     const body = { store, accountId, vendorId, storeId, vendorChannels };
     const messageBody = { body, storeHash, syncAll };
 
-    await sqsClient.sendMessage({
+    await sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",
       MessageBody: JSON.stringify(messageBody),
       MessageGroupId: `${accountId}-${vendorId}-${storeId}`

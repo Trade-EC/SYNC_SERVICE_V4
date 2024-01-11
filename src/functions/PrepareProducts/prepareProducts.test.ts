@@ -2,13 +2,13 @@ import { faker } from "@faker-js/faker";
 import context from "aws-lambda-mock-context";
 import { mockClient } from "aws-sdk-client-mock";
 
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 import { lambdaHandler } from "./handler";
 import { PrepareProductsPayload } from "./prepareProducts.types";
 import { buildListRequest } from "../../builders/lists/lists.builders";
 
-const sqsMockClient = mockClient(sqsClient);
+const sqsMockClient = mockClient(sqsExtendedClient.sqsClient);
 const mockList = buildListRequest();
 
 afterAll(() => {
@@ -18,7 +18,7 @@ afterAll(() => {
 
 describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {
-    const sqsSpy = jest.spyOn(sqsClient, "sendMessage");
+    const sqsSpy = jest.spyOn(sqsExtendedClient, "sendMessage");
     const ctx = context();
     ctx.done();
     const event: PrepareProductsPayload = {

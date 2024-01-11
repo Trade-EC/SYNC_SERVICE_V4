@@ -5,6 +5,7 @@ import { CreateStoreProps } from "./createStores.types";
 
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 const handler = async (
   event: SQSEvent,
@@ -31,4 +32,6 @@ const handler = async (
   return response;
 };
 
-export const lambdaHandler = middyWrapper(handler);
+export const lambdaHandler = middyWrapper(handler).use(
+  sqsExtendedClient.middleware()
+);

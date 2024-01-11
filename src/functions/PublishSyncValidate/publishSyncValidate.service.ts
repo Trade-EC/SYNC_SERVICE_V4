@@ -4,7 +4,7 @@ import { publishSyncValidateValidator } from "./publishSyncValidate.validate";
 import { publishSyncQueryValidator } from "./publishSyncValidate.validate";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 /**
  *
@@ -22,7 +22,7 @@ export const publishSyncValidateService = async (
   const info = publishSyncValidateValidator.parse(parsedBody);
   const { vendorId } = info;
 
-  await sqsClient.sendMessage({
+  await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.SYNC_PUBLISH_SQS_URL ?? "",
     MessageBody: JSON.stringify({ vendorId, accountId, rePublish }),
     MessageGroupId: `${accountId}-${vendorId}`

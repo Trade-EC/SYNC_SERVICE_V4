@@ -3,6 +3,7 @@ import { Context, SQSEvent } from "aws-lambda";
 import { syncImagesService } from "./syncImages.service";
 
 import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 /**
  *
@@ -19,4 +20,6 @@ const handler = async (event: SQSEvent, context: Context) => {
   return response;
 };
 
-export const lambdaHandler = middyWrapper(handler);
+export const lambdaHandler = middyWrapper(handler).use(
+  sqsExtendedClient.middleware()
+);

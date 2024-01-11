@@ -1416,6 +1416,13 @@ sparse-bitfield@^3.0.3:
   dependencies:
     memory-pager "^1.0.2"
 
+sqs-extended-client@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/sqs-extended-client/-/sqs-extended-client-1.0.0.tgz#ec81b6a5a39274f45f2239080c4131f92bcffb4c"
+  integrity sha512-WOenc72R9fsC2oAGwGMpfkPvPqDl1JcLCDiTaCZTSO8kKPkPn4f9n4CjFkVr4W2hWOT5WJLRfNbFvRZjMniVng==
+  dependencies:
+    uuid "^9.0.1"
+
 stack-chain@^1.3.7:
   version "1.3.7"
   resolved "https://registry.yarnpkg.com/stack-chain/-/stack-chain-1.3.7.tgz#d192c9ff4ea6a22c94c4dd459171e3f00cea1285"
@@ -1472,6 +1479,11 @@ uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
+
+uuid@^9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
+  integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
 
 webidl-conversions@^7.0.0:
   version "7.0.0"

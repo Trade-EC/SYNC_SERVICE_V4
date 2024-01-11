@@ -1,11 +1,11 @@
-import { Context } from "aws-lambda";
+import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 
 import { prepareProductsService } from "./prepareProducts.service";
 import { PrepareProductsPayload } from "./prepareProducts.types";
 
-import { handleError } from "/opt/nodejs/sync-service-layer/utils/error.utils";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 /**
  *
@@ -14,17 +14,30 @@ import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
  * @description Lambda handler
  * @returns {Promise<APIGatewayProxyResult>}
  */
-const handler = async (event: PrepareProductsPayload, context: Context) => {
+const handler = async (
+  event: SQSEvent,
+  context: Context
+): Promise<SQSBatchResponse> => {
   context.callbackWaitsForEmptyEventLoop = false;
-  let response;
+  const { Records } = event;
+  const response: SQSBatchResponse = { batchItemFailures: [] };
+  const recordPromises = Records.map(async record => {
+    try {
+      logger.info("PREPARE PRODUCTS:", { record });
+      const { body: bodyRecord } = record ?? {};
+      const props: PrepareProductsPayload = JSON.parse(bodyRecord ?? "");
+      await prepareProductsService(props);
+    } catch (error) {
+      logger.error("PREPARE PRODUCTS ERROR:", { error });
+      response.batchItemFailures.push({ itemIdentifier: record.messageId });
+      return error;
+    }
+  });
 
-  try {
-    await prepareProductsService(event);
-  } catch (e) {
-    response = handleError(e);
-    logger.error("error", { response });
-    return response;
-  }
+  await Promise.all(recordPromises);
+  return response;
 };
 
-export const lambdaHandler = middyWrapper(handler);
+export const lambdaHandler = middyWrapper(handler).use(
+  sqsExtendedClient.middleware()
+);

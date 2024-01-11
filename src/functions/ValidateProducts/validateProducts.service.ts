@@ -14,7 +14,7 @@ import { validateProducts } from "/opt/nodejs/transforms-layer/validators/produc
 import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
-import { lambdaClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 /**
  *
@@ -104,10 +104,10 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
     source: "PRODUCTS"
   };
 
-  await lambdaClient.invoke({
-    FunctionName: process.env.PREPARE_PRODUCTS_LAMBDA_NAME,
-    InvocationType: "Event",
-    Payload: JSON.stringify(payload)
+  await sqsExtendedClient.sendMessage({
+    QueueUrl: process.env.PREPARE_PRODUCTS_SQS_URL ?? "",
+    MessageBody: JSON.stringify(payload),
+    MessageGroupId: `${accountId}-${vendorId}`
   });
 
   logger.info("PRODUCTS VALIDATE: FINISHED");

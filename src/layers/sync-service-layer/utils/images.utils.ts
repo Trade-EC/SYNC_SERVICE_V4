@@ -1,4 +1,4 @@
-import { sqsClient } from "../configs/config";
+import { sqsExtendedClient } from "../configs/config";
 import CONSTANTS from "../configs/constants";
 import { fetchImage } from "../repositories/images.repository";
 
@@ -38,7 +38,7 @@ export const imageHandler = async (url: string, imageCategory: string) => {
   const { bucket, cloudFrontUrl, key, name, url: s3Url } = imageProps;
   const response = { bucket, cloudFrontUrl, key, name, url: s3Url };
   if (image) return response;
-  await sqsClient.sendMessage({
+  await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.SYNC_IMAGES_SQS_URL ?? "",
     MessageBody: JSON.stringify(imageProps)
   });

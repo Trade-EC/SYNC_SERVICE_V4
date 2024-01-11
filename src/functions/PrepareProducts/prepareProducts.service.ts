@@ -1,6 +1,6 @@
 import { PrepareProductsPayload } from "./prepareProducts.types";
 
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { createSyncRecords } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
 import { fetchDraftStores } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
@@ -51,7 +51,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
     const body3 = { isLast, storeId };
     const body = { ...body1, ...body2, ...body3, source };
     const messageBody = { vendorIdStoreIdChannelId, body, listHash, syncAll };
-    return sqsClient.sendMessage({
+    return sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_PRODUCT_SQS_URL ?? "",
       MessageBody: JSON.stringify(messageBody),
       MessageGroupId: `${accountId}-${vendorId}-${productId}`

@@ -11,7 +11,7 @@ import { CreateShippingCostProps } from "../CreateShippingCost/createShippingCos
 
 import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { SyncStoreRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 /**
  *
@@ -67,7 +67,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
       oldShippingCostId: shippingCostId
     };
     logger.info("STORE: SEND SHIPPING COST", { shippingPayload });
-    await sqsClient.sendMessage({
+    await sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_SHIPPING_COST_SQS_URL ?? "",
       MessageBody: JSON.stringify(shippingPayload),
       MessageGroupId: `${accountId}-${vendorId}-${deliveryId}`
