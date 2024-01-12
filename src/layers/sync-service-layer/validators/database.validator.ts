@@ -61,6 +61,12 @@ export const dbServicesValidator = z.object({
   active: z.boolean()
 });
 
+export const dbCatalogueValidator = z.object({
+  catalogueId: z.string(),
+  name: z.string(),
+  active: z.boolean()
+});
+
 export const dbStoreValidator = z.object({
   storeId: z.string(),
   status: statusValidator,
@@ -83,8 +89,8 @@ export const dbStoreValidator = z.object({
   minOrder: z.number(),
   minOrderSymbol: z.string().nullable(),
   orderSymbol: z.string().nullable(),
-  catalogues: z.array(z.string()), // TODO:
-  polygons: z.array(z.any()).nullable(), // TODO:
+  catalogues: z.array(dbCatalogueValidator),
+  polygons: z.array(z.any()).nullable(),
   sponsored: z.boolean(),
   tips: z.array(z.any()).nullable(), // TODO:
   timezone: z.string().nullable(),

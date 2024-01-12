@@ -5,6 +5,37 @@ import { transformStoreSchedulesByChannel } from "/opt/nodejs/sync-service-layer
 import { getTaxes } from "/opt/nodejs/sync-service-layer/transforms/product.transform";
 import { VendorChannels } from "/opt/nodejs/sync-service-layer/types/vendor.types";
 
+export const catalogueTransformer = (
+  storeChannels: string[],
+  vendorChannels: VendorChannels,
+  vendorId: string,
+  storeId: string
+) => {
+  const catalogues =
+    storeChannels
+      .map(storeChannel => {
+        const filterVendorChannels = vendorChannels.filter(
+          vendorChannel =>
+            vendorChannel.channelId === storeChannel ||
+            vendorChannel.ecommerceChannelId === storeChannel
+        );
+        const channels = filterVendorChannels.map(vendorChannel => {
+          const { channelId, name, ecommerceChannelId } = vendorChannel;
+          return {
+            catalogueId: `${vendorId}.${storeId}.${
+              ecommerceChannelId ?? channelId
+            }`,
+            name,
+            active: true
+          };
+        });
+        return channels;
+      })
+      .flat() ?? [];
+
+  return catalogues;
+};
+
 /**
  *
  * @param store request store
@@ -64,7 +95,12 @@ export const storeTransformer = (
     minOrder: deliveryInfo?.minimumOrder ?? 0,
     minOrderSymbol: null,
     orderSymbol: null,
-    catalogues: [],
+    catalogues: catalogueTransformer(
+      storeChannels,
+      vendorChannels,
+      vendorId,
+      storeId
+    ),
     polygons: null,
     sponsored: !!featured, // Debería salir del vendor
     tips: [], // Salen del vendor

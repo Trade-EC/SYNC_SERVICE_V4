@@ -33,32 +33,33 @@ export const createOrUpdateProduct = async (
     { upsert: true }
   );
 
-  const storesPromises = storesId.map(async storeId => {
-    const dbStoreId = `${accountId}.${vendorId}.${storeId}`;
-    const updateResult = await dbClient.collection("stores").updateOne(
-      {
-        storeId: dbStoreId,
-        $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }]
-      },
-      {
-        $addToSet: {
-          catalogues: {
-            catalogueId: `${vendorId}.${storeId}.${channelId}`,
-            name: listName,
-            active: true
-          }
-        }
-      }
-    );
+  // TODO: Uncomment this if catalogues are come from sync lists
+  // const storesPromises = storesId.map(async storeId => {
+  //   const dbStoreId = `${accountId}.${vendorId}.${storeId}`;
+  //   const updateResult = await dbClient.collection("stores").updateOne(
+  //     {
+  //       storeId: dbStoreId,
+  //       $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }]
+  //     },
+  //     {
+  //       $addToSet: {
+  //         catalogues: {
+  //           catalogueId: `${vendorId}.${storeId}.${channelId}`,
+  //           name: listName,
+  //           active: true
+  //         }
+  //       }
+  //     }
+  //   );
 
-    if (updateResult.modifiedCount === 0) return;
+  //   if (updateResult.modifiedCount === 0) return;
 
-    await dbClient
-      .collection("stores")
-      .updateOne({ storeId: dbStoreId }, { $set: { status: "DRAFT" } });
-  });
+  //   await dbClient
+  //     .collection("stores")
+  //     .updateOne({ storeId: dbStoreId }, { $set: { status: "DRAFT" } });
+  // });
 
-  await Promise.all(storesPromises);
+  // await Promise.all(storesPromises);
   return createdProduct;
 };
 
