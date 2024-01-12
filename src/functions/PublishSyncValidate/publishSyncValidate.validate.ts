@@ -5,5 +5,5 @@ export const publishSyncValidateValidator = z.object({
 });
 
 export const publishSyncQueryValidator = z.object({
-  rePublish: z.boolean().optional()
+  rePublish: z.coerce.boolean().optional()
 });

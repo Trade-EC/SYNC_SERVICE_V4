@@ -21,11 +21,18 @@ const fetchOptions = {
   }
 };
 
-export const callPublishEP = async (key: string) => {
+export const callPublishEP = async (
+  key: string,
+  accountId: string,
+  vendorId: string,
+  type: "STORES" | "PRODUCTS"
+) => {
   await fetch(
     `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/api/v4/publish?bucket=${SYNC_BUCKET}&key=${key}`,
     fetchOptions
   );
+  logger.info("PUBLISH PRODUCTS: SAVING PUBLISH REQUEST", { type });
+  await savePublishRequest(vendorId, accountId, type);
 };
 
 export const publishStores = async (vendorId: string, accountId: string) => {
@@ -45,13 +52,11 @@ export const publishStores = async (vendorId: string, accountId: string) => {
   await saveDocumentsInS3(shippingCosts, shippingCostsS3Url);
   const { key: storesKey } = storeResponse;
   logger.info("PUBLISH STORES: SYNCING", { type: "STORES" });
-  await callPublishEP(storesKey);
+  await callPublishEP(storesKey, accountId, vendorId, "STORES");
   logger.info("PUBLISH STORES: HISTORY", { type: "STORES" });
   await saveStoresInHistory(vendorId, accountId);
   logger.info("PUBLISH STORES: UPDATING STATUS", { type: "STORES" });
   await updateStatusStores(vendorId, accountId);
-  logger.info("PUBLISH STORES: SAVING PUBLISH REQUEST", { type: "STORES" });
-  await savePublishRequest(vendorId, accountId, "STORES");
   return storeResponse;
 };
 
@@ -84,13 +89,11 @@ export const publishProducts = async (vendorId: string, accountId: string) => {
   const productResponse = await saveDocumentsInS3(products, productsS3Url);
   const { key: productsKey } = productResponse;
   logger.info("PUBLISH PRODUCTS: SYNCING", { type: "PRODUCTS" });
-  await callPublishEP(productsKey);
+  await callPublishEP(productsKey, accountId, vendorId, "PRODUCTS");
   logger.info("PUBLISH PRODUCTS: HISTORY", { type: "PRODUCTS" });
   await saveProductsInHistory(vendorId, accountId);
   logger.info("PUBLISH PRODUCTS: UPDATING STATUS", { type: "PRODUCTS" });
   await updateStatusProducts(vendorId, accountId);
-  logger.info("PUBLISH PRODUCTS: SAVING PUBLISH REQUEST", { type: "PRODUCTS" });
-  await savePublishRequest(vendorId, accountId, "PRODUCTS");
   return productResponse;
 };
 
@@ -109,7 +112,10 @@ export const publishSyncService = async (props: PublishSyncServiceProps) => {
     const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
     const productsKey = `sync/${accountId}/${vendorId}/products.json`;
     logger.info("PUBLISH: REPUBLISH");
-    await Promise.all([callPublishEP(storesKey), callPublishEP(productsKey)]);
+    await Promise.all([
+      callPublishEP(storesKey, accountId, vendorId, "STORES"),
+      callPublishEP(productsKey, accountId, vendorId, "PRODUCTS")
+    ]);
     logger.info("PUBLISH: FINISHED");
     return;
   }

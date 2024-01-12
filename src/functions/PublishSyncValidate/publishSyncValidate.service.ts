@@ -15,8 +15,10 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
 export const publishSyncValidateService = async (
   event: APIGatewayProxyEvent
 ) => {
-  const { headers, body, queryStringParameters = {} } = event;
-  const { rePublish } = publishSyncQueryValidator.parse(queryStringParameters);
+  const { headers, body, queryStringParameters } = event;
+  const { rePublish } = publishSyncQueryValidator.parse(
+    queryStringParameters ?? {}
+  );
   const parsedBody = JSON.parse(body ?? "");
   const { account: accountId } = headersValidator.parse(headers);
   const info = publishSyncValidateValidator.parse(parsedBody);

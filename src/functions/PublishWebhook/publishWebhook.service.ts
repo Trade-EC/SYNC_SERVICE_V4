@@ -11,7 +11,7 @@ import { publishWebhookValidator } from "./publishWebhook.validator";
  * @description Publish sync, save in S3 and in history collection
  * @returns void
  */
-export const publishWebhookService = async (event: APIGatewayProxyEvent) => {
+export const publishWebhookService = (event: APIGatewayProxyEvent) => {
   const { body } = event;
   const parsedBody = JSON.parse(body ?? "");
   const info = publishWebhookValidator.parse(parsedBody);
