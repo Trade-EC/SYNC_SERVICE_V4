@@ -73,13 +73,13 @@ export const modifierGroupValidator = z.object({
   modifierOptions: z.array(modifierOptionValidator)
 });
 
-// TODO: Revisar en peticiones
 export const listValidator = z.object({
   listId: z.string().max(100),
   listName: z.string().max(100),
   vendorId: z.string().max(100),
   storeId: z.string().or(z.literal("replicate_in_all")),
   channelId: z.string().max(100),
+  // TODO: revisar en peticiones
   schedules: z.array(scheduleValidator).optional(),
   ecommerceChannelId: z.number().int().optional(),
   channelReferenceName: z.string().optional()

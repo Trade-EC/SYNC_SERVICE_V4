@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { SQSEvent } from "aws-lambda";
 import context from "aws-lambda-mock-context";
 import { mockClient } from "aws-sdk-client-mock";
 
@@ -7,6 +8,7 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
 import { lambdaHandler } from "./handler";
 import { PrepareStoresPayload } from "./prepareStores.types";
 import { buildChannelsAndStores } from "../../builders/stores/stores.builders";
+import * as sqsEvent from "../../events/sqs.json";
 
 const sqsMockClient = mockClient(sqsExtendedClient.sqsClient);
 
@@ -20,13 +22,15 @@ describe("Unit test for app handler", function () {
     const sqsSpy = jest.spyOn(sqsExtendedClient, "sendMessage");
     const ctx = context();
     ctx.done();
-    const event: PrepareStoresPayload = {
+    const body: PrepareStoresPayload = {
       channelsAndStores: buildChannelsAndStores(),
       accountId: faker.string.uuid(),
       storeHash: faker.string.alphanumeric(40),
       vendorChannels: []
     };
 
+    const event: SQSEvent = sqsEvent;
+    event.Records[0].body = JSON.stringify(body);
     await lambdaHandler(event, ctx);
 
     expect(sqsSpy).toBeCalled();

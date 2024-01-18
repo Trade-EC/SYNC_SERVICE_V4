@@ -3,6 +3,9 @@ import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.ut
 export const fetchProductsByVendorRepository = async (
   accountId: string,
   vendorId: string,
+  skip: number,
+  limit: number,
+  status?: string,
   productId?: string,
   channelId?: string,
   storeId?: string
@@ -25,17 +28,24 @@ export const fetchProductsByVendorRepository = async (
 
   return dbClient
     .collection("products")
-    .find(
-      {
-        "vendor.id": vendorId,
-        "account.accountId": accountId,
-        productId: productId
-          ? `${accountId}.${vendorId}.${productId}`
-          : undefined,
-        "statuses.vendorIdStoreIdChannelId": statusFilter
-          ? { $regex: statusFilter }
-          : undefined
-      },
+    .aggregate(
+      [
+        {
+          $match: {
+            "vendor.id": vendorId,
+            "account.accountId": accountId,
+            status,
+            productId: productId
+              ? `${accountId}.${vendorId}.${productId}`
+              : undefined,
+            "statuses.vendorIdStoreIdChannelId": statusFilter
+              ? { $regex: statusFilter }
+              : undefined
+          }
+        },
+        { $skip: skip },
+        { $limit: limit }
+      ],
       { ignoreUndefined: true }
     )
     .toArray();

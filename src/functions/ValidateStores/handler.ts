@@ -24,6 +24,7 @@ const handler = async (
   try {
     response = await validateStoresService(event);
   } catch (e) {
+    logger.error("error raw", { e });
     response = handleError(e);
     logger.error("error", { response });
   }

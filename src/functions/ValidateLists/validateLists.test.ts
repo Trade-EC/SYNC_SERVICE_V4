@@ -2,13 +2,13 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import context from "aws-lambda-mock-context";
 import { mockClient } from "aws-sdk-client-mock";
 
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
-
 import { lambdaHandler } from "./handler";
 import { buildListRequest } from "../../builders/lists/lists.builders";
 import * as gatewayEvent from "../../events/gateway.json";
 
-const sqsMockClient = mockClient(sqsClient);
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
+
+const sqsMockClient = mockClient(sqsExtendedClient.sqsClient);
 const mockList = buildListRequest();
 const { list } = mockList;
 const { channelId, ecommerceChannelId, channelReferenceName } = list;

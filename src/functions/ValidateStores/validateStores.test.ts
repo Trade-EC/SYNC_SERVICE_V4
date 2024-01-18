@@ -3,13 +3,13 @@ import context from "aws-lambda-mock-context";
 import { mockClient } from "aws-sdk-client-mock";
 
 import { lambdaHandler } from "./handler";
-import { buildChannelsAndStores } from "../../builders/stores/stores.builders";
 import * as gatewayEvent from "../../events/gateway.json";
+import { buildChannelsAndStores } from "../../builders/stores/stores.builders";
 
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
-// import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
-const sqsMockClient = mockClient(sqsClient);
+const sqsMockClient = mockClient(sqsExtendedClient.sqsClient);
+
 jest.mock(
   "/opt/nodejs/sync-service-layer/repositories/vendors.repository",
   () => ({

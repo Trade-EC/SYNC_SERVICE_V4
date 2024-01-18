@@ -16,7 +16,7 @@ export const savePublishRequest = async (props: PublishValidatorProps) => {
     {
       vendorId,
       accountId,
-      $or: [{ status: "PENDING" }, { status: "ERROR" }],
+      $or: [{ status: "PENDING" }],
       type
     },
     { $set: { updatedAt: new Date(), status } }

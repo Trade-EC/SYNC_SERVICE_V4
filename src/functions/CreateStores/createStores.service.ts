@@ -90,7 +90,6 @@ export const syncStoresService = async (props: CreateStoreProps) => {
   const version = new Date().getTime();
   orderedTransformStore.hash = newHash;
   orderedTransformStore.version = version;
-  orderedTransformStore.catalogues = syncAll ? [] : storeDB.catalogues;
   const { hash } = storeDB;
   if (hash === newHash && !syncAll) {
     logger.info("STORE: NO CHANGES");

@@ -14,6 +14,8 @@ export const fetchProductsByVendor = async (event: APIGatewayProxyEvent) => {
   const { queryStringParameters, pathParameters, headers } = event;
   const { account: accountId } = headersValidator.parse(headers);
   const { vendorId, channelId, storeId } = queryStringParameters ?? {};
+  const { skip = "0", limit = "10" } = queryStringParameters ?? {};
+  const { status = "DRAFT" } = queryStringParameters ?? {};
   const { productId } = pathParameters ?? {};
 
   if (!vendorId || !accountId)
@@ -22,6 +24,9 @@ export const fetchProductsByVendor = async (event: APIGatewayProxyEvent) => {
   const products = await fetchProductsByVendorRepository(
     accountId,
     vendorId,
+    +skip,
+    +limit,
+    status,
     productId,
     channelId,
     storeId
@@ -32,6 +37,8 @@ export const fetchProductsByVendor = async (event: APIGatewayProxyEvent) => {
 
   return {
     statusCode: 200,
-    body: JSON.stringify(productId ? productResponse : productsResponse)
+    body: JSON.stringify(
+      productId ? productResponse : { skip, limit, data: productsResponse }
+    )
   };
 };

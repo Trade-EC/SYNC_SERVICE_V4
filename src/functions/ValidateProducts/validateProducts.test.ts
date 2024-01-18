@@ -6,9 +6,9 @@ import { buildProductRequest } from "../../builders/lists/lists.builders";
 import { lambdaHandler } from "./handler";
 import * as gatewayEvent from "../../events/gateway.json";
 
-import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
-const sqsMockClient = mockClient(sqsClient);
+const sqsMockClient = mockClient(sqsExtendedClient.sqsClient);
 const mockProducts = buildProductRequest();
 const { list } = mockProducts;
 const { channelId, ecommerceChannelId, channelReferenceName } = list;

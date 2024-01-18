@@ -16,6 +16,8 @@ export const fetchStoresByVendorService = async (
   const { queryStringParameters, pathParameters, headers } = event;
   const { account: accountId } = headersValidator.parse(headers);
   const { vendorId } = queryStringParameters ?? {};
+  const { skip = "0", limit = "10" } = queryStringParameters ?? {};
+  const { status } = queryStringParameters ?? {};
   const { storeId } = pathParameters ?? {};
 
   if (!vendorId || !accountId)
@@ -24,6 +26,9 @@ export const fetchStoresByVendorService = async (
   const stores = await fetchStoresByVendorRepository(
     accountId,
     vendorId,
+    +skip,
+    +limit,
+    status,
     storeId
   );
 
@@ -32,6 +37,8 @@ export const fetchStoresByVendorService = async (
 
   return {
     statusCode: 200,
-    body: JSON.stringify(storeId ? storeResponse : storesResponse)
+    body: JSON.stringify(
+      storeId ? storeResponse : { skip, limit, data: storesResponse }
+    )
   };
 };
