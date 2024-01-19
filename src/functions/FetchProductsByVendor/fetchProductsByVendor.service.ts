@@ -32,13 +32,12 @@ export const fetchProductsByVendor = async (event: APIGatewayProxyEvent) => {
     storeId
   );
 
-  const productResponse = products?.[0] ?? {};
+  const { data } = products;
+  const productResponse = data?.[0] ?? {};
   const productsResponse = products ?? [];
 
   return {
     statusCode: 200,
-    body: JSON.stringify(
-      productId ? productResponse : { skip, limit, data: productsResponse }
-    )
+    body: JSON.stringify(productId ? productResponse : productsResponse)
   };
 };

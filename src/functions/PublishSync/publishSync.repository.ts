@@ -16,7 +16,8 @@ const { SYNC_BUCKET } = CONSTANTS.GENERAL;
  */
 export const saveStoresInHistory = async (
   vendorId: string,
-  accountId: string
+  accountId: string,
+  version: number
 ) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
@@ -29,7 +30,7 @@ export const saveStoresInHistory = async (
           status: "DRAFT"
         }
       },
-      { $addFields: { status: "DELETED", deleted_at: new Date() } },
+      { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
       { $project: { _id: 0 } },
       { $merge: { into: "historyStores" } }
     ])
@@ -47,7 +48,8 @@ export const saveStoresInHistory = async (
  */
 export const saveProductsInHistory = async (
   vendorId: string,
-  accountId: string
+  accountId: string,
+  version: number
 ) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
@@ -60,7 +62,7 @@ export const saveProductsInHistory = async (
           status: "DRAFT"
         }
       },
-      { $addFields: { status: "DELETED", deleted_at: new Date() } },
+      { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
       { $project: { _id: 0 } },
       { $merge: { into: "historyProducts" } }
     ])
@@ -125,7 +127,11 @@ export const findShippingCost = async (vendorId: string, accountId: string) => {
  * @description Fetch products by vendorId, accountId and status DRAFT
  * @returns DBStore[]
  */
-export const fetchProducts = async (vendorId: string, accountId: string) => {
+export const fetchProducts = async (
+  vendorId: string,
+  accountId: string,
+  version: number
+) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
     .collection("products")
@@ -137,6 +143,7 @@ export const fetchProducts = async (vendorId: string, accountId: string) => {
           status: "DRAFT"
         }
       },
+      { $set: { version } },
       {
         $graphLookup: {
           from: "products",
@@ -190,63 +197,6 @@ export const saveDocumentsInS3 = async (
   };
 };
 
-// export const saveShippingCostInS3 = async (
-//   vendorId: string,
-//   accountId: string,
-//   shippingCost: WithId<Document>[]
-// ) => {
-//   const storesKey = `sync/${accountId}/${vendorId}/shippingCost.json`;
-//   const storesInput = {
-//     Bucket: SYNC_BUCKET,
-//     Key: storesKey,
-//     Body: Buffer.from(JSON.stringify(shippingCost))
-//   };
-//   const uploadStores = new Upload({
-//     client: s3Client,
-//     params: storesInput
-//   });
-//   const responseStores = await uploadStores.done();
-//   const { $metadata: metadata } = responseStores;
-//   const { httpStatusCode } = metadata;
-//   if (httpStatusCode !== 200) throw new Error("Upload stores failed");
-//   return {
-//     bucket: SYNC_BUCKET,
-//     key: storesKey,
-//     status: "DONE"
-//   };
-// };
-
-// export const saveProductsInS3 = async (
-//   vendorId: string,
-//   accountId: string,
-//   products: any
-// ) => {
-//   const productsKey = `sync/${accountId}/${vendorId}/products.json`;
-
-//   const productsInput = {
-//     Bucket: SYNC_BUCKET,
-//     Key: productsKey,
-//     Body: Buffer.from(JSON.stringify(products))
-//   };
-
-//   const uploadProducts = new Upload({
-//     client: s3Client,
-//     params: productsInput
-//   });
-
-//   const responseProducts = await uploadProducts.done();
-
-//   const { $metadata: productsMetadata } = responseProducts;
-//   if (productsMetadata.httpStatusCode !== 200)
-//     throw new Error("Upload stores failed");
-
-//   return {
-//     Bucket: SYNC_BUCKET,
-//     key: productsKey,
-//     status: "DONE"
-//   };
-// };
-
 /**
  *
  * @param vendorId
@@ -289,6 +239,24 @@ export const updateStatusProducts = async (
     },
     { $set: { status: "PUBLISHED" } }
   );
+
+  return response;
+};
+
+export const saveVersion = async (
+  vendorId: string,
+  accountId: string,
+  version: number,
+  type: "STORES" | "PRODUCTS" | "SHIPPING_COSTS"
+) => {
+  const dbClient = await connectToDatabase();
+  const response = await dbClient.collection("versions").insertOne({
+    vendorId,
+    accountId,
+    version,
+    createdAt: new Date(),
+    type
+  });
 
   return response;
 };

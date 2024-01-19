@@ -34,3 +34,37 @@ export async function connectToDatabase() {
   cachedDbClient = db;
   return db;
 }
+
+export const getPaginatedData = async (
+  collection: string,
+  skip: number,
+  limit: number,
+  filter?: Record<string, any>,
+  sort?: Record<string, any>
+) => {
+  const dbClient = await connectToDatabase();
+  const query = await dbClient
+    .collection(collection)
+    .aggregate(
+      [
+        {
+          $facet: {
+            data: [
+              { $match: filter },
+              { $skip: skip },
+              { $limit: limit },
+              { $sort: sort }
+            ],
+            count: [{ $match: filter }, { $count: "total" }]
+          }
+        },
+        { $project: { total: { $first: "$count.total" }, data: 1 } }
+      ],
+      { ignoreUndefined: true }
+    )
+    .toArray();
+
+  const { data, total } = query?.[0] ?? { data: [], total: 0 };
+
+  return { total, skip, limit, data };
+};

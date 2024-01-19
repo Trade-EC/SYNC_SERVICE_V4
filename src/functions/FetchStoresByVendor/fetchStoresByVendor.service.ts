@@ -32,13 +32,12 @@ export const fetchStoresByVendorService = async (
     storeId
   );
 
-  const storeResponse = stores?.[0] ?? {};
+  const { data } = stores;
+  const storeResponse = data?.[0] ?? {};
   const storesResponse = stores ?? [];
 
   return {
     statusCode: 200,
-    body: JSON.stringify(
-      storeId ? storeResponse : { skip, limit, data: storesResponse }
-    )
+    body: JSON.stringify(storeId ? storeResponse : storesResponse)
   };
 };

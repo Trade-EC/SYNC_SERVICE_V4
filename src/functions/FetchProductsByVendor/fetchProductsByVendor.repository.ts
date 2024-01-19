@@ -1,4 +1,4 @@
-import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
+import { getPaginatedData } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
 export const fetchProductsByVendorRepository = async (
   accountId: string,
@@ -10,8 +10,6 @@ export const fetchProductsByVendorRepository = async (
   channelId?: string,
   storeId?: string
 ) => {
-  const dbClient = await connectToDatabase();
-
   let statusFilter = "";
 
   if (storeId) {
@@ -26,27 +24,16 @@ export const fetchProductsByVendorRepository = async (
     statusFilter = ".";
   }
 
-  return dbClient
-    .collection("products")
-    .aggregate(
-      [
-        {
-          $match: {
-            "vendor.id": vendorId,
-            "account.accountId": accountId,
-            status,
-            productId: productId
-              ? `${accountId}.${vendorId}.${productId}`
-              : undefined,
-            "statuses.vendorIdStoreIdChannelId": statusFilter
-              ? { $regex: statusFilter }
-              : undefined
-          }
-        },
-        { $skip: skip },
-        { $limit: limit }
-      ],
-      { ignoreUndefined: true }
-    )
-    .toArray();
+  const filter = {
+    "vendor.id": vendorId,
+    "account.accountId": accountId,
+    status,
+    productId: productId ? `${accountId}.${vendorId}.${productId}` : undefined,
+    "statuses.vendorIdStoreIdChannelId": statusFilter
+      ? { $regex: statusFilter }
+      : undefined
+  };
+
+  const sort = { productId: 1 };
+  return await getPaginatedData("products", skip, limit, filter, sort);
 };

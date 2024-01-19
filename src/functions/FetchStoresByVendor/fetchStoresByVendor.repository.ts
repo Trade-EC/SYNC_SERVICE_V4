@@ -1,4 +1,4 @@
-import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
+import { getPaginatedData } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
 export const fetchStoresByVendorRepository = async (
   accountId: string,
@@ -8,26 +8,13 @@ export const fetchStoresByVendorRepository = async (
   status?: string,
   storeId?: string
 ) => {
-  const dbClient = await connectToDatabase();
+  const filter = {
+    "vendor.id": vendorId,
+    storeId: storeId ? `${accountId}.${vendorId}.${storeId}` : undefined,
+    "account.id": accountId,
+    status
+  };
 
-  return dbClient
-    .collection("products")
-    .aggregate(
-      [
-        {
-          $match: {
-            "vendor.id": vendorId,
-            storeId: storeId
-              ? `${accountId}.${vendorId}.${storeId}`
-              : undefined,
-            "account.id": accountId,
-            status
-          }
-        },
-        { $skip: skip },
-        { $limit: limit }
-      ],
-      { ignoreUndefined: true }
-    )
-    .toArray();
+  const sort = { productId: 1 };
+  return await getPaginatedData("stores", skip, limit, filter, sort);
 };
