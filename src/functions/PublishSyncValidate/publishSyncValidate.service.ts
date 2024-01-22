@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import { publishSyncValidateValidator } from "./publishSyncValidate.validate";
-import { publishSyncQueryValidator } from "./publishSyncValidate.validate";
+import { publishSyncValidateValidator } from "./publishSyncValidate.validator";
+import { publishSyncQueryValidator } from "./publishSyncValidate.validator";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";

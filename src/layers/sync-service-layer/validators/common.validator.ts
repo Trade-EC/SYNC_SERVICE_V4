@@ -38,7 +38,7 @@ export const schedulesByChannelValidator = z.object({
 });
 
 export const headersValidator = z.object({
-  account: z.string()
+  account: z.string().min(1)
 });
 
 export const syncHeadersValidator = z.object({

@@ -31,4 +31,16 @@ describe("Unit test for app handler", function () {
     expect(spy).toBeCalledWith("products");
     expect(result.statusCode).toEqual(200);
   });
+  // Error case
+  it("verifies error response with invalid body", async () => {
+    const ctx = context();
+    ctx.done();
+    const event: APIGatewayProxyEvent = {
+      ...gatewayEvent,
+      headers: { account: accountId },
+      queryStringParameters: {}
+    };
+    const result = await lambdaHandler(event, ctx);
+    expect(result.statusCode).toEqual(500);
+  });
 });

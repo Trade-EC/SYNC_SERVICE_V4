@@ -2,6 +2,7 @@ import { SQSEvent, SQSBatchResponse } from "aws-lambda";
 import { Context } from "aws-lambda";
 
 import { publishSyncService } from "./publishSync.service";
+import { publishSyncValidator } from "./publishSync.validator";
 
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
@@ -25,7 +26,8 @@ const handler = async (
     try {
       const { body: bodyRecord } = record;
       const props = JSON.parse(bodyRecord ?? "");
-      await publishSyncService(props);
+      const validateProps = await publishSyncValidator.parse(props);
+      await publishSyncService(validateProps);
     } catch (e) {
       response.batchItemFailures.push({ itemIdentifier: record.messageId });
       logger.error("error", { response });

@@ -9,8 +9,7 @@ import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.ut
 
 const accountId = faker.string.uuid();
 const vendorId = faker.string.uuid();
-const channelId = faker.string.uuid();
-const storeId = faker.string.uuid();
+const version = faker.date.past().getTime().toString();
 
 afterAll(() => {
   jest.resetAllMocks();
@@ -23,12 +22,12 @@ describe("Unit test for app handler", function () {
     const event: APIGatewayProxyEvent = {
       ...gatewayEvent,
       headers: { account: accountId },
-      queryStringParameters: { vendorId, channelId, storeId }
+      queryStringParameters: { vendorId, version }
     };
     const result = await lambdaHandler(event, ctx);
     const dbClient = await connectToDatabase();
     const spy = jest.spyOn(dbClient, "collection");
-    expect(spy).toBeCalledWith("stores");
+    expect(spy).toBeCalledWith("historyStores");
     expect(result.statusCode).toEqual(200);
   });
   // Error case

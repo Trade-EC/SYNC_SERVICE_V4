@@ -49,4 +49,16 @@ describe("Unit test for app handler", function () {
     const result = await lambdaHandler(event, ctx);
     expect(result.statusCode).toEqual(500);
   });
+  // Error case
+  it("verifies error response with invalid body", async () => {
+    const ctx = context();
+    ctx.done();
+    const event: APIGatewayProxyEvent = {
+      ...gatewayEvent,
+      body: JSON.stringify({})
+    };
+    const result = await lambdaHandler(event, ctx);
+
+    expect(result.statusCode).toEqual(500);
+  });
 });

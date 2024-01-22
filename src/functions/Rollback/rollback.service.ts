@@ -28,7 +28,6 @@ export const rollbackService = async (event: APIGatewayProxyEvent) => {
     case "PRODUCTS":
       await rollbackProductsRepository(account, vendorId, version);
       break;
-      break;
     default:
       throw new Error("Invalid type");
   }
