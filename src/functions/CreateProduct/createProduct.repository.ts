@@ -14,14 +14,7 @@ import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.ty
  * @description Create or update product
  * @returns @link SendMessageBatchRequestEntry[]
  */
-export const createOrUpdateProduct = async (
-  product: DbProduct,
-  storesId: string[],
-  vendorId: string,
-  channelId: string,
-  listName: string,
-  accountId: string
-) => {
+export const createOrUpdateProduct = async (product: DbProduct) => {
   const dbClient = await connectToDatabase();
   const { productId } = product;
 
@@ -55,7 +48,7 @@ export const verifyCompletedList = async (
   await dbClient
     .collection("syncLists")
     .updateOne(
-      { productId, vendorId, channelId, accountId, storeId, listId },
+      { productId, vendorId, channelId, accountId, storeId, listId, source },
       { $set: { status: "SUCCESS" } },
       { upsert: false }
     );
@@ -83,6 +76,6 @@ export const verifyCompletedList = async (
     await saveSyncRequest(syncRequest, false);
     await dbClient
       .collection("syncLists")
-      .deleteMany({ accountId, channelId, storeId, vendorId, listId });
+      .deleteMany({ accountId, channelId, storeId, vendorId, listId, source });
   }
 };

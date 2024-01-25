@@ -83,7 +83,7 @@ Resources:
       QueueName: StoresSyncSQS.fifo
       ContentBasedDeduplication: true
       FifoQueue: true
-      VisibilityTimeout: 300
+      VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt StoresSyncDLQ.Arn
         maxReceiveCount: 3
@@ -104,7 +104,7 @@ Resources:
       QueueName: ProductSyncSQS.fifo
       ContentBasedDeduplication: true
       FifoQueue: true
-      VisibilityTimeout: 300
+      VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt ProductSyncDLQ.Arn
         maxReceiveCount: 3
@@ -125,7 +125,7 @@ Resources:
       QueueName: ShippingCostSyncSQS.fifo
       ContentBasedDeduplication: true
       FifoQueue: true
-      VisibilityTimeout: 300
+      VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt ShippingCostSyncDLQ.Arn
         maxReceiveCount: 3
@@ -143,10 +143,8 @@ Resources:
   PublishSyncSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: PublishSyncSQS.fifo
-      ContentBasedDeduplication: true
-      FifoQueue: true
-      VisibilityTimeout: 300
+      QueueName: PublishSyncSQS
+      VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PublishSyncDLQ.Arn
         maxReceiveCount: 3
@@ -157,9 +155,7 @@ Resources:
   PublishSyncDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: PublishSyncDLQ.fifo
-      ContentBasedDeduplication: true
-      FifoQueue: true
+      QueueName: PublishSyncDLQ
 
   PrepareProductsSQS:
     Type: AWS::SQS::Queue
@@ -167,7 +163,7 @@ Resources:
       QueueName: PrepareProductsSQS.fifo
       ContentBasedDeduplication: true
       FifoQueue: true
-      VisibilityTimeout: 300
+      VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PrepareProductsDLQ.Arn
         maxReceiveCount: 3
@@ -188,7 +184,7 @@ Resources:
       QueueName: PrepareStoresSQS.fifo
       ContentBasedDeduplication: true
       FifoQueue: true
-      VisibilityTimeout: 300
+      VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PrepareStoresDLQ.Arn
         maxReceiveCount: 3

@@ -20,7 +20,7 @@ import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.ut
 export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId, listHash, syncAll } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
-  const { storesId, vendorId, listName, listId, storeId } = body;
+  const { storesId, vendorId, listId, storeId } = body;
   const { source } = body;
   const { productId } = product;
   const dbProductId = `${accountId}.${vendorId}.${productId}`;
@@ -43,7 +43,8 @@ export const createProductService = async (props: CreateProductProps) => {
     channelId,
     vendorId,
     storeId,
-    status: "SUCCESS" as const
+    status: "SUCCESS" as const,
+    source
   };
   const orderedTransformProduct = sortObjectByKeys(transformedProduct);
 
@@ -56,14 +57,7 @@ export const createProductService = async (props: CreateProductProps) => {
       ...lambdaInfo,
       product: orderedTransformProduct
     });
-    await createOrUpdateProduct(
-      orderedTransformProduct,
-      storesId,
-      vendorId,
-      channelId,
-      listName,
-      accountId
-    );
+    await createOrUpdateProduct(orderedTransformProduct);
     logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
     await verifyCompletedList(syncProductRequest, source, listHash);
     logger.info("PRODUCT: FINISHED", lambdaInfo);
@@ -133,14 +127,7 @@ export const createProductService = async (props: CreateProductProps) => {
     ...lambdaInfo,
     product: orderedTransformProduct
   });
-  await createOrUpdateProduct(
-    orderedTransformProduct,
-    storesId,
-    vendorId,
-    channelId,
-    listName,
-    accountId
-  );
+  await createOrUpdateProduct(orderedTransformProduct);
   logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
   await verifyCompletedList(syncProductRequest, source, listHash);
   logger.info("PRODUCT: FINISHED", lambdaInfo);

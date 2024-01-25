@@ -32,6 +32,7 @@ export interface SyncProductRecord {
   vendorId: string;
   storeId: string;
   status: "PENDING" | "SUCCESS";
+  source: "LISTS" | "PRODUCTS";
 }
 
 export interface SyncStoreRecord {

@@ -26,8 +26,7 @@ export const publishSyncValidateService = async (
 
   await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.SYNC_PUBLISH_SQS_URL ?? "",
-    MessageBody: JSON.stringify({ vendorId, accountId, rePublish }),
-    MessageGroupId: `${accountId}-${vendorId}`
+    MessageBody: JSON.stringify({ vendorId, accountId, rePublish })
   });
 
   return {

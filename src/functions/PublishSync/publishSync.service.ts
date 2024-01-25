@@ -60,9 +60,9 @@ export const publishStores = async (
   logger.info("PUBLISH STORES: SAVING IN S3", { type: "STORES" });
   const storeResponse = await saveDocumentsInS3(storesWithVersion, storesS3Url);
   await saveDocumentsInS3(shippingCostsWithVersion, shippingCostsS3Url);
-  // const { key: storesKey } = storeResponse;
-  // logger.info("PUBLISH STORES: SYNCING", { type: "STORES" });
-  // await callPublishEP(storesKey, accountId, vendorId, "STORES");
+  const { key: storesKey } = storeResponse;
+  logger.info("PUBLISH STORES: SYNCING", { type: "STORES" });
+  await callPublishEP(storesKey, accountId, vendorId, "STORES");
   logger.info("PUBLISH STORES: HISTORY", { type: "STORES" });
   await saveStoresInHistory(vendorId, accountId, version);
   logger.info("PUBLISH STORES: UPDATING STATUS", { type: "STORES" });
@@ -103,9 +103,9 @@ export const publishProducts = async (
   });
   logger.info("PUBLISH PRODUCTS: SAVING IN S3", { type: "PRODUCTS" });
   const productResponse = await saveDocumentsInS3(products, productsS3Url);
-  // const { key: productsKey } = productResponse;
-  // logger.info("PUBLISH PRODUCTS: SYNCING", { type: "PRODUCTS" });
-  // await callPublishEP(productsKey, accountId, vendorId, "PRODUCTS");
+  const { key: productsKey } = productResponse;
+  logger.info("PUBLISH PRODUCTS: SYNCING", { type: "PRODUCTS" });
+  await callPublishEP(productsKey, accountId, vendorId, "PRODUCTS");
   logger.info("PUBLISH PRODUCTS: HISTORY", { type: "PRODUCTS" });
   await saveProductsInHistory(vendorId, accountId, version);
   logger.info("PUBLISH PRODUCTS: UPDATING STATUS", { type: "PRODUCTS" });

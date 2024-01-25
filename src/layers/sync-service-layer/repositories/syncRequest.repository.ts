@@ -31,7 +31,7 @@ export const saveSyncRequest = async (
   const dbClient = await connectToDatabase();
   const dbSyncRequest = await dbClient
     .collection("syncRequests")
-    .updateOne(
+    .updateMany(
       { ...syncRequest, status: "PENDING" },
       { $set: { ...syncRequest, updatedAt: new Date().toISOString() } },
       { upsert, ignoreUndefined: true }

@@ -8,6 +8,7 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
   const { accountId, channelsAndStores, storeHash, vendorChannels } = payload;
   const { syncAll = false } = payload;
   const { stores, vendorId } = channelsAndStores;
+  const logKeys = { vendorId, accountId };
   const syncStores = stores.map(store => {
     const { storeId } = store;
     return {
@@ -17,7 +18,7 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
       status: "PENDING" as const
     };
   });
-  logger.info("STORE PREPARE: CREATING SYNC STORE RECORDS");
+  logger.info("STORE PREPARE: CREATING SYNC STORE RECORDS", logKeys);
   await createSyncStoresRecords(syncStores);
 
   const productsPromises = stores.map(async store => {
@@ -32,7 +33,7 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
     });
   });
 
-  logger.info("STORE PREPARE: SEND TO SQS");
+  logger.info("STORE PREPARE: SEND TO SQS", logKeys);
   const promises = await Promise.all(productsPromises);
 
   return promises;

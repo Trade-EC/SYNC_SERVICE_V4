@@ -7,6 +7,7 @@ import { listValidator } from "/opt/nodejs/sync-service-layer/validators/lists.v
 import { modifierGroupValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { productListingValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
+import { imageValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
 import { kfcPreprocessArray } from "./kfc-common.validator";
@@ -44,7 +45,8 @@ const kfcBaseCategoryValidator = baseCategoryValidator.merge(
   z.object({
     productListing: productListingValidator
       .merge(kfcProductListingValidator)
-      .array()
+      .array(),
+    images: z.array(imageValidator).max(1).nullable().optional()
   })
 );
 
@@ -85,6 +87,7 @@ export const kfcProductsValidator = z.object({
     .omit({ modifierOptions: true })
     .merge(kfcProductModifierGroupValidator)
     .array()
+    .nullable()
 });
 
 const kfcListsValidator = z.object({
@@ -94,6 +97,7 @@ const kfcListsValidator = z.object({
   modifierGroups: modifierGroupValidator
     .merge(kfcModifierGroupValidator)
     .array()
+    .nullable()
 });
 
 // -KFC LIST VALIDATOR
@@ -103,7 +107,7 @@ export const kfcListsValidatorMerge = productsValidator
     const { products, categories, modifierGroups } = schema;
 
     const productIds = products.map(product => product.productId);
-    const modifierGroupIds = modifierGroups.map(
+    const modifierGroupIds = modifierGroups?.map(
       modifierGroup => modifierGroup.modifierId
     );
 
@@ -141,7 +145,7 @@ export const kfcListsValidatorMerge = productsValidator
     );
 
     const nonExistModifiers = [...modifiersInProductsSet].filter(
-      modifierId => !modifierGroupIds.includes(modifierId)
+      modifierId => !modifierGroupIds?.includes(modifierId)
     );
 
     if (nonExistModifiers.length > 0) {
@@ -154,7 +158,7 @@ export const kfcListsValidatorMerge = productsValidator
     }
 
     const productInModifierSet = new Set<number>();
-    modifierGroups.forEach(modifierGroup =>
+    modifierGroups?.forEach(modifierGroup =>
       modifierGroup.modifierOptions.forEach((modifierOption: any) => {
         productInModifierSet.add(modifierOption.productId);
       })

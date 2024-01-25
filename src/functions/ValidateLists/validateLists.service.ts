@@ -79,7 +79,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     type: "LISTS",
     vendorId,
     hash,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(),
     metadata: {
       channelId,
       storesId: storeId,

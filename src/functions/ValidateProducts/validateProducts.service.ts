@@ -78,7 +78,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
     type: "PRODUCTS",
     vendorId,
     hash,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(),
     metadata: { channelId, storesId: storeId, listId },
     s3Path: Location
   };

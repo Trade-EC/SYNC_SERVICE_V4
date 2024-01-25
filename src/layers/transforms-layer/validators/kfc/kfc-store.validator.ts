@@ -29,9 +29,9 @@ const kfcLocationInfoValidator = z.object({
 const kfcStoreDeliveryValidator = z.object({
   deliveryTimeValue: z.number().int().or(z.string()).optional(),
   deliveryTimeUnit: z.enum(["min", "hour"]).optional(),
-  minimumOrder: z.string().optional(),
+  minimumOrder: z.coerce.number().optional(),
   shippingCost: z.number().optional(),
-  cookTime: z.string().optional()
+  cookTime: z.coerce.number().optional()
 });
 
 const kfcStoreValidator = z.object({

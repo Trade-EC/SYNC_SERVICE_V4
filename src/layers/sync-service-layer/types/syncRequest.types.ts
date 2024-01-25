@@ -4,7 +4,7 @@ export interface SyncRequest {
   vendorId: string;
   status: "PENDING" | "ERROR" | "SUCCESS";
   hash: string;
-  createdAt?: string;
+  createdAt?: Date;
   s3Path?: string;
   metadata: SyncRequestMetadata;
 }

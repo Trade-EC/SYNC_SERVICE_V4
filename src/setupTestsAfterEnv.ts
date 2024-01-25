@@ -21,7 +21,8 @@ jest.mock("mongodb", () => {
           insertOne: jest.fn(),
           updateOne: jest.fn(() => ({ modifiedCount: 1 })),
           bulkWrite: jest.fn(),
-          deleteMany: jest.fn()
+          deleteMany: jest.fn(),
+          updateMany: jest.fn()
         }))
       }))
     }))

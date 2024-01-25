@@ -114,7 +114,7 @@ export const findShippingCost = async (vendorId: string, accountId: string) => {
   const dbClient = await connectToDatabase();
   const shippingCost = await dbClient
     .collection("shippingCost")
-    .find({ "vendor.id": vendorId, "account.id": accountId })
+    .find({ "vendor.id": vendorId, "account.accountId": accountId })
     .toArray();
 
   return shippingCost;

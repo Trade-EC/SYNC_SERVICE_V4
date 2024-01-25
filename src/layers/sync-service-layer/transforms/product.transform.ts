@@ -116,13 +116,13 @@ export const transformCategory = async (
 export const getTaxes = (taxesInfo: TaxesInfo | undefined) => {
   const { taxRate, vatRatePercentage } = taxesInfo ?? {};
   const taxes = [];
-  if (vatRatePercentage) {
+  if (typeof vatRatePercentage !== "undefined") {
     taxes.push({
       type: "IVA",
       value: vatRatePercentage
     });
   }
-  if (taxRate) {
+  if (typeof taxRate !== "undefined") {
     taxes.push({
       type: "OTROS",
       value: taxRate

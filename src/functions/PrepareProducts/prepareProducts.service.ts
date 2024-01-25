@@ -17,6 +17,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
   const { source, syncAll = false } = props;
   const { categories, list, modifierGroups, products } = listInfo;
   const { storeId, vendorId, listName, listId } = list;
+  const logKeys = { vendorId, accountId, listId, storeId };
   let storesId: string[];
   if (storeId === "replicate_in_all") {
     const dbStores = await fetchDraftStores(accountId, vendorId);
@@ -37,10 +38,11 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
       channelId,
       vendorId,
       storeId,
-      status: "PENDING" as const
+      status: "PENDING" as const,
+      source
     };
   });
-  logger.info(`${source} VALIDATE: CREATING SYNC LIST RECORDS`);
+  logger.info(`${source} VALIDATE: CREATING SYNC LIST RECORDS`, logKeys);
   await createSyncRecords(syncProducts);
 
   const productsPromises = products.map((product, index) => {
@@ -58,6 +60,6 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
     });
   });
 
-  logger.info(`${source} VALIDATE: SEND TO SQS`);
+  logger.info(`${source} VALIDATE: SEND TO SQS`, logKeys);
   return await Promise.all(productsPromises);
 };
