@@ -42,12 +42,13 @@ Globals:
         SYNC_PUBLISH_SQS_ARN: !GetAtt PublishSyncSQS.Arn        
         PREPARE_PRODUCTS_SQS_ARN: !GetAtt PrepareProductsSQS.Arn
         PREPARE_STORES_SQS_ARN: !GetAtt PrepareStoresSQS.Arn 
+        SYNC_BUCKET_ADMIN: !Ref SyncServiceV4AdminBucket
+        SYNC_BUCKET_SYNC: !Ref SyncServiceV4SyncBucket
+        SYNC_BUCKET_LOGS: !Ref SyncServiceV4LogsBucket
     VpcConfig:
       SecurityGroupIds:
-        - sg-080312893df07b75d
-      SubnetIds:
-        - subnet-0f9d5eddc689fcd8d
-        - subnet-0170677e6682ab84a     
+        - !Ref securityGroupIds
+      SubnetIds: !Split [",", !Ref subnetIds]   
 
 Parameters:
   StageName:
@@ -57,6 +58,18 @@ Parameters:
     AllowedValues:
       - dev
       - prod
+  vpceIds:
+    Description: "List of allowed vpc endpoint ids"
+    Type: "String"
+    Default: "vpce-0eb8ec9b48e73b9f9"
+  securityGroupIds:
+    Description: "List of allowed security groups ids"
+    Type: "String"
+    Default: "sg-080312893df07b75d"
+  subnetIds:
+    Description: "List of allowed subnets ids"
+    Type: "String"
+    Default: "subnet-0f9d5eddc689fcd8d,subnet-0170677e6682ab84a"
 
 Resources:
   # SQS Queues
@@ -216,35 +229,20 @@ Resources:
             }]
       EndpointConfiguration:
         Type: PRIVATE
-        VPCEndpointIds: 
-          - "vpce-0eb8ec9b48e73b9f9"
+        VPCEndpointIds: !Split [",", !Ref vpceIds]
 
   # S3 Buckets
-  SyncServiceV4Bucket:
+  SyncServiceV4AdminBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "syncservicev4.admin.${StageName}"
 
-  ProductBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref SyncServiceV4Bucket
-      PolicyDocument:
-        Id: PublicReadPolicy
-        Version: 2012-10-17
-        Statement:
-          - Sid: PublicReadForGetBucketObjects
-            Effect: Allow
-            Principal: '*'
-            Action: 's3:GetObject'
-            Resource: !Sub arn:aws:s3:::${SyncServiceV4Bucket}/*
-
-  SyncServiceV4LogsBucket:
+  SyncServiceV4SyncBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "syncservicev4.sync.${StageName}"
 
-  SyncServiceV4SQSLogsBucket:
+  SyncServiceV4LogsBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "syncservicev4.logs.${StageName}"
@@ -340,7 +338,7 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.logs.dev/*"
+              Resource: !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -377,7 +375,7 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.admin.dev/*"
+              Resource: !Join ["", [!GetAtt SyncServiceV4AdminBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -414,7 +412,7 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.admin.dev/*"
+              Resource: !Join ["", [!GetAtt SyncServiceV4AdminBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -451,7 +449,7 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
+              Resource: !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -493,7 +491,7 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.logs.dev/*"
+              Resource: !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -535,7 +533,7 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.logs.dev/*"
+              Resource: !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -774,12 +772,9 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.logs.dev/*"
-        - Statement:
-            - Effect: Allow
-              Action:
-                - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
+              Resource: 
+                - !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+                - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -817,12 +812,9 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.logs.dev/*"
-        - Statement:
-            - Effect: Allow
-              Action:
-                - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
+              Resource: 
+                - !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+                - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -860,12 +852,9 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.logs.dev/*"
-        - Statement:
-            - Effect: Allow
-              Action:
-                - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.sync.dev/*"
+              Resource: 
+              - !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+              - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -909,6 +898,8 @@ Resources:
                 - !GetAtt ProductSyncDLQ.Arn
                 - !GetAtt ShippingCostSyncDLQ.Arn
                 - !GetAtt PublishSyncDLQ.Arn
+                - !GetAtt PrepareProductsSQS.Arn
+                - !GetAtt PrepareStoresSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -952,6 +943,8 @@ Resources:
                 - !GetAtt ProductSyncDLQ.Arn
                 - !GetAtt ShippingCostSyncDLQ.Arn
                 - !GetAtt PublishSyncDLQ.Arn
+                - !GetAtt PrepareProductsSQS.Arn
+                - !GetAtt PrepareStoresSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -1071,6 +1064,61 @@ Resources:
         External:
           - "/opt/nodejs/*"
 
+  CreateVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/CreateVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/vendor"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  UpdateVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/UpdateVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/vendor"
+            Method: PUT
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+          
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
@@ -1081,6 +1129,3 @@ Outputs:
   SyncServiceV4Bucket:
     Description: "S3 Bucket for SyncServices"
     Value: !Sub "syncservicev4.admin.${StageName}"
-  SyncServiceV4BucketARN:
-    Description: "S3 Bucket for SyncServices"
-    Value: !GetAtt SyncServiceV4Bucket.Arn

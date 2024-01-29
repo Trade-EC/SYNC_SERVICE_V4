@@ -11,9 +11,8 @@ import { transformQuestions } from "./publishSync.transform";
 import { PublishSyncServiceProps } from "./publishSync.types";
 
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
-import CONSTANTS from "/opt/nodejs/sync-service-layer/configs/constants";
 
-const { SYNC_BUCKET } = CONSTANTS.GENERAL;
+const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
 
 const fetchOptions = {
   method: "POST",

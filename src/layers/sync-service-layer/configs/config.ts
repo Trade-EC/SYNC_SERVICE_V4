@@ -7,8 +7,9 @@ import SqsExtendedClient from "sqs-extended-client";
 import CONSTANTS from "./constants";
 import { tracer } from "./observability.config";
 
-const { REGION, LOGS_BUCKET } = CONSTANTS.GENERAL;
+const { REGION } = CONSTANTS.GENERAL;
 const serviceConfig = { region: REGION };
+const LOGS_BUCKET = process.env.SYNC_BUCKET_LOGS ?? " ";
 
 export const s3Client = tracer.captureAWSv3Client(new S3Client(serviceConfig));
 export const sqsClient = new SQS(serviceConfig);

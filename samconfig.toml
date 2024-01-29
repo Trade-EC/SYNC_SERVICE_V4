@@ -19,7 +19,7 @@ confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "sync-service-v4"
 region = "us-east-2"
-parameter_overrides = "StageName=\"dev\""
+parameter_overrides = "StageName=\"dev\" vpceIds=\"vpce-0eb8ec9b48e73b9f9\" securityGroupIds=\"sg-080312893df07b75d\" subnetIds=\"subnet-0f9d5eddc689fcd8d,subnet-0170677e6682ab84a\""
 image_repositories = []
 disable_rollback = true
 

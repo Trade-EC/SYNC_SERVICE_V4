@@ -22,11 +22,13 @@ export const genVendorChannels = (quantity = 5) => {
 };
 
 export const buildVendor = (overrides: Partial<Vendor> = {}): Vendor => {
+  const time = faker.date.recent();
   return {
     active: true,
     vendorId: faker.string.uuid(),
     name: faker.company.name(),
     account: { accountId: faker.string.uuid() },
+    syncTime: `${time.getHours()}:${time.getMinutes()}`,
     channels: genVendorChannels(),
     ...overrides
   };

@@ -21,7 +21,7 @@ export const fetchHistoryStoresByVersionService = async (
   );
   const { vendorId, version, skip = 0, limit = 10 } = info;
 
-  const historyStores = await fetchHistoryStoresByVersionRepository(
+  const data = await fetchHistoryStoresByVersionRepository(
     account,
     vendorId,
     version,
@@ -31,10 +31,6 @@ export const fetchHistoryStoresByVersionService = async (
 
   return {
     statusCode: 200,
-    body: JSON.stringify({
-      skip,
-      limit,
-      data: historyStores
-    })
+    body: JSON.stringify(data)
   };
 };

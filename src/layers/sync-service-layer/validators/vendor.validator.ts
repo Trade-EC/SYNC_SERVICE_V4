@@ -16,5 +16,6 @@ export const vendorValidator = z.object({
   }),
   active: z.boolean(),
   name: z.string(),
+  syncTime: z.string(),
   channels: vendorChannelsValidator.array()
 });

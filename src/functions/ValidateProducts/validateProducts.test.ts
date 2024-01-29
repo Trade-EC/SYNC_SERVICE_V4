@@ -9,6 +9,7 @@ import * as gatewayEvent from "../../events/gateway.json";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 const sqsMockClient = mockClient(sqsExtendedClient.sqsClient);
+const s3Client = mockClient(sqsExtendedClient.s3Client);
 const mockProducts = buildProductRequest();
 const { list } = mockProducts;
 const { channelId, ecommerceChannelId, channelReferenceName } = list;
@@ -28,8 +29,13 @@ jest.mock(
   })
 );
 
+beforeEach(() => {
+  jest.resetModules(); // Most important - it clears the cache
+});
+
 afterAll(() => {
   sqsMockClient.reset();
+  s3Client.reset();
   jest.resetAllMocks();
 });
 

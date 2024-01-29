@@ -10,9 +10,11 @@ import { genCategories } from "../../builders/lists/lists.builders";
 import { genModifierGroups } from "../../builders/lists/lists.builders";
 import * as sqsEvent from "../../events/sqs.json";
 
+import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
 mockClient(sqsClient);
+mockClient(s3Client);
 
 describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {

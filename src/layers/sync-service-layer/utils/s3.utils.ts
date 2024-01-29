@@ -2,9 +2,8 @@ import { CompleteMultipartUploadCommandOutput } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
 import { s3Client } from "../configs/config";
-import CONSTANTS from "../configs/constants";
 
-const { SYNC_BUCKET } = CONSTANTS.GENERAL;
+const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
 
 export const createFileS3 = async (
   path: string,

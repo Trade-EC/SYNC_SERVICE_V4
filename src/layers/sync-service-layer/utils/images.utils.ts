@@ -2,8 +2,8 @@ import { sqsExtendedClient } from "../configs/config";
 import CONSTANTS from "../configs/constants";
 import { fetchImage } from "../repositories/images.repository";
 
-const { CLOUDFRONT_URL, GENERAL } = CONSTANTS;
-const { ADMIN_BUCKET } = GENERAL;
+const { CLOUDFRONT_URL } = CONSTANTS;
+const ADMIN_BUCKET = process.env.SYNC_BUCKET_ADMIN ?? "";
 
 /**
  * @description Get AWS directory

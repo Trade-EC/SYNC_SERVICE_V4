@@ -1,12 +1,10 @@
 import { Document } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
 import { WithId } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
-import CONSTANTS from "/opt/nodejs/sync-service-layer/configs/constants";
 import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
-const { SYNC_BUCKET } = CONSTANTS.GENERAL;
-
+const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
 /**
  *
  * @param vendorId
@@ -176,7 +174,6 @@ export const saveDocumentsInS3 = async (
   documents: WithId<Document>[],
   s3Url: string
 ) => {
-  // const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
   const documentInput = {
     Bucket: SYNC_BUCKET,
     Key: s3Url,
