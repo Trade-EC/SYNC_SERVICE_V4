@@ -45,6 +45,7 @@ Globals:
         SYNC_BUCKET_ADMIN: !Ref SyncServiceV4AdminBucket
         SYNC_BUCKET_SYNC: !Ref SyncServiceV4SyncBucket
         SYNC_BUCKET_LOGS: !Ref SyncServiceV4LogsBucket
+        MONGODB_URI: !Ref mongoDbUri
     VpcConfig:
       SecurityGroupIds:
         - !Ref securityGroupIds
@@ -54,14 +55,14 @@ Parameters:
   StageName:
     Type: String
     Default: dev
-    Description: (Required) Enter dev | prod. Default is Dev.
+    Description: (Required) Enter dev | prod. Default is dev.
     AllowedValues:
       - dev
       - prod
-  vpceIds:
-    Description: "List of allowed vpc endpoint ids"
-    Type: "String"
-    Default: "vpce-0eb8ec9b48e73b9f9"
+  # vpceIds:
+  #   Description: "List of allowed vpc endpoint ids"
+  #   Type: "String"
+  #   Default: "vpce-0eb8ec9b48e73b9f9"
   securityGroupIds:
     Description: "List of allowed security groups ids"
     Type: "String"
@@ -70,6 +71,14 @@ Parameters:
     Description: "List of allowed subnets ids"
     Type: "String"
     Default: "subnet-0f9d5eddc689fcd8d,subnet-0170677e6682ab84a"
+  mongoDbUri:
+    Description: "MongoDb uri"
+    Type: "String"
+    Default: "mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority"
+  clientName:
+    Description: "Name of the client, necessary for the creation of the s3 buckets"
+    Type: "String"
+    Default: ""
 
 Resources:
   # SQS Queues
@@ -227,25 +236,25 @@ Resources:
               Resource: ["execute-api:/*/*/*"],
               Principal: "*",
             }]
-      EndpointConfiguration:
-        Type: PRIVATE
-        VPCEndpointIds: !Split [",", !Ref vpceIds]
+      # EndpointConfiguration:
+      #   Type: PRIVATE
+      #   VPCEndpointIds: !Split [",", !Ref vpceIds]
 
   # S3 Buckets
   SyncServiceV4AdminBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "syncservicev4.admin.${StageName}"
+      BucketName: !Sub "syncservicev4.${clientName}.admin.${StageName}"
 
   SyncServiceV4SyncBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "syncservicev4.sync.${StageName}"
+      BucketName: !Sub "syncservicev4.${clientName}.sync.${StageName}"
 
   SyncServiceV4LogsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "syncservicev4.logs.${StageName}"
+      BucketName: !Sub "syncservicev4.${clientName}.logs.${StageName}"
 
   #Lambdas
   LayerSyncService:
@@ -833,6 +842,7 @@ Resources:
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
       Tracing: Active
+      MemorySize: 256
       Architectures:
         - x86_64
       Events:
@@ -1128,4 +1138,4 @@ Outputs:
     Value: !Sub "https://${SyncServiceV4Api}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
   SyncServiceV4Bucket:
     Description: "S3 Bucket for SyncServices"
-    Value: !Sub "syncservicev4.admin.${StageName}"
+    Value: !Ref SyncServiceV4AdminBucket

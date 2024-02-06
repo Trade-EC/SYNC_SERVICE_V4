@@ -25,7 +25,7 @@ export const createOrUpdateStores = async (store: DBStore) => {
   const { storeId } = store;
   return await dbClient
     .collection("stores")
-    .updateOne(
+    .updateMany(
       { storeId, $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }] },
       { $set: { ...store } },
       { upsert: true }

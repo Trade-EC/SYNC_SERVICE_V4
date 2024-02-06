@@ -152,10 +152,10 @@ export const transformPrices = (
     netPrice: price,
     taxes: getTaxes(taxesInfo),
     grossPrice: 0,
-    discounts: [], // php -> No existe
-    discountGrossPrice: 0, // php -> No existe
-    discountNetPrice: 0, // php -> No existe
-    discount: 0 // php -> No existe
+    discounts: [],
+    discountGrossPrice: 0,
+    discountNetPrice: 0,
+    discount: 0
   };
 
   const points = {

@@ -4,8 +4,7 @@ import CONSTANTS from "../configs/constants";
 
 const { DB_NAME } = CONSTANTS.GENERAL;
 
-const MONGODB_URI =
-  "mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority";
+const MONGODB_URI = process.env.MONGODB_URI ?? "";
 
 let cachedDbClient: Db | null = null;
 

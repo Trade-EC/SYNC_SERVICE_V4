@@ -25,7 +25,7 @@ export const fetchVersionsByVendorServices = async (
   if (!vendorId || !accountId)
     throw new Error("AccountId or VendorId is required");
 
-  const versions = await fetchVersionsByVendorRepository(
+  const data = await fetchVersionsByVendorRepository(
     accountId,
     vendorId,
     type,
@@ -35,6 +35,6 @@ export const fetchVersionsByVendorServices = async (
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ skip, limit, data: versions })
+    body: JSON.stringify(data)
   };
 };
