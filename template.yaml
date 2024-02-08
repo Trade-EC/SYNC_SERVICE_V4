@@ -46,6 +46,9 @@ Globals:
         SYNC_BUCKET_SYNC: !Ref SyncServiceV4SyncBucket
         SYNC_BUCKET_LOGS: !Ref SyncServiceV4LogsBucket
         MONGODB_URI: !Ref mongoDbUri
+        REGION: !Ref "AWS::Region"
+        TASK_SCHEDULE_TABLE: !Ref taskScheduleTable
+        NEW_PRODUCTS_SERVICE_URL: !Ref newProductsServiceUrl
     VpcConfig:
       SecurityGroupIds:
         - !Ref securityGroupIds
@@ -59,10 +62,10 @@ Parameters:
     AllowedValues:
       - dev
       - prod
-  # vpceIds:
-  #   Description: "List of allowed vpc endpoint ids"
-  #   Type: "String"
-  #   Default: "vpce-0eb8ec9b48e73b9f9"
+  vpceIds:
+    Description: "List of allowed vpc endpoint ids"
+    Type: "String"
+    Default: "vpce-0eb8ec9b48e73b9f9"
   securityGroupIds:
     Description: "List of allowed security groups ids"
     Type: "String"
@@ -77,6 +80,14 @@ Parameters:
     Default: "mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority"
   clientName:
     Description: "Name of the client, necessary for the creation of the s3 buckets"
+    Type: "String"
+    Default: ""
+  taskScheduleTable:
+    Description: "Name of the task schedule table"
+    Type: "String"
+    Default: ""
+  newProductsServiceUrl:
+    Description: "Name of the task schedule table"
     Type: "String"
     Default: ""
 
@@ -236,9 +247,9 @@ Resources:
               Resource: ["execute-api:/*/*/*"],
               Principal: "*",
             }]
-      # EndpointConfiguration:
-      #   Type: PRIVATE
-      #   VPCEndpointIds: !Split [",", !Ref vpceIds]
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds: !Split [",", !Ref vpceIds]
 
   # S3 Buckets
   SyncServiceV4AdminBucket:
@@ -1081,6 +1092,7 @@ Resources:
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
       Tracing: Active
+      MemorySize: 256
       Architectures:
         - x86_64
       Events:
@@ -1090,6 +1102,14 @@ Resources:
             Path: "/api/v4/vendor"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: 
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -1117,6 +1137,12 @@ Resources:
             Path: "/api/v4/vendor"
             Method: PUT
             RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}/*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -1139,3 +1165,6 @@ Outputs:
   SyncServiceV4Bucket:
     Description: "S3 Bucket for SyncServices"
     Value: !Ref SyncServiceV4AdminBucket
+  SyncServiceV4PublishSqs:
+    Description: "Publish Sync SQS"
+    Value: !GetAtt  PublishSyncSQS.Arn

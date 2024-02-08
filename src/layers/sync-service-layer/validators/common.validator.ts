@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const timeRegExp = new RegExp("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$");
+
 export const additionalInfoValidator = z.record(z.string().min(1), z.any());
 
 export const taxesValidator = z.object({
@@ -48,4 +50,14 @@ export const syncHeadersValidator = z.object({
 
 export const productsQueryParamsValidator = z.object({
   type: z.enum(["INCREMENTAL", "ALL"]).optional()
+});
+
+export const timeValidator = z.string().superRefine((value, ctx) => {
+  const isValid = timeRegExp.test(value);
+  if (!isValid) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Invalid time format"
+    });
+  }
 });

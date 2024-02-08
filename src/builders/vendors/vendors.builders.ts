@@ -28,7 +28,8 @@ export const buildVendor = (overrides: Partial<Vendor> = {}): Vendor => {
     vendorId: faker.string.uuid(),
     name: faker.company.name(),
     account: { accountId: faker.string.uuid() },
-    syncTime: `${time.getHours()}:${time.getMinutes()}`,
+    syncTimeUnit: "EVERYDAY",
+    syncTimeValue: `${time.getHours()}:${time.getMinutes()}`,
     channels: genVendorChannels(),
     ...overrides
   };

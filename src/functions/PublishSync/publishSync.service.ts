@@ -13,6 +13,7 @@ import { PublishSyncServiceProps } from "./publishSync.types";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
+const NEW_PRODUCT_SERVICE_URL = process.env.NEW_PRODUCT_SERVICE_URL ?? "";
 
 const fetchOptions = {
   method: "POST",
@@ -28,7 +29,7 @@ export const callPublishEP = async (
   type: "STORES" | "PRODUCTS"
 ) => {
   await fetch(
-    `https://v9ti364z21.execute-api.us-east-2.amazonaws.com/Dev/api/v4/publish?bucket=${SYNC_BUCKET}&key=${key}`,
+    `${NEW_PRODUCT_SERVICE_URL}/api/v4/publish?bucket=${SYNC_BUCKET}&key=${key}`,
     fetchOptions
   );
   logger.info("PUBLISH PRODUCTS: SAVING PUBLISH REQUEST", { type });
