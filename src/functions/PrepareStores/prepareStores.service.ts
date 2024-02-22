@@ -15,7 +15,8 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
       storeId: `${accountId}.${vendorId}.${storeId}`,
       accountId,
       vendorId,
-      status: "PENDING" as const
+      status: "PENDING" as const,
+      hash: storeHash
     };
   });
   logger.info("STORE PREPARE: CREATING SYNC STORE RECORDS", logKeys);

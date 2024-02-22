@@ -45,11 +45,12 @@ export const verifyCompletedStore = async (
 ) => {
   const { status, storeId, ...registerFilter } = register;
   const { accountId, vendorId } = registerFilter;
+  const commonFilters = { accountId, vendorId };
   const dbClient = await connectToDatabase();
   await dbClient
     .collection("syncStores")
     .updateOne(
-      { vendorId, accountId, storeId },
+      { storeId, ...commonFilters },
       { $set: { status: "SUCCESS" } },
       { upsert: false }
     );
@@ -71,6 +72,6 @@ export const verifyCompletedStore = async (
     };
 
     await saveSyncRequest(syncRequest, false);
-    await dbClient.collection("syncStores").deleteMany({ accountId, vendorId });
+    await dbClient.collection("syncStores").deleteMany(commonFilters);
   }
 };

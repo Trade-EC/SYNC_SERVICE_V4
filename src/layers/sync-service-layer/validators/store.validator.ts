@@ -10,7 +10,7 @@ export const channelValidator = z.object({
   channelId: z.string(),
   additionalInfo: z.record(z.string().min(1), z.any()).optional(),
   channelReferenceName: z.string().optional(),
-  ecommerceChannelId: z.number().int().optional()
+  ecommerceChannelId: z.coerce.number().int().optional()
 });
 
 export const storeServicesValidator = z.object({
@@ -29,7 +29,7 @@ export const storeDeliveryValidator = z.object({
   minimumOrder: z.number().optional(),
   shippingCost: z.number().optional(),
   cookTime: z.number().int().optional(),
-  deliveryId: z.number().int().optional()
+  deliveryId: z.coerce.number().int().optional()
 });
 
 export const storeLocationValidator = z.object({

@@ -1,92 +1,70 @@
-# Microservicio Sync Service
+# 🔄 Sync Service V4
 
-El **Sync Service** es un microservicio diseñado para simplificar la sincronización de tiendas y productos de los clientes de TRD. El objetivo es facilitar este proceso de manera eficiente y sin complicaciones. Se ha mantenido la estructura de las peticiones de sincronización anterior para garantizar la transición suave y minimizar cualquier impacto en los sistemas existentes y, sobre todo, para asegurar la comodidad y familiaridad de los clientes.
+## Descripción
 
-## Mejoras en la Tecnología
+El microservicio "Sync Service V4" se ha desarrollado con el objetivo de facilitar a los clientes la sincronización de sus tiendas y productos en el comercio electrónico de TRD de manera eficiente y rápida. Este microservicio simplifica la gestión de información al centrarse en las entidades fundamentales: tiendas y productos. Una optimización clave se encuentra en la gestión de productos, donde toda la información relacionada con un producto se almacena en un único objeto. Por ejemplo, un producto puede contener datos como la categoría asociada, los precios en diferentes tiendas y sus imágenes, lo que resulta en consultas más rápidas y una información centralizada. Documentación más extensa en este [enlace](https://docs.google.com/document/d/1LF5z8dWP8d5Q5SpuHaZZf0OIx0GToniv6xz2vm13pp4/edit?usp=sharing).
 
-Se implementaron mejoras tecnológicas significativas para agilizar el proceso de sincronización. Ahora se hace uso de la base de datos MongoDB y se han reestructurado los documentos, consolidando la información necesaria en las colecciones de **stores** y **products**.
+## 🌟 Nuevas Características Destacadas
 
-## Funcionamiento
+- 🚀 Escalabilidad Automática Mejorada
+- ⚡ Optimizaciones de Rendimiento
+- 📊 Monitorización y Registro Mejorados
+- 📚 Mejoras en la Documentación y Soporte
 
-El microservicio opera en varias fases:
+## Instalación
 
-1. **Envío de Solicitudes de Sincronización:**
+Para instalar las dependencias del proyecto, utilizar el siguiente comando:
 
-   - Los clientes envían peticiones de sincronización, ya sea para **stores** o **products**, a los endpoints específicos. ([Ver más sobre los endpoints](#endpoints))
-
-2. **Validación y Procesamiento de las Solicitudes:**
-
-   - Tras la recepción de la petición, el microservicio realiza una validación exhaustiva y la envía a otro lambda para su procesamiento. ([Ver consideraciones](#consideraciones-importantes))
-
-3. **Sincronización de Imágenes (si es requerido):**
-
-   - En caso de que la petición incluya imágenes, estas se enfilan para ser procesadas por una función lambda separada.
-
-4. **Almacenamiento de Datos en Estado "DRAFT":**
-
-   - Los datos se almacenan en colecciones de la base de datos en estado de "borrador".
-
-5. **Proceso de Publicación de la Sincronización:**
-   - Una vez finalizado el proceso de sincronización, se puede invocar el endpoint de PUBLICACIÓN ([Ver más sobre este endpoint](enlace_endpoint)). Todos los objetos en estado de "borrador" se actualizan a "publicados". Además, los documentos se almacenan en un bucket S3 para su posterior sincronización en el servicio de ADMIN. ([Detalles sobre las integraciones](enlace_integraciones))
-
-## Beneficios de la Sincronización
-
-Esta sincronización ofrece múltiples beneficios, entre ellos:
-
-- Posibilidad de sincronizar múltiples clientes simultáneamente.
-- Reducción significativa de los tiempos de sincronización.
-- Actualización selectiva únicamente de los documentos que han sufrido cambios.
-- Implementación de pruebas unitarias para facilitar el desarrollo.
-- Almacenamiento de logs en CloudWatch, lo que no solo reduce costos sino que también facilita la búsqueda y seguimiento de información.
-
-## Infraestructura y Consideraciones Clave
-
-Este proyecto está desarrollado utilizando AWS SAM (Serverless Application Model). La estructura de la infraestructura puede ser modificada en el archivo template.yml.
-
-### Infraestructura de los Endpoints
-
-![Default infraestructure](./docs/arquitectura-default.jpg)
-
-El flujo de llamadas a los endpoints incluye la validación por un lambda que inicia el proceso de sincronización, seguido por la activación del procesamiento de la petición a través de SQS y lambdas específicos según la configuración. Se procesan las imágenes en SQS y se almacenan en un bucket S3. La información del procesamiento se guarda en la colección "images" en MongoDB.
-
-### Endpoints
-
-#### Tiendas
-
+```sh
+yarn install
 ```
-[POST] /channels-stores
+
+Debido a que este proyecto es serverless, no se puede ejecutar localmente es por ello que se debe configurar un ambiente en aws para su ejecución.
+
+Para configurar tus credenciales en la terminal que se está ejecutando se debe utilizar el siguiente comando en la terminal:
+
+```sh
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
 ```
-Este endpoint permite registrar tiendas y canales de venta en el sistema.
 
+Una vez que las credenciales están configuradas se puede desplegar esta solución en cualquiera de las cuentas de AWS que se requiera. Para hacer más fácil este trabajo se pueden ejecutar los siguientes comandos:
 
-![stores infraestructure](./docs/arquitectura-stores.jpg)
-
-#### Listas
-
+```sh
+yarn deploy:kfc:dev
 ```
-[POST] /listas
+
+Este comando permite desplegar esta solución en el ambiente de kfc ecuador en desarrollo.
+
+```sh
+yarn deploy:artisncore:dev
 ```
-Este endpoint permite registrar o editar una lista en el sistema.
 
-![lists infraestructure](./docs/arquitectura-lists.jpg)
+Este comando permite desplegar esta solución en el ambiente de artisn core en desarrollo.
 
-#### Products
+Al momento del despliegue, este microservicio pide varios parámetros para su correcto funcionamiento. Estos parámetros son:
 
+```sh
+StageName= Nombre del stage "prod" | "dev"
+vpceIds= vpce para conexión con los demás microservicios
+securityGroupIds= securityGroupsIds para conexión con los demás microservicios
+subnetIds= subnetIds separado por comas para conexión con los demás microservicios
+mongoDbUri= Uri de conexión para mongo db
+clientName= nombre del cliente para el que se está desplegando
+taskScheduleTable= nombre de la tabla creado por el task scheduling service
+newProductsServiceUrl= Url del new products service con el cuál se comunicará
 ```
-[POST] /products
-```
-Este endpoint permite agregar una lista en el sistema.
 
-![products infraestructure](./docs/arquitectura-products.jpg)
+Una vez desplegado, en la terminal aparecerá la información requerida para configurar los demás microservicios.
 
-### Consideraciones Importantes
+## Uso
 
-- **Limitaciones de AWS API Gateway:** La respuesta debe tardar como máximo 30 segundos. Se dividen endpoints para gestionar la respuesta al cliente.
-- **Uso de AWS SQS:** Permite configurar la cantidad de lambdas para atender las peticiones, controlando los recursos utilizados.
-- **Optimización de Recursos:** Algunos lambdas se han configurado con mayor memoria RAM para un mejor rendimiento. Todas las configuraciones están detalladas en el archivo template.yml.
+Este microservicio se puede utilizar a través de los endpoints que expone. A continuación un enlace a la colección de [postman](https://drive.google.com/file/d/1G5ULFd4bz5xGf_3TdlZntg42Rs2tDIN5/view?usp=drive_link) de esta solución.
 
--------
+## Contact
 
-_Se recomienda proporcionar enlaces reales a la documentación y recursos mencionados._
+Alexander Tigselema
+alexander.tigselema@trade.ec
 
-Esta documentación proporciona una visión detallada y comprensible del microservicio Sync Service para usuarios que aún no están familiarizados con su funcionamiento. Ofrece explicaciones detalladas de cada paso del proceso de sincronización, resalta sus beneficios y describe la infraestructura subyacente junto con las consideraciones clave para su correcto funcionamiento.
+Brayan Burgos
+brayan.burgos@trade.ec

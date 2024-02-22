@@ -81,7 +81,7 @@ export const listValidator = z.object({
   channelId: z.string().max(100),
   // TODO: revisar en peticiones
   schedules: z.array(scheduleValidator).optional(),
-  ecommerceChannelId: z.number().int().optional(),
+  ecommerceChannelId: z.coerce.number().int().optional(),
   channelReferenceName: z.string().optional()
 });
 
@@ -114,22 +114,18 @@ export const productsValidator = z.object({
   modifierGroups: z.array(modifierGroupValidator)
 });
 
-/**
- *
- * @description Validate lists
- * @returns {Promise<void>}
- */
-export const listsValidator = productsValidator.superRefine((schema, ctx) => {
+// TODO: Fix any type
+export const listsSuperRefine = (schema: any, ctx: z.RefinementCtx) => {
   const { products, categories, modifierGroups } = schema;
 
-  const productIds = products.map(product => product.productId);
+  const productIds = products.map((product: any) => product.productId);
   const modifierGroupIds = modifierGroups.map(
-    modifierGroup => modifierGroup.modifierId
+    (modifierGroup: any) => modifierGroup.modifierId
   );
 
   const productsInCategoriesSet = new Set<string>();
-  categories.forEach(category =>
-    category.productListing.forEach(product =>
+  categories.forEach((category: any) =>
+    category.productListing.forEach((product: any) =>
       productsInCategoriesSet.add(product.productId)
     )
   );
@@ -148,8 +144,8 @@ export const listsValidator = productsValidator.superRefine((schema, ctx) => {
   }
 
   const modifiersInProductsSet = new Set<string>();
-  products.forEach(product =>
-    product.productModifiers?.forEach(productModifier => {
+  products.forEach((product: any) =>
+    product.productModifiers?.forEach((productModifier: any) => {
       if (typeof productModifier === "string") {
         modifiersInProductsSet.add(productModifier);
       }
@@ -174,8 +170,8 @@ export const listsValidator = productsValidator.superRefine((schema, ctx) => {
   }
 
   const productInModifierSet = new Set<string>();
-  modifierGroups.forEach(modifierGroup =>
-    modifierGroup.modifierOptions.forEach(modifierOption => {
+  modifierGroups.forEach((modifierGroup: any) =>
+    modifierGroup.modifierOptions.forEach((modifierOption: any) => {
       productInModifierSet.add(modifierOption.productId);
     })
   );
@@ -192,4 +188,11 @@ export const listsValidator = productsValidator.superRefine((schema, ctx) => {
       });
     });
   }
-});
+};
+
+/**
+ *
+ * @description Validate lists
+ * @returns {Promise<void>}
+ */
+export const listsValidator = productsValidator.superRefine(listsSuperRefine);

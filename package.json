@@ -22,7 +22,9 @@
     "clear:modules": "rm -rf node_modules && rm -rf src/functions/**/node_modules && rm -rf src/layers/**/node_modules",
     "prepare": "npx husky install",
     "build:layer": "esbuild src/layers/sync-service-layer/**/*.ts --bundle --platform=node --outdir=./src/layers/sync-service-layer/build/sync-service-layer --format=cjs --minify --target=es2020 --sourcemap && cp -R src/layers/sync-service-layer/node_modules src/layers/sync-service-layer/build/sync-service-layer",
-    "build:transform-layer": "esbuild src/layers/transforms-layer/**/*.ts --bundle --platform=node --outdir=./src/layers/transforms-layer/build/transforms-layer --format=cjs --minify --target=es2020 --sourcemap"
+    "build:transform-layer": "esbuild src/layers/transforms-layer/**/*.ts --bundle --platform=node --outdir=./src/layers/transforms-layer/build/transforms-layer --format=cjs --minify --target=es2020 --sourcemap",
+    "deploy:kfc:dev": "yarn deploy --config-env dev",
+    "deploy:artisncore:dev": "yarn deploy --config-env artisncoredev"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",

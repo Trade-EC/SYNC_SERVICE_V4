@@ -60,6 +60,7 @@ export const transformCategory = async (
 ) => {
   const { name, productCategoryId, schedules, images } = category;
   const { featured, productListing, displayInList } = category;
+  const { childCategories = [] } = category;
   const productInCategory = productListing.find(
     listing => listing.productId === productId
   );
@@ -68,7 +69,18 @@ export const transformCategory = async (
   const imagesPromises = images?.map(image =>
     imageHandler(image.fileUrl, "category")
   );
+  const childCategoriesPromises = childCategories.map(childCategory =>
+    transformCategory(
+      childCategory,
+      storesId,
+      channelId,
+      productCategoryId,
+      productId,
+      parentId
+    )
+  );
   const newImages = await Promise.all(imagesPromises ?? []);
+  const newChildCategories = await Promise.all(childCategoriesPromises);
 
   const newCategory: DbCategory = {
     categoryId: productCategoryId,
@@ -77,17 +89,7 @@ export const transformCategory = async (
     schedules: schedules
       ? transformSchedules(schedules, storesId, channelId)
       : [],
-    // subcategories: childCategories.map(childCategory =>
-    //   transformCategory(
-    //     childCategory,
-    //     storesId,
-    //     channelId,
-    //     productCategoryId,
-    //     productId,
-    //     parentId
-    //   )
-    // ),
-    subcategories: [],
+    subcategories: newChildCategories,
     parentId: parentId ? parentId : "",
     standardTime: schedules ? "YES" : "NO",
     reload: false,

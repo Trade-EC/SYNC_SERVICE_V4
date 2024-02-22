@@ -21,6 +21,7 @@ export const createVendorService = async (event: APIGatewayProxyEvent) => {
   const { requestContext } = event;
   const { domainName } = requestContext;
 
+  console.log({ validatedBody });
   await createVendorRepository(validatedBody, accountId);
   const url = `https://${domainName}/api/v4/publish-sync`;
   if (syncTimeUnit && syncTimeValue && taskTableName) {

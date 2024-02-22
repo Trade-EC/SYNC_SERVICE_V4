@@ -15,23 +15,27 @@ const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
 export const saveStoresInHistory = async (
   vendorId: string,
   accountId: string,
-  version: number
+  version: number,
+  all: boolean
 ) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
     .collection("stores")
-    .aggregate([
-      {
-        $match: {
-          "vendor.id": vendorId,
-          "account.id": accountId,
-          status: "DRAFT"
-        }
-      },
-      { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
-      { $project: { _id: 0 } },
-      { $merge: { into: "historyStores" } }
-    ])
+    .aggregate(
+      [
+        {
+          $match: {
+            "vendor.id": vendorId,
+            "account.id": accountId,
+            status: !all ? "DRAFT" : undefined
+          }
+        },
+        { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
+        { $project: { _id: 0 } },
+        { $merge: { into: "historyStores" } }
+      ],
+      { ignoreUndefined: true }
+    )
     .toArray();
 
   return response;
@@ -47,23 +51,27 @@ export const saveStoresInHistory = async (
 export const saveProductsInHistory = async (
   vendorId: string,
   accountId: string,
-  version: number
+  version: number,
+  all: boolean
 ) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
     .collection("products")
-    .aggregate([
-      {
-        $match: {
-          "vendor.id": vendorId,
-          "account.accountId": accountId,
-          status: "DRAFT"
-        }
-      },
-      { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
-      { $project: { _id: 0 } },
-      { $merge: { into: "historyProducts" } }
-    ])
+    .aggregate(
+      [
+        {
+          $match: {
+            "vendor.id": vendorId,
+            "account.accountId": accountId,
+            status: !all ? "DRAFT" : undefined
+          }
+        },
+        { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
+        { $project: { _id: 0 } },
+        { $merge: { into: "historyProducts" } }
+      ],
+      { ignoreUndefined: true }
+    )
     .toArray();
 
   return response;
@@ -98,11 +106,22 @@ export const savePublishRequest = async (
  * @description Fetch stores by vendorId, accountId and status DRAFT
  * @returns DBStore[]
  */
-export const fetchStores = async (vendorId: string, accountId: string) => {
+export const fetchStores = async (
+  vendorId: string,
+  accountId: string,
+  all: boolean
+) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
     .collection("stores")
-    .find({ "vendor.id": vendorId, "account.id": accountId, status: "DRAFT" })
+    .find(
+      {
+        "vendor.id": vendorId,
+        "account.id": accountId,
+        status: !all ? "DRAFT" : undefined
+      },
+      { ignoreUndefined: true }
+    )
     .toArray();
 
   return response;
@@ -128,35 +147,39 @@ export const findShippingCost = async (vendorId: string, accountId: string) => {
 export const fetchProducts = async (
   vendorId: string,
   accountId: string,
-  version: number
+  version: number,
+  all: boolean
 ) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
     .collection("products")
-    .aggregate([
-      {
-        $match: {
-          "vendor.id": vendorId,
-          "account.accountId": accountId,
-          status: "DRAFT"
-        }
-      },
-      { $set: { version } },
-      {
-        $graphLookup: {
-          from: "products",
-          startWith: "$attributes.externalId",
-          connectFromField: "questions.answers.productId",
-          connectToField: "attributes.externalId",
-          as: "questionsProducts",
-          maxDepth: 2,
-          restrictSearchWithMatch: {
+    .aggregate(
+      [
+        {
+          $match: {
             "vendor.id": vendorId,
-            "account.accountId": accountId
+            "account.accountId": accountId,
+            status: !all ? "DRAFT" : undefined
+          }
+        },
+        { $set: { version } },
+        {
+          $graphLookup: {
+            from: "products",
+            startWith: "$attributes.externalId",
+            connectFromField: "questions.answers.productId",
+            connectToField: "attributes.externalId",
+            as: "questionsProducts",
+            maxDepth: 2,
+            restrictSearchWithMatch: {
+              "vendor.id": vendorId,
+              "account.accountId": accountId
+            }
           }
         }
-      }
-    ])
+      ],
+      { ignoreUndefined: true }
+    )
     .toArray();
 
   return response;

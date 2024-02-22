@@ -6,11 +6,12 @@ export const createVendorRepository = async (
   payload: CreateVendorPayload,
   accountId: string
 ) => {
-  const { vendorId } = payload;
   const dbClient = await connectToDatabase();
-  const createdProduct = dbClient
-    .collection("vendors")
-    .insertOne({ "account.accountId": accountId, vendorId, channels: [] });
+  const createdProduct = dbClient.collection("vendors").insertOne({
+    account: { accountId },
+    channels: [],
+    ...payload
+  });
 
   return createdProduct;
 };

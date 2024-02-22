@@ -16,7 +16,7 @@ export const publishSyncValidateService = async (
   event: APIGatewayProxyEvent
 ) => {
   const { headers, body, queryStringParameters } = event;
-  const { rePublish } = publishSyncQueryValidator.parse(
+  const { rePublish, all } = publishSyncQueryValidator.parse(
     queryStringParameters ?? {}
   );
   const parsedBody = JSON.parse(body ?? "");
@@ -26,7 +26,7 @@ export const publishSyncValidateService = async (
 
   await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.SYNC_PUBLISH_SQS_URL ?? "",
-    MessageBody: JSON.stringify({ vendorId, accountId, rePublish })
+    MessageBody: JSON.stringify({ vendorId, accountId, rePublish, all })
   });
 
   return {

@@ -7,10 +7,12 @@ export const updateVendorRepository = async (
   accountId: string,
   vendorId: string
 ) => {
+  const filters = { "account.accountId": accountId, vendorId };
+  console.log(JSON.stringify(filters));
   const dbClient = await connectToDatabase();
   const createdProduct = dbClient
     .collection("vendors")
-    .updateOne({ "account.accountId": accountId, vendorId }, { ...payload });
+    .updateOne({ "account.accountId": accountId, vendorId }, { $set: payload });
 
   return createdProduct;
 };

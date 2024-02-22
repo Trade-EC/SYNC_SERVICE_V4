@@ -44,11 +44,20 @@ export const verifyCompletedList = async (
 ) => {
   const { status, productId, ...registerFilter } = register;
   const { accountId, channelId, storeId, vendorId, listId } = registerFilter;
+  const commonFilters = {
+    vendorId,
+    channelId,
+    accountId,
+    storeId,
+    listId,
+    source,
+    hash: listHash
+  };
   const dbClient = await connectToDatabase();
   await dbClient
     .collection("syncLists")
     .updateOne(
-      { productId, vendorId, channelId, accountId, storeId, listId, source },
+      { productId, ...commonFilters },
       { $set: { status: "SUCCESS" } },
       { upsert: false }
     );
@@ -74,8 +83,6 @@ export const verifyCompletedList = async (
     };
 
     await saveSyncRequest(syncRequest, false);
-    await dbClient
-      .collection("syncLists")
-      .deleteMany({ accountId, channelId, storeId, vendorId, listId, source });
+    await dbClient.collection("syncLists").deleteMany(commonFilters);
   }
 };

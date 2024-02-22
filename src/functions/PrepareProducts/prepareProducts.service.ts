@@ -39,7 +39,8 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
       vendorId,
       storeId,
       status: "PENDING" as const,
-      source
+      source,
+      hash: listHash
     };
   });
   logger.info(`${source} VALIDATE: CREATING SYNC LIST RECORDS`, logKeys);
