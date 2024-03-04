@@ -1,8 +1,11 @@
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 import { DbProduct } from "/opt/nodejs/sync-service-layer/types/products.types";
 import { SyncProductRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
+import { saveErrorSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
 import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
+
+import { CreateProductProps } from "./createProduct.types";
 
 /**
  *
@@ -66,12 +69,84 @@ export const verifyCompletedList = async (
     .find({ ...registerFilter })
     .toArray();
 
+  const pendingExists = allRecords.some(record => record.status === "PENDING");
   const allSuccess = allRecords.every(record => record.status === "SUCCESS");
+  const errorExists = allRecords.some(record => record.status === "ERROR");
 
-  if (allSuccess) {
-    const syncRequest: SyncRequest = {
+  const syncRequest: SyncRequest = {
+    accountId,
+    status: "SUCCESS",
+    type: source,
+    vendorId,
+    hash: listHash,
+    metadata: {
+      channelId,
+      storesId: storeId,
+      listId
+    }
+  };
+  if (allSuccess && !pendingExists) {
+    await saveSyncRequest(syncRequest, false);
+    await dbClient.collection("syncLists").deleteMany(commonFilters);
+  }
+
+  if (errorExists && !pendingExists) {
+    await saveErrorSyncRequest(syncRequest);
+  }
+};
+
+export const updateErrorProductSyncRecord = async (
+  register: SyncProductRecord,
+  errorMessage: string
+) => {
+  const dbClient = await connectToDatabase();
+  const { status, ...registerFilter } = register;
+  await dbClient
+    .collection("syncLists")
+    .updateOne(
+      { ...registerFilter },
+      { $set: { status: "ERROR", errorMessage } }
+    );
+};
+
+export const errorCreateProduct = async (
+  props: CreateProductProps,
+  errorMessage: string
+) => {
+  const { listHash, body } = props;
+  const { accountId, source, vendorId, listId, channelId, storeId } = body;
+  const { product } = body;
+  const { productId } = product;
+  const dbProductId = `${accountId}.${vendorId}.${productId}`;
+  const commonFilters = {
+    vendorId,
+    channelId,
+    accountId,
+    storeId,
+    listId,
+    source,
+    hash: listHash,
+    status: "PENDING" as const,
+    productId: dbProductId
+  };
+
+  await updateErrorProductSyncRecord(commonFilters, errorMessage);
+
+  const dbClient = await connectToDatabase();
+  const allRecords = await dbClient
+    .collection("syncLists")
+    .find(
+      { ...commonFilters, status: undefined, productId: undefined },
+      { ignoreUndefined: true }
+    )
+    .toArray();
+
+  const pendingExists = allRecords.some(record => record.status === "PENDING");
+  const errorExists = allRecords.some(record => record.status === "ERROR");
+
+  if (!pendingExists && errorExists) {
+    await saveErrorSyncRequest({
       accountId,
-      status: "SUCCESS",
       type: source,
       vendorId,
       hash: listHash,
@@ -80,9 +155,6 @@ export const verifyCompletedList = async (
         storesId: storeId,
         listId
       }
-    };
-
-    await saveSyncRequest(syncRequest, false);
-    await dbClient.collection("syncLists").deleteMany(commonFilters);
+    });
   }
 };

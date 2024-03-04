@@ -8,6 +8,9 @@ export const transformProducts = (products: any[]) => {
     if (product.taxInfo && product.taxInfo.length > 0) {
       product.taxInfo = product.taxInfo[0];
     }
+    if (Array.isArray(product.taxInfo) && product.taxInfo.length === 0) {
+      product.taxInfo = {};
+    }
     if (product.description === null) {
       delete product.description;
     }
@@ -18,10 +21,21 @@ export const transformProducts = (products: any[]) => {
   });
 };
 
+export const transformModifierGroups = (modifierGroups: any[]) => {
+  return modifierGroups.map(modifierGroup => {
+    const { type } = modifierGroup;
+    return {
+      ...modifierGroup,
+      type: type ? type : "CUSTOM"
+    };
+  });
+};
+
 export const transformHorneroLists = (listRequest: any) => {
-  const { products } = listRequest;
+  const { products, modifierGroups } = listRequest;
 
   listRequest.products = transformProducts(products);
+  listRequest.modifierGroups = transformModifierGroups(modifierGroups);
 
   return listRequest;
 };

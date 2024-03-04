@@ -1,6 +1,8 @@
 import { transformKFCStores } from "../transformations/kfc/stores.transform";
-import { kfcAccounts } from "../utils/accounts.utils";
+import { transformSCStores } from "../transformations/sushicorp/stores.transform";
+import { kfcAccounts, sushicorpAccounts } from "../utils/accounts.utils";
 import { kfcChannelsAndStoresValidatorMerge } from "./kfc/kfc-store.validator";
+import { sCChannelsAndStoresValidatorMerge } from "./sushicorp/sushicorp-store.validator";
 
 import { channelsAndStoresValidator } from "/opt/nodejs/sync-service-layer/validators/store.validator";
 
@@ -12,6 +14,13 @@ export const validateStores = (channelsAndStores: any, accountId: string) => {
         kfcChannelsAndStoresValidatorMerge.parse(channelsAndStores);
 
       channelsAndStoresTransformed = transformKFCStores(kfcValidatedPayload);
+      break;
+    case sushicorpAccounts.includes(accountId):
+      const sushicorpValidatedPayload =
+        sCChannelsAndStoresValidatorMerge.parse(channelsAndStores);
+      channelsAndStoresTransformed = transformSCStores(
+        sushicorpValidatedPayload
+      );
       break;
     default:
       channelsAndStoresTransformed = channelsAndStores;

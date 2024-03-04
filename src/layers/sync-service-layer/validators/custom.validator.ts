@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-export const numberStringValidator = z
-  .string()
-  .transform(x => Number(x))
-  .pipe(z.number());
-
 // TODO: Confirmar con input "aa:bb" y "100"
 export const timeString = z.preprocess(value => {
   z.string().parse(value);

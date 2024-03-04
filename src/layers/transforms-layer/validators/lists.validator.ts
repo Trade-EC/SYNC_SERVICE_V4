@@ -1,8 +1,10 @@
 import { transformHorneroLists } from "../transformations/hornero/lists.transform";
 import { transformKFCList } from "../transformations/kfc/lists.transform";
 import { horneroAccounts, kfcAccounts } from "../utils/accounts.utils";
+import { sushicorpAccounts } from "../utils/accounts.utils";
 import { horneroListsValidatorMerge } from "./hornero/hornero-lists.validator";
 import { kfcListsValidatorMerge } from "./kfc/kfc-lists.validator";
+import { sCListsValidatorMerge } from "./sushicorp/sushicorp-lists.validator";
 
 import { listsValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 
@@ -16,6 +18,10 @@ export const validateLists = (list: any, accountId: string) => {
     case horneroAccounts.includes(accountId):
       const horneroValidatedPayload = horneroListsValidatorMerge.parse(list);
       listTransformed = transformHorneroLists(horneroValidatedPayload);
+      break;
+    case sushicorpAccounts.includes(accountId):
+      const sushicorpValidatedPayload = sCListsValidatorMerge.parse(list);
+      listTransformed = sushicorpValidatedPayload;
       break;
     default:
       listTransformed = list;

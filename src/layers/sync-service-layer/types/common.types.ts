@@ -31,7 +31,7 @@ export interface SyncProductRecord {
   channelId: string;
   vendorId: string;
   storeId: string;
-  status: "PENDING" | "SUCCESS";
+  status: "PENDING" | "SUCCESS" | "ERROR";
   source: "LISTS" | "PRODUCTS";
 }
 
@@ -39,5 +39,5 @@ export interface SyncStoreRecord {
   accountId: string;
   vendorId: string;
   storeId: string;
-  status: "PENDING" | "SUCCESS";
+  status: "PENDING" | "SUCCESS" | "ERROR";
 }

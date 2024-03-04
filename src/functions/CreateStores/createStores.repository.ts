@@ -1,6 +1,9 @@
-import { DBStore } from "./createStores.types";
+import { CreateStoreProps, DBStore } from "./createStores.types";
 
-import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
+import {
+  saveErrorSyncRequest,
+  saveSyncRequest
+} from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
 import { SyncStoreRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
@@ -59,19 +62,78 @@ export const verifyCompletedStore = async (
     .find({ ...registerFilter })
     .toArray();
 
+  const pendingExists = allRecords.some(record => record.status === "PENDING");
   const allSuccess = allRecords.every(record => record.status === "SUCCESS");
+  const errorExists = allRecords.some(record => record.status === "ERROR");
 
-  if (allSuccess) {
-    const syncRequest: SyncRequest = {
+  const syncRequest: SyncRequest = {
+    accountId,
+    status: "SUCCESS",
+    vendorId,
+    hash: storeHash,
+    type: "CHANNELS_STORES",
+    metadata: {}
+  };
+  if (allSuccess && !pendingExists) {
+    await saveSyncRequest(syncRequest, false);
+    await dbClient.collection("syncStores").deleteMany(commonFilters);
+  }
+
+  if (errorExists && !pendingExists) {
+    await saveErrorSyncRequest(syncRequest);
+  }
+};
+
+export const updateErrorStoreSyncRecord = async (
+  register: SyncStoreRecord,
+  errorMessage: string
+) => {
+  const dbClient = await connectToDatabase();
+  await dbClient
+    .collection("syncStores")
+    .updateOne({ ...register }, { $set: { status: "ERROR", errorMessage } });
+};
+
+export const errorCreateStore = async (
+  props: CreateStoreProps,
+  errorMessage: string
+) => {
+  const { storeHash, body } = props;
+  const { accountId, vendorId } = body;
+  const { store } = body;
+  const { storeId } = store;
+  const commonFilters = {
+    storeId: `${accountId}.${vendorId}.${storeId}`,
+    accountId,
+    vendorId,
+    status: "PENDING" as const,
+    hash: storeHash
+  };
+
+  await updateErrorStoreSyncRecord(commonFilters, errorMessage);
+  console.log(JSON.stringify({ commonFilters }));
+
+  const dbClient = await connectToDatabase();
+  const allRecords = await dbClient
+    .collection("syncStores")
+    .find(
+      { ...commonFilters, storeId: undefined, status: undefined },
+      { ignoreUndefined: true }
+    )
+    .toArray();
+
+  console.log(JSON.stringify({ allRecords }));
+
+  const pendingExists = allRecords.some(record => record.status === "PENDING");
+  const errorExists = allRecords.some(record => record.status === "ERROR");
+
+  if (!pendingExists && errorExists) {
+    await saveErrorSyncRequest({
       accountId,
-      status: "SUCCESS",
       vendorId,
       hash: storeHash,
       type: "CHANNELS_STORES",
       metadata: {}
-    };
-
-    await saveSyncRequest(syncRequest, false);
-    await dbClient.collection("syncStores").deleteMany(commonFilters);
+    });
   }
 };

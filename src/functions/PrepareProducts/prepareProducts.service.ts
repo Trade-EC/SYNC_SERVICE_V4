@@ -40,7 +40,8 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
       storeId,
       status: "PENDING" as const,
       source,
-      hash: listHash
+      hash: listHash,
+      createdAt: new Date()
     };
   });
   logger.info(`${source} VALIDATE: CREATING SYNC LIST RECORDS`, logKeys);

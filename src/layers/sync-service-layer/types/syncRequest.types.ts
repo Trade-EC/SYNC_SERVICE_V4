@@ -14,3 +14,8 @@ export interface SyncRequestMetadata {
   storesId?: string;
   listId?: string;
 }
+
+export type ErrorSyncRequest = Pick<
+  SyncRequest,
+  "type" | "accountId" | "vendorId" | "hash" | "metadata"
+>;

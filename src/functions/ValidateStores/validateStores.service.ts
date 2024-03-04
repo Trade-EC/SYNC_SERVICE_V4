@@ -78,7 +78,6 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   await saveSyncRequest(syncRequest);
 
   logger.info("STORE VALIDATE: SEND TO PREPARE STORES");
-  // await syncStores(channelsAndStores, accountId, hash, vendorChannels);
   // TODO: implement syncAll
   const payload: PrepareStoresPayload = {
     channelsAndStores,

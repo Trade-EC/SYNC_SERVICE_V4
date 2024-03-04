@@ -81,7 +81,7 @@ export const listValidator = z.object({
   channelId: z.string().max(100),
   // TODO: revisar en peticiones
   schedules: z.array(scheduleValidator).optional(),
-  ecommerceChannelId: z.coerce.number().int().optional(),
+  ecommerceChannelId: z.number().int().optional(),
   channelReferenceName: z.string().optional()
 });
 
@@ -119,19 +119,19 @@ export const listsSuperRefine = (schema: any, ctx: z.RefinementCtx) => {
   const { products, categories, modifierGroups } = schema;
 
   const productIds = products.map((product: any) => product.productId);
-  const modifierGroupIds = modifierGroups.map(
-    (modifierGroup: any) => modifierGroup.modifierId
+  const modifierGroupIds = modifierGroups.map((modifierGroup: any) =>
+    modifierGroup.modifierId.toString()
   );
 
   const productsInCategoriesSet = new Set<string>();
   categories.forEach((category: any) =>
     category.productListing.forEach((product: any) =>
-      productsInCategoriesSet.add(product.productId)
+      productsInCategoriesSet.add(product.productId.toString())
     )
   );
 
   const nonExistProductsForCategories = [...productsInCategoriesSet].filter(
-    productInCategory => !productIds.includes(productInCategory)
+    productInCategory => !productIds.includes(productInCategory.toString())
   );
 
   if (nonExistProductsForCategories.length > 0) {
@@ -147,17 +147,17 @@ export const listsSuperRefine = (schema: any, ctx: z.RefinementCtx) => {
   products.forEach((product: any) =>
     product.productModifiers?.forEach((productModifier: any) => {
       if (typeof productModifier === "string") {
-        modifiersInProductsSet.add(productModifier);
+        modifiersInProductsSet.add(productModifier.toString());
       }
 
       if (typeof productModifier === "object") {
-        modifiersInProductsSet.add(productModifier.modifierId);
+        modifiersInProductsSet.add(productModifier.modifierId.toString());
       }
     })
   );
 
   const nonExistModifiers = [...modifiersInProductsSet].filter(
-    modifierId => !modifierGroupIds.includes(modifierId)
+    modifierId => !modifierGroupIds.includes(modifierId.toString())
   );
 
   if (nonExistModifiers.length > 0) {
@@ -172,7 +172,7 @@ export const listsSuperRefine = (schema: any, ctx: z.RefinementCtx) => {
   const productInModifierSet = new Set<string>();
   modifierGroups.forEach((modifierGroup: any) =>
     modifierGroup.modifierOptions.forEach((modifierOption: any) => {
-      productInModifierSet.add(modifierOption.productId);
+      productInModifierSet.add(modifierOption.productId.toString());
     })
   );
 

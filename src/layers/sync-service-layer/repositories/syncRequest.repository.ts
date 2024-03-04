@@ -1,4 +1,4 @@
-import { SyncRequest } from "../types/syncRequest.types";
+import { ErrorSyncRequest, SyncRequest } from "../types/syncRequest.types";
 import { connectToDatabase } from "../utils/mongo.utils";
 
 /**
@@ -36,6 +36,23 @@ export const saveSyncRequest = async (
       { $set: { ...syncRequest, updatedAt: new Date() } },
       { upsert, ignoreUndefined: true }
     );
+
+  return dbSyncRequest;
+};
+
+export const saveErrorSyncRequest = async (
+  errorSyncRequest: ErrorSyncRequest
+) => {
+  const dbClient = await connectToDatabase();
+  const dbSyncRequest = await dbClient.collection("syncRequests").updateMany(
+    { ...errorSyncRequest, status: "PENDING" },
+    {
+      $set: {
+        status: "ERROR",
+        updatedAt: new Date()
+      }
+    }
+  );
 
   return dbSyncRequest;
 };

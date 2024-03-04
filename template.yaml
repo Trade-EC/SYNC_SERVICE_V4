@@ -96,24 +96,24 @@ Resources:
   SyncImagesSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: SyncImagesSQS
+      QueueName: !Sub "${AWS::StackName}-sync-images-${StageName}-sqs"
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt SyncImagesDLQ.Arn
         maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: SyncImagesSQS
+          Value: !Sub "${AWS::StackName}-sync-images-${StageName}-sqs"
   
   SyncImagesDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: SyncImagesDLQ
+      QueueName: !Sub "${AWS::StackName}-sync-images-${StageName}-dlq"
 
   StoresSyncSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: StoresSyncSQS.fifo
+      QueueName: !Sub "${AWS::StackName}-stores-sync-${StageName}-sqs.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
       VisibilityTimeout: 180
@@ -122,19 +122,19 @@ Resources:
         maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: StoresSyncSQS
+          Value: !Sub "${AWS::StackName}-stores-sync-${StageName}-sqs.fifo"
 
   StoresSyncDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: StoresSyncDLQ.fifo
+      QueueName: !Sub "${AWS::StackName}-stores-sync-${StageName}-dlq.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
 
   ProductSyncSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ProductSyncSQS.fifo
+      QueueName: !Sub "${AWS::StackName}-product-sync-${StageName}-sqs.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
       VisibilityTimeout: 180
@@ -143,19 +143,19 @@ Resources:
         maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: ProductSyncSQS
+          Value: !Sub "${AWS::StackName}-product-sync-${StageName}-sqs.fifo"
 
   ProductSyncDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ProductSyncDLQ.fifo
+      QueueName: !Sub "${AWS::StackName}-product-sync-${StageName}-dlq.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
 
   ShippingCostSyncSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ShippingCostSyncSQS.fifo
+      QueueName: !Sub "${AWS::StackName}-shipping-cost-sync-${StageName}-sqs.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
       VisibilityTimeout: 180
@@ -164,36 +164,36 @@ Resources:
         maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: ShippingCostSyncSQS
+          Value: !Sub "${AWS::StackName}-shipping-cost-sync-${StageName}-sqs.fifo"
 
   ShippingCostSyncDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ShippingCostSyncDLQ.fifo
+      QueueName: !Sub "${AWS::StackName}-shipping-cost-sync-${StageName}-dlq.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
 
   PublishSyncSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: PublishSyncSQS
+      QueueName: !Sub "${AWS::StackName}-publish-sync-${StageName}-sqs"
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PublishSyncDLQ.Arn
         maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: PublishSyncSQS
+          Value: !Sub "${AWS::StackName}-publish-sync-${StageName}-sqs"
 
   PublishSyncDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: PublishSyncDLQ
+      QueueName: !Sub "${AWS::StackName}-publish-sync-${StageName}-dlq"
 
   PrepareProductsSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: PrepareProductsSQS.fifo
+      QueueName: !Sub "${AWS::StackName}-prepare-products-${StageName}-sqs.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
       VisibilityTimeout: 180
@@ -202,19 +202,19 @@ Resources:
         maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: PrepareProductsSQS
+          Value: !Sub "${AWS::StackName}-prepare-products-${StageName}-sqs.fifo"
   
   PrepareProductsDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: PrepareProductsDLQ.fifo
+      QueueName: !Sub "${AWS::StackName}-prepare-products-${StageName}-dlq.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
 
   PrepareStoresSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: PrepareStoresSQS.fifo
+      QueueName: !Sub "${AWS::StackName}-prepare-stores-${StageName}-sqs.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
       VisibilityTimeout: 180
@@ -223,12 +223,12 @@ Resources:
         maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: PrepareStoresSQS
+          Value: !Sub "${AWS::StackName}-prepare-stores-${StageName}-sqs.fifo"
     
   PrepareStoresDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: PrepareStoresDLQ.fifo
+      QueueName: !Sub "${AWS::StackName}-prepare-stores-${StageName}-dlq.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
 
@@ -271,7 +271,7 @@ Resources:
   LayerSyncService:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: sync-service-layer
+      LayerName: !Sub "${AWS::StackName}-sync-service-layer-${StageName}"
       Description: Shared dependencies and utils for the app
       ContentUri: src/layers/sync-service-layer/build
       RetentionPolicy: Retain
@@ -283,7 +283,7 @@ Resources:
   LayerTransforms:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: transforms-layer
+      LayerName: !Sub "${AWS::StackName}-transforms-layer-${StageName}"
       Description: Sync service account transformations
       ContentUri: src/layers/transforms-layer/build
       RetentionPolicy: Retain
@@ -295,6 +295,7 @@ Resources:
   CreateStores:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-CreateStores-${StageName}"
       CodeUri: src/functions/CreateStores/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -331,6 +332,7 @@ Resources:
   CreateProduct:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-CreateProduct-${StageName}"
       CodeUri: src/functions/CreateProduct/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -373,6 +375,7 @@ Resources:
   SyncImages:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-SyncImages-${StageName}"
       CodeUri: src/functions/SyncImages/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -410,6 +413,7 @@ Resources:
   CreateShippingCost:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-CreateShippingCost-${StageName}"
       CodeUri: src/functions/CreateShippingCost/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -447,6 +451,7 @@ Resources:
   PublishSync:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-PublishSync-${StageName}"
       CodeUri: src/functions/PublishSync/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -484,6 +489,7 @@ Resources:
   PrepareProducts:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-PrepareProducts-${StageName}"
       CodeUri: src/functions/PrepareProducts/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -526,6 +532,7 @@ Resources:
   PrepareStores:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-PrepareStores-${StageName}"
       CodeUri: src/functions/PrepareStores/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -569,6 +576,7 @@ Resources:
   PublishSyncValidate:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-PublishSyncValidate-${StageName}"
       CodeUri: src/functions/PublishSyncValidate/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -602,6 +610,7 @@ Resources:
   PublishWebhook:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-PublishWebhook-${StageName}"
       CodeUri: src/functions/PublishWebhook/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -629,6 +638,7 @@ Resources:
   SyncSummary:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-SyncSummary-${StageName}"
       CodeUri: src/functions/SyncSummary/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -656,6 +666,7 @@ Resources:
   FetchStoresByIdByVendor:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchStoresByIdByVendor-${StageName}"
       CodeUri: src/functions/FetchStoresByVendor/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -684,6 +695,7 @@ Resources:
   FetchStoresByVendor:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchStoresByVendor-${StageName}"
       CodeUri: src/functions/FetchStoresByVendor/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -712,6 +724,7 @@ Resources:
   FetchProductsByIdByVendor:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchProductsByIdByVendor-${StageName}"
       CodeUri: src/functions/FetchProductsByVendor/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -740,6 +753,7 @@ Resources:
   FetchProductsByVendor:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchProductsByVendor-${StageName}"
       CodeUri: src/functions/FetchProductsByVendor/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -768,6 +782,7 @@ Resources:
   ValidateLists:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-ValidateLists-${StageName}"
       CodeUri: src/functions/ValidateLists/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -809,6 +824,7 @@ Resources:
   ValidateProducts:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-ValidateProducts-${StageName}"
       CodeUri: src/functions/ValidateProducts/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -850,6 +866,7 @@ Resources:
   ValidateStores:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-ValidateStores-${StageName}"
       CodeUri: src/functions/ValidateStores/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -891,6 +908,7 @@ Resources:
   FetchQueueEvents:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchQueueEvents-${StageName}"
       CodeUri: src/functions/FetchQueueEvents/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -936,6 +954,7 @@ Resources:
   ModifyQueues:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-ModifyQueues-${StageName}"
       CodeUri: src/functions/ModifyQueues/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -981,6 +1000,7 @@ Resources:
   FetchVersionsByVendor:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchVersionsByVendor-${StageName}"
       CodeUri: src/functions/FetchVersionsByVendor/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -1008,6 +1028,7 @@ Resources:
   FetchHistoryStoresByVersion:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchHistoryStoresByVersion-${StageName}"
       CodeUri: src/functions/FetchHistoryStoresByVersion/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -1035,6 +1056,7 @@ Resources:
   FetchHistoryProductsByVersion:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchHistoryProductsByVersion-${StageName}"
       CodeUri: src/functions/FetchHistoryProductsByVersion/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -1062,6 +1084,7 @@ Resources:
   Rollback:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-Rollback-${StageName}"
       CodeUri: src/functions/Rollback/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
@@ -1089,6 +1112,7 @@ Resources:
   CreateVendor:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-CreateVendor-${StageName}"
       CodeUri: src/functions/CreateVendor/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x

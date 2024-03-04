@@ -2,7 +2,6 @@ import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
 import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { schedulesByChannelValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { scheduleValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
-import { numberStringValidator } from "/opt/nodejs/sync-service-layer/validators/custom.validator";
 
 export const channelValidator = z.object({
   active: z.boolean(),
@@ -10,7 +9,7 @@ export const channelValidator = z.object({
   channelId: z.string(),
   additionalInfo: z.record(z.string().min(1), z.any()).optional(),
   channelReferenceName: z.string().optional(),
-  ecommerceChannelId: z.coerce.number().int().optional()
+  ecommerceChannelId: z.number().int().optional()
 });
 
 export const storeServicesValidator = z.object({
@@ -24,18 +23,18 @@ export const storeContactValidator = z.object({
 });
 
 export const storeDeliveryValidator = z.object({
-  deliveryTimeValue: z.number().int().or(numberStringValidator).optional(),
+  deliveryTimeValue: z.coerce.number().int().optional(),
   deliveryTimeUnit: z.enum(["min", "hour"]).optional(),
   minimumOrder: z.number().optional(),
   shippingCost: z.number().optional(),
   cookTime: z.number().int().optional(),
-  deliveryId: z.coerce.number().int().optional()
+  deliveryId: z.number().int().optional()
 });
 
 export const storeLocationValidator = z.object({
   city: z.string(),
-  latitude: numberStringValidator,
-  longitude: numberStringValidator
+  latitude: z.coerce.number(),
+  longitude: z.coerce.number()
 });
 
 export const storeValidator = z.object({
