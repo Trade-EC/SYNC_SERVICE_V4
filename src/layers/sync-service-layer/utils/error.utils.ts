@@ -2,10 +2,18 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { z } from "zod";
 
+/**
+ * @description Handle error and return APIGatewayProxyResult
+ * @param e
+ * @returns APIGatewayProxyResult
+ */
 export const handleError = (e: any): APIGatewayProxyResult => {
   let message: string = e.message;
-  if (e instanceof z.ZodError) {
-    message = e.issues.map(issue => issue.message).join(". ");
+  if (e.issues) {
+    const zodError = new z.ZodError(e.issues);
+    message = zodError.issues
+      .map(issue => `Error in field ${issue.path.join(",")}: ${issue.message}`)
+      .join(". ");
   }
   return { statusCode: 500, body: JSON.stringify({ message }) };
 };

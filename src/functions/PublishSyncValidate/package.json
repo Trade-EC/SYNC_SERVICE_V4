@@ -1,0 +1,10 @@
+{
+  "name": "publish-sync-validate",
+  "version": "1.0.0",
+  "description": "Lambda function to validate publish sync for sync process",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "clear:modules": "rm -rf node_modules"
+  }
+}

@@ -1,0 +1,11 @@
+{
+    "name": "fetch-stores-by-vendor",
+    "version": "1.0.0",
+    "description": "Lambda function to fetch stores by vendor",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+      "clear:modules": "rm -rf node_modules"
+    }
+  }
+  

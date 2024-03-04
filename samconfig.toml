@@ -18,9 +18,10 @@ capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "sync-service-v4"
-region = "us-east-2"
-parameter_overrides = "StageName=\"dev\""
+region = "us-west-2"
+parameter_overrides = "StageName=\"dev\" securityGroupIds=\"sg-0a2373670051fdd3b\" subnetIds=\"subnet-0911a26d71ef84cc0,subnet-0f8ca9799aa4bf654,subnet-062d9351300f5dfd0\" mongoDbUri=\"mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority\" clientName=\"kfc\""
 image_repositories = []
+disable_rollback = true
 
 [default.package.parameters]
 resolve_s3 = true
@@ -33,3 +34,33 @@ warm_containers = "EAGER"
 
 [default.local_start_lambda.parameters]
 warm_containers = "EAGER"
+
+[dev.deploy.parameters]
+stack_name = "sync-service-v4"
+resolve_s3 = true
+s3_prefix = "sync-service-v4"
+region = "us-west-2"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "StageName=\"dev\" vpceIds=\"vpce-0955b737b31101992\" securityGroupIds=\"sg-0adb5421e6072c925\" subnetIds=\"subnet-0911a26d71ef84cc0,subnet-0f8ca9799aa4bf654,subnet-062d9351300f5dfd0\" mongoDbUri=\"mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority\" clientName=\"kfc\" taskScheduleTable=\"TaskSchedule-bup3eyjsybh3zd6oqclgsbib7u-develop\" newProductsServiceUrl=\"https://18paa7bo67.execute-api.us-west-2.amazonaws.com/dev\""
+image_repositories = []
+confirm_changeset = true
+
+[artisncoredev.deploy.parameters]
+stack_name = "sync-service-v4"
+resolve_s3 = true
+s3_prefix = "sync-service-v4"
+region = "us-east-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "StageName=\"dev\" vpceIds=\"vpce-0cefa56873851b15e\" securityGroupIds=\"sg-0f85f34f3fd902237\" subnetIds=\"subnet-0581285c12275daaa,subnet-0018c38f16c16a218,subnet-0bf5af8b446362a0b\" mongoDbUri=\"mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority\" clientName=\"artisncore\" taskScheduleTable=\"TaskSchedule-3ndoveqbsra2vn422aqnjr6goy-artisndev\" newProductsServiceUrl=\"https://r6s9rw9cbe.execute-api.us-east-2.amazonaws.com/dev\""
+image_repositories = []
+
+["prod.kfc".deploy.parameters]
+stack_name = "sync-service-v4"
+resolve_s3 = true
+s3_prefix = "sync-service-v4"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "StageName=\"prod\" vpceIds=\"vpce-079371f259d5ee01d\" securityGroupIds=\"sg-050c0bf1b765af094\" subnetIds=\"subnet-0345c7d3b7d223883,subnet-005bfb41fa99e2531,subnet-0e9c6885fc4c61a1a\" mongoDbUri=\" \" clientName=\"kfc\" taskScheduleTable=\"TaskSchedule-srdj54q3qzgfdl2jvq2lpmlcaq-production\" newProductsServiceUrl=\"https://phl0xzxwej.execute-api.us-east-1.amazonaws.com/prod\""
+image_repositories = []

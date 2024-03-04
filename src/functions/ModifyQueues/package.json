@@ -1,0 +1,10 @@
+{
+  "name": "modify-queues",
+  "version": "1.0.0",
+  "description": "Lambda function to modify queues",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "clear:modules": "rm -rf node_modules"
+  }
+}

@@ -10,6 +10,10 @@ export const transformProducts = (products: any[]) => {
   return products.map(product => {
     product.productId = String(product.productId);
     product.tags = product.tags?.replace("[", "").replace("]", "").split(",");
+    product.upselling = product.upselling
+      ?.replace("[", "")
+      .replace("]", "")
+      .split(",");
     if (product.priceInfo && product.priceInfo.length > 0) {
       product.priceInfo = product.priceInfo[0];
     }

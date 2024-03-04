@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-export const numberString = z.preprocess(
-  value => parseFloat(z.string().parse(value)),
-  z.number(),
-  {}
-);
-
 // TODO: Confirmar con input "aa:bb" y "100"
 export const timeString = z.preprocess(value => {
   z.string().parse(value);

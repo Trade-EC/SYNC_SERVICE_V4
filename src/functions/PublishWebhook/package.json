@@ -1,0 +1,11 @@
+{
+    "name": "publish-webhook",
+    "version": "1.0.0",
+    "description": "Lambda function to publish webhook for sync process",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+      "clear:modules": "rm -rf node_modules"
+    }
+  }
+  

@@ -1,27 +1,77 @@
 import { DBStore, Store } from "./createStores.types";
 
-import { transformStoreSchedules } from "/opt/nodejs/utils/schedule.utils";
-import { transformStoreSchedulesByChannel } from "/opt/nodejs/utils/schedule.utils";
+import { transformStoreSchedules } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
+import { transformStoreSchedulesByChannel } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
+import { getTaxes } from "/opt/nodejs/sync-service-layer/transforms/product.transform";
+import { VendorChannels } from "/opt/nodejs/sync-service-layer/types/vendor.types";
 
+export const catalogueTransformer = (
+  storeChannels: string[],
+  vendorChannels: VendorChannels,
+  vendorId: string,
+  storeId: string
+) => {
+  const catalogues =
+    storeChannels
+      .map(storeChannel => {
+        const filterVendorChannels = vendorChannels.filter(
+          vendorChannel =>
+            vendorChannel.channelId === storeChannel ||
+            vendorChannel.ecommerceChannelId === storeChannel
+        );
+        const channels = filterVendorChannels.map(vendorChannel => {
+          const { channelId, name, ecommerceChannelId } = vendorChannel;
+          return {
+            catalogueId: `${vendorId}.${storeId}.${
+              ecommerceChannelId ?? channelId
+            }`,
+            name,
+            active: true
+          };
+        });
+        return channels;
+      })
+      .flat() ?? [];
+
+  return catalogues;
+};
+
+/**
+ *
+ * @param store request store
+ * @param accountId
+ * @param vendorId
+ * @description Transform store into DBStore
+ * @returns DBStore
+ */
 export const storeTransformer = (
   store: Store,
   accountId: string,
-  vendorId: string
-): DBStore => {
+  vendorId: string,
+  storeChannels: string[],
+  vendorChannels: VendorChannels
+) => {
   const { storeId, name, contactInfo, locationInfo, schedules } = store;
-  const { schedulesByChannel, storeChannels, deliveryInfo } = store;
+  const { schedulesByChannel, deliveryInfo } = store;
   const { services, active, default: isDefault, featured } = store;
+  const { storeCode, taxesInfo } = store;
+  const { deliveryId } = deliveryInfo ?? {};
   const transformedSchedules = schedules
     ? transformStoreSchedules(schedules, storeChannels, storeId)
     : [];
   const transformedSchedulesByChannel = schedulesByChannel
-    ? transformStoreSchedulesByChannel(schedulesByChannel, storeId)
+    ? transformStoreSchedulesByChannel(
+        schedulesByChannel,
+        storeId,
+        vendorChannels
+      )
     : [];
 
-  return {
-    storeId,
-    status: "DRAFT",
-    version: "2023-07-01-1",
+  const newStore: DBStore = {
+    storeId: `${accountId}.${vendorId}.${storeId}`,
+    version: null,
+    hash: null,
+    status: "DRAFT" as const,
     storeName: name,
     maxOrderAmount: 0,
     address: contactInfo.address,
@@ -35,6 +85,7 @@ export const storeTransformer = (
       services
         ?.map(service => ({ ...service, active: service.active === "ACTIVE" }))
         .filter(service => service.active) ?? [],
+    taxes: getTaxes(taxesInfo),
     active: active,
     isDefault,
     outOfService: false,
@@ -44,30 +95,28 @@ export const storeTransformer = (
     minOrder: deliveryInfo?.minimumOrder ?? 0,
     minOrderSymbol: null,
     orderSymbol: null,
-    catalogues: [],
+    catalogues: catalogueTransformer(
+      storeChannels,
+      vendorChannels,
+      vendorId,
+      storeId
+    ),
     polygons: null,
     sponsored: !!featured, // Debería salir del vendor
     tips: [], // Salen del vendor
     timezone: null,
-    location: {
-      lat: locationInfo.latitude,
-      lon: locationInfo.longitude
-    },
-    additionalInfo: {
-      externalId: storeId
-    },
-    city: {
-      id: "",
-      name: locationInfo.city, // city
-      active: false
-    },
+    location: { lat: locationInfo.latitude, lon: locationInfo.longitude },
+    additionalInfo: { externalId: storeId, external_code: storeCode },
+    city: { id: "", name: locationInfo.city, active: false },
     country: null,
-    vendor: {
-      id: vendorId
-    },
+    vendor: { id: vendorId },
     accounts: [{ accountId }],
-    account: {
-      id: accountId
-    }
+    account: { id: accountId },
+    shippingCostId:
+      typeof deliveryId !== "undefined"
+        ? `${accountId}.${vendorId}.${deliveryId}`
+        : null
   };
+
+  return newStore;
 };

@@ -11,97 +11,267 @@ Globals:
     Timeout: 180
     Layers:
       - !Ref LayerSyncService
+      - !Ref LayerTransforms
     Environment:
       Variables:
         SYNC_IMAGES_SQS_URL: !Ref SyncImagesSQS
-        SYNC_LISTS_SQS_URL: !Ref ListSyncSQS
-        SYNC_PRODUCTS_SQS_URL: !Ref ProductsSyncSQS
         SYNC_STORES_SQS_URL: !Ref StoresSyncSQS
+        SYNC_PRODUCT_SQS_URL: !Ref ProductSyncSQS
+        SYNC_SHIPPING_COST_SQS_URL: !Ref ShippingCostSyncSQS
+        SYNC_PUBLISH_SQS_URL: !Ref PublishSyncSQS
+        PREPARE_PRODUCTS_SQS_URL: !Ref PrepareProductsSQS
+        PREPARE_STORES_SQS_URL: !Ref PrepareStoresSQS
+        SYNC_IMAGES_DLQ_URL: !Ref SyncImagesDLQ
+        SYNC_STORES_DLQ_URL: !Ref StoresSyncDLQ
+        SYNC_PRODUCT_DLQ_URL: !Ref ProductSyncDLQ
+        SYNC_SHIPPING_COST_DLQ_URL: !Ref ShippingCostSyncDLQ
+        SYNC_PUBLISH_DLQ_URL: !Ref PublishSyncDLQ
+        PREPARE_PRODUCTS_DLQ_URL: !Ref PrepareProductsDLQ
+        PREPARE_STORES_DLQ_URL: !Ref PrepareStoresDLQ
+        SYNC_IMAGES_DLQ_ARN: !GetAtt SyncImagesDLQ.Arn
+        SYNC_STORES_DLQ_ARN: !GetAtt StoresSyncDLQ.Arn
+        SYNC_PRODUCT_DLQ_ARN: !GetAtt ProductSyncDLQ.Arn
+        SYNC_SHIPPING_COST_DLQ_ARN: !GetAtt ShippingCostSyncDLQ.Arn
+        SYNC_PUBLISH_DLQ_ARN: !GetAtt PublishSyncDLQ.Arn
+        PREPARE_PRODUCTS_DLQ_ARN: !GetAtt PrepareProductsDLQ.Arn
+        PREPARE_STORES_DLQ_ARN: !GetAtt PrepareStoresDLQ.Arn
+        SYNC_IMAGES_SQS_ARN: !GetAtt SyncImagesSQS.Arn
+        SYNC_STORES_SQS_ARN: !GetAtt StoresSyncSQS.Arn
+        SYNC_PRODUCT_SQS_ARN: !GetAtt ProductSyncSQS.Arn
+        SYNC_SHIPPING_COST_SQS_ARN: !GetAtt ShippingCostSyncSQS.Arn
+        SYNC_PUBLISH_SQS_ARN: !GetAtt PublishSyncSQS.Arn        
+        PREPARE_PRODUCTS_SQS_ARN: !GetAtt PrepareProductsSQS.Arn
+        PREPARE_STORES_SQS_ARN: !GetAtt PrepareStoresSQS.Arn 
+        SYNC_BUCKET_ADMIN: !Ref SyncServiceV4AdminBucket
+        SYNC_BUCKET_SYNC: !Ref SyncServiceV4SyncBucket
+        SYNC_BUCKET_LOGS: !Ref SyncServiceV4LogsBucket
+        MONGODB_URI: !Ref mongoDbUri
+        REGION: !Ref "AWS::Region"
+        TASK_SCHEDULE_TABLE: !Ref taskScheduleTable
+        NEW_PRODUCTS_SERVICE_URL: !Ref newProductsServiceUrl
+    VpcConfig:
+      SecurityGroupIds:
+        - !Ref securityGroupIds
+      SubnetIds: !Split [",", !Ref subnetIds]   
 
 Parameters:
   StageName:
     Type: String
     Default: dev
-    Description: (Required) Enter Dev | Prod. Default is Dev.
+    Description: (Required) Enter dev | prod. Default is dev.
     AllowedValues:
       - dev
       - prod
+  vpceIds:
+    Description: "List of allowed vpc endpoint ids"
+    Type: "String"
+    Default: "vpce-0eb8ec9b48e73b9f9"
+  securityGroupIds:
+    Description: "List of allowed security groups ids"
+    Type: "String"
+    Default: "sg-080312893df07b75d"
+  subnetIds:
+    Description: "List of allowed subnets ids"
+    Type: "String"
+    Default: "subnet-0f9d5eddc689fcd8d,subnet-0170677e6682ab84a"
+  mongoDbUri:
+    Description: "MongoDb uri"
+    Type: "String"
+    Default: "mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority"
+  clientName:
+    Description: "Name of the client, necessary for the creation of the s3 buckets"
+    Type: "String"
+    Default: ""
+  taskScheduleTable:
+    Description: "Name of the task schedule table"
+    Type: "String"
+    Default: ""
+  newProductsServiceUrl:
+    Description: "Name of the task schedule table"
+    Type: "String"
+    Default: ""
 
 Resources:
   # SQS Queues
   SyncImagesSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: SyncImagesSQS
+      QueueName: !Sub "${AWS::StackName}-sync-images-${StageName}-sqs"
       VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SyncImagesDLQ.Arn
+        maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: SyncImagesSQS
-
-  ListSyncSQS:
+          Value: !Sub "${AWS::StackName}-sync-images-${StageName}-sqs"
+  
+  SyncImagesDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ListSyncSQS.fifo
-      ContentBasedDeduplication: true
-      FifoQueue: true
-      VisibilityTimeout: 300
-      Tags:
-        - Key: Name
-          Value: ListSyncSQS
+      QueueName: !Sub "${AWS::StackName}-sync-images-${StageName}-dlq"
 
   StoresSyncSQS:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: StoresSyncSQS.fifo
+      QueueName: !Sub "${AWS::StackName}-stores-sync-${StageName}-sqs.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
-      VisibilityTimeout: 300
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt StoresSyncDLQ.Arn
+        maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: StoresSyncSQS
+          Value: !Sub "${AWS::StackName}-stores-sync-${StageName}-sqs.fifo"
 
-  ProductsSyncSQS:
+  StoresSyncDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: ProductsSyncSQS.fifo
+      QueueName: !Sub "${AWS::StackName}-stores-sync-${StageName}-dlq.fifo"
       ContentBasedDeduplication: true
       FifoQueue: true
-      VisibilityTimeout: 300
+
+  ProductSyncSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-product-sync-${StageName}-sqs.fifo"
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ProductSyncDLQ.Arn
+        maxReceiveCount: 3
       Tags:
         - Key: Name
-          Value: ProductsSyncSQS
+          Value: !Sub "${AWS::StackName}-product-sync-${StageName}-sqs.fifo"
 
-  # API Gateway
+  ProductSyncDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-product-sync-${StageName}-dlq.fifo"
+      ContentBasedDeduplication: true
+      FifoQueue: true
+
+  ShippingCostSyncSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-shipping-cost-sync-${StageName}-sqs.fifo"
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ShippingCostSyncDLQ.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-shipping-cost-sync-${StageName}-sqs.fifo"
+
+  ShippingCostSyncDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-shipping-cost-sync-${StageName}-dlq.fifo"
+      ContentBasedDeduplication: true
+      FifoQueue: true
+
+  PublishSyncSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-publish-sync-${StageName}-sqs"
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt PublishSyncDLQ.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-publish-sync-${StageName}-sqs"
+
+  PublishSyncDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-publish-sync-${StageName}-dlq"
+
+  PrepareProductsSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-prepare-products-${StageName}-sqs.fifo"
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt PrepareProductsDLQ.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-prepare-products-${StageName}-sqs.fifo"
+  
+  PrepareProductsDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-prepare-products-${StageName}-dlq.fifo"
+      ContentBasedDeduplication: true
+      FifoQueue: true
+
+  PrepareStoresSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-prepare-stores-${StageName}-sqs.fifo"
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt PrepareStoresDLQ.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-prepare-stores-${StageName}-sqs.fifo"
+    
+  PrepareStoresDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-prepare-stores-${StageName}-dlq.fifo"
+      ContentBasedDeduplication: true
+      FifoQueue: true
+
+# API Gateway
   SyncServiceV4Api:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref StageName
+      TracingEnabled: true
+      Auth:
+        ResourcePolicy:
+          CustomStatements:
+            [{
+              Effect: "Allow",
+              Action: "execute-api:Invoke",
+              Resource: ["execute-api:/*/*/*"],
+              Principal: "*",
+            }]
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds: !Split [",", !Ref vpceIds]
 
   # S3 Buckets
-  SyncServiceV4Bucket:
+  SyncServiceV4AdminBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "syncservicev4.admin.${StageName}"
+      BucketName: !Sub "syncservicev4.${clientName}.admin.${StageName}"
 
-  ProductBucketPolicy:
-    Type: AWS::S3::BucketPolicy
+  SyncServiceV4SyncBucket:
+    Type: AWS::S3::Bucket
     Properties:
-      Bucket: !Ref SyncServiceV4Bucket
-      PolicyDocument:
-        Id: PublicReadPolicy
-        Version: 2012-10-17
-        Statement:
-          - Sid: PublicReadForGetBucketObjects
-            Effect: Allow
-            Principal: '*'
-            Action: 's3:GetObject'
-            Resource: !Sub arn:aws:s3:::${SyncServiceV4Bucket}/*
-            
+      BucketName: !Sub "syncservicev4.${clientName}.sync.${StageName}"
+
+  SyncServiceV4LogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "syncservicev4.${clientName}.logs.${StageName}"
+
   #Lambdas
   LayerSyncService:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: sync-service-layer
+      LayerName: !Sub "${AWS::StackName}-sync-service-layer-${StageName}"
       Description: Shared dependencies and utils for the app
       ContentUri: src/layers/sync-service-layer/build
       RetentionPolicy: Retain
@@ -109,166 +279,24 @@ Resources:
         - nodejs18.x
     Metadata:
       BuildMethod: nodejs18.x
-
-  ValidateStores:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  
+  LayerTransforms:
+    Type: AWS::Serverless::LayerVersion
     Properties:
-      CodeUri: src/functions/ValidateStores/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /channels-stores
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt StoresSyncSQS.Arn 
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
+      LayerName: !Sub "${AWS::StackName}-transforms-layer-${StageName}"
+      Description: Sync service account transformations
+      ContentUri: src/layers/transforms-layer/build
+      RetentionPolicy: Retain
+      CompatibleRuntimes:
+        - nodejs18.x
+    Metadata:
+      BuildMethod: nodejs18.x
 
   CreateStores:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-CreateStores-${StageName}"
       CodeUri: src/functions/CreateStores/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      Events:
-        SqsTrigger:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt StoresSyncSQS.Arn
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
-  ValidateLists:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/ValidateLists/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /lists
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt ListSyncSQS.Arn
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
-  CreateLists:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/CreateLists/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      Events:
-        SqsTrigger:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt ListSyncSQS.Arn
-            BatchSize: 1
-            ScalingConfig:
-               MaximumConcurrency: 10
-      MemorySize: 512
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - lambda:InvokeFunction
-                - lambda:InvokeAsync
-              Resource: !GetAtt CreateProduct.Arn
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
-  ValidateProducts:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/ValidateProducts/
-      Handler: handler.lambdaHandler
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /products
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt ProductsSyncSQS.Arn
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints: 
-        - handler.ts
-        External:
-          - "/opt/nodejs/*"
-
-  CreateProducts:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: src/functions/CreateProducts/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
       Architectures:
@@ -278,17 +306,18 @@ Resources:
         SqsTrigger:
           Type: SQS
           Properties:
-            Queue: !GetAtt ProductsSyncSQS.Arn
-            BatchSize: 1
+            Queue: !GetAtt StoresSyncSQS.Arn
+            BatchSize: 5
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
             ScalingConfig:
-               MaximumConcurrency: 10
+               MaximumConcurrency: 20
       Policies:
         - Statement:
             - Effect: Allow
               Action:
-                - lambda:InvokeFunction
-                - lambda:InvokeAsync
-              Resource: !GetAtt CreateProduct.Arn
+                - sqs:SendMessage
+              Resource: !GetAtt ShippingCostSyncSQS.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -303,17 +332,35 @@ Resources:
   CreateProduct:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-CreateProduct-${StageName}"
       CodeUri: src/functions/CreateProduct/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
+      Tracing: Active
       Architectures:
         - x86_64
+      MemorySize: 256
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ProductSyncSQS.Arn
+            BatchSize: 3
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
+            ScalingConfig:
+               MaximumConcurrency: 20
       Policies:
         - Statement:
             - Effect: Allow
               Action:
                 - sqs:SendMessage
               Resource: !GetAtt SyncImagesSQS.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -328,9 +375,12 @@ Resources:
   SyncImages:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-SyncImages-${StageName}"
       CodeUri: src/functions/SyncImages/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
+      Tracing: Active
+      MemorySize: 256
       Architectures:
         - x86_64
       Events:
@@ -338,14 +388,55 @@ Resources:
           Type: SQS
           Properties:
             Queue: !GetAtt SyncImagesSQS.Arn
+            BatchSize: 8
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
             ScalingConfig:
-               MaximumConcurrency: 10
+               MaximumConcurrency: 5
       Policies:
         - Statement:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.admin.dev/*"
+              Resource: !Join ["", [!GetAtt SyncServiceV4AdminBucket.Arn, "/*"]]
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  CreateShippingCost:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-CreateShippingCost-${StageName}"
+      CodeUri: src/functions/CreateShippingCost/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      MemorySize: 256
+      Architectures:
+        - x86_64
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ShippingCostSyncSQS.Arn
+            BatchSize: 3
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
+            ScalingConfig:
+               MaximumConcurrency: 2
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: !Join ["", [!GetAtt SyncServiceV4AdminBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -360,25 +451,30 @@ Resources:
   PublishSync:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-PublishSync-${StageName}"
       CodeUri: src/functions/PublishSync/
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
-      MemorySize: 512
+      Tracing: Active
+      MemorySize: 1024
       Architectures:
         - x86_64
       Events:
-        ApiEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        SqsTrigger:
+          Type: SQS
           Properties:
-            Path: /publish-sync
-            Method: POST
-            RestApiId: !Ref SyncServiceV4Api
+            Queue: !GetAtt PublishSyncSQS.Arn
+            BatchSize: 1
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
+            ScalingConfig:
+               MaximumConcurrency: 2
       Policies:
         - Statement:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: "arn:aws:s3:::syncservicev4.admin.dev/*"
+              Resource: !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -390,6 +486,700 @@ Resources:
         External:
           - "/opt/nodejs/*"
 
+  PrepareProducts:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-PrepareProducts-${StageName}"
+      CodeUri: src/functions/PrepareProducts/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt PrepareProductsSQS.Arn
+            BatchSize: 1
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
+            ScalingConfig:
+               MaximumConcurrency: 3
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt ProductSyncSQS.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  PrepareStores:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-PrepareStores-${StageName}"
+      CodeUri: src/functions/PrepareStores/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt PrepareStoresSQS.Arn
+            BatchSize: 1
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
+            ScalingConfig:
+               MaximumConcurrency: 3
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt StoresSyncSQS.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  # Gateways Lambdas
+  PublishSyncValidate:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-PublishSyncValidate-${StageName}"
+      CodeUri: src/functions/PublishSyncValidate/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/publish-sync"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt PublishSyncSQS.Arn 
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  PublishWebhook:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-PublishWebhook-${StageName}"
+      CodeUri: src/functions/PublishWebhook/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/publish-webhook"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  SyncSummary:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-SyncSummary-${StageName}"
+      CodeUri: src/functions/SyncSummary/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/sync-summary"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchStoresByIdByVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchStoresByIdByVendor-${StageName}"
+      CodeUri: src/functions/FetchStoresByVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/stores/{storeId}"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchStoresByVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchStoresByVendor-${StageName}"
+      CodeUri: src/functions/FetchStoresByVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/stores"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchProductsByIdByVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchProductsByIdByVendor-${StageName}"
+      CodeUri: src/functions/FetchProductsByVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/products/{productId}"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchProductsByVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchProductsByVendor-${StageName}"
+      CodeUri: src/functions/FetchProductsByVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/products"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ValidateLists:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-ValidateLists-${StageName}"
+      CodeUri: src/functions/ValidateLists/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/lists"
+            Method: PUT
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt PrepareProductsSQS.Arn 
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: 
+                - !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+                - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ValidateProducts:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-ValidateProducts-${StageName}"
+      CodeUri: src/functions/ValidateProducts/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      MemorySize: 256
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/products"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt PrepareProductsSQS.Arn 
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: 
+                - !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+                - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ValidateStores:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-ValidateStores-${StageName}"
+      CodeUri: src/functions/ValidateStores/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      MemorySize: 256
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/channels-stores"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt PrepareStoresSQS.Arn 
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: 
+              - !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+              - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchQueueEvents:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchQueueEvents-${StageName}"
+      CodeUri: src/functions/FetchQueueEvents/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/queue-events"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:*
+              Resource: 
+                - !GetAtt SyncImagesSQS.Arn
+                - !GetAtt StoresSyncSQS.Arn
+                - !GetAtt ProductSyncSQS.Arn
+                - !GetAtt ShippingCostSyncSQS.Arn
+                - !GetAtt PublishSyncSQS.Arn
+                - !GetAtt SyncImagesDLQ.Arn
+                - !GetAtt StoresSyncDLQ.Arn
+                - !GetAtt ProductSyncDLQ.Arn
+                - !GetAtt ShippingCostSyncDLQ.Arn
+                - !GetAtt PublishSyncDLQ.Arn
+                - !GetAtt PrepareProductsSQS.Arn
+                - !GetAtt PrepareStoresSQS.Arn
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  ModifyQueues:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-ModifyQueues-${StageName}"
+      CodeUri: src/functions/ModifyQueues/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/modify-queue"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:*
+              Resource: 
+                - !GetAtt SyncImagesSQS.Arn
+                - !GetAtt StoresSyncSQS.Arn
+                - !GetAtt ProductSyncSQS.Arn
+                - !GetAtt ShippingCostSyncSQS.Arn
+                - !GetAtt PublishSyncSQS.Arn
+                - !GetAtt SyncImagesDLQ.Arn
+                - !GetAtt StoresSyncDLQ.Arn
+                - !GetAtt ProductSyncDLQ.Arn
+                - !GetAtt ShippingCostSyncDLQ.Arn
+                - !GetAtt PublishSyncDLQ.Arn
+                - !GetAtt PrepareProductsSQS.Arn
+                - !GetAtt PrepareStoresSQS.Arn
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchVersionsByVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchVersionsByVendor-${StageName}"
+      CodeUri: src/functions/FetchVersionsByVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/versions"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchHistoryStoresByVersion:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchHistoryStoresByVersion-${StageName}"
+      CodeUri: src/functions/FetchHistoryStoresByVersion/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/history-stores"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  FetchHistoryProductsByVersion:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-FetchHistoryProductsByVersion-${StageName}"
+      CodeUri: src/functions/FetchHistoryProductsByVersion/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/history-products"
+            Method: GET
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  Rollback:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-Rollback-${StageName}"
+      CodeUri: src/functions/Rollback/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/rollback"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  CreateVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-CreateVendor-${StageName}"
+      CodeUri: src/functions/CreateVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      MemorySize: 256
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/vendor"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: 
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}"
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+  UpdateVendor:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/UpdateVendor/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/vendor/{vendorId}"
+            Method: PUT
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}/*"
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+          
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
@@ -399,7 +1189,7 @@ Outputs:
     Value: !Sub "https://${SyncServiceV4Api}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
   SyncServiceV4Bucket:
     Description: "S3 Bucket for SyncServices"
-    Value: !Sub "syncservicev4.admin.${StageName}"
-  SyncServiceV4BucketARN:
-    Description: "S3 Bucket for SyncServices"
-    Value: !GetAtt SyncServiceV4Bucket.Arn
+    Value: !Ref SyncServiceV4AdminBucket
+  SyncServiceV4PublishSqs:
+    Description: "Publish Sync SQS"
+    Value: !GetAtt  PublishSyncSQS.Arn

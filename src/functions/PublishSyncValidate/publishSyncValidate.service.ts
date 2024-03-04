@@ -1,0 +1,38 @@
+import { APIGatewayProxyEvent } from "aws-lambda";
+
+import { publishSyncValidateValidator } from "./publishSyncValidate.validator";
+import { publishSyncQueryValidator } from "./publishSyncValidate.validator";
+
+import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
+
+/**
+ *
+ * @param event
+ * @description Fetch stores by vendor service
+ * @returns {Promise<{statusCode: number, body: string}>}
+ */
+export const publishSyncValidateService = async (
+  event: APIGatewayProxyEvent
+) => {
+  const { headers, body, queryStringParameters } = event;
+  const { rePublish, all } = publishSyncQueryValidator.parse(
+    queryStringParameters ?? {}
+  );
+  const parsedBody = JSON.parse(body ?? "");
+  const { account: accountId } = headersValidator.parse(headers);
+  const info = publishSyncValidateValidator.parse(parsedBody);
+  const { vendorId } = info;
+
+  await sqsExtendedClient.sendMessage({
+    QueueUrl: process.env.SYNC_PUBLISH_SQS_URL ?? "",
+    MessageBody: JSON.stringify({ vendorId, accountId, rePublish, all })
+  });
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: "Publish sync process started"
+    })
+  };
+};

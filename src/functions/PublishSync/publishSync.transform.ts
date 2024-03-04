@@ -1,4 +1,4 @@
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 export const transformQuestions = (
   questions: any[],
@@ -16,7 +16,7 @@ export const transformQuestions = (
       );
 
       if (!product) {
-        logger.info("product answer not found", { productId });
+        logger.info("PUBLISH: ANSWER NOT FOUND", { productId });
         return answer;
       }
 

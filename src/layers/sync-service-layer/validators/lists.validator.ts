@@ -73,16 +73,16 @@ export const modifierGroupValidator = z.object({
   modifierOptions: z.array(modifierOptionValidator)
 });
 
-// TODO: Revisar en peticiones
 export const listValidator = z.object({
   listId: z.string().max(100),
   listName: z.string().max(100),
   vendorId: z.string().max(100),
   storeId: z.string().or(z.literal("replicate_in_all")),
   channelId: z.string().max(100),
-  ecommerceChannelId: z.string().optional(),
-  channelReferenceName: z.string().optional(),
-  schedules: z.array(scheduleValidator).optional()
+  // TODO: revisar en peticiones
+  schedules: z.array(scheduleValidator).optional(),
+  ecommerceChannelId: z.number().int().optional(),
+  channelReferenceName: z.string().optional()
 });
 
 export const productListingValidator = z.object({
@@ -113,3 +113,86 @@ export const productsValidator = z.object({
   categories: z.array(categoryValidator),
   modifierGroups: z.array(modifierGroupValidator)
 });
+
+// TODO: Fix any type
+export const listsSuperRefine = (schema: any, ctx: z.RefinementCtx) => {
+  const { products, categories, modifierGroups } = schema;
+
+  const productIds = products.map((product: any) => product.productId);
+  const modifierGroupIds = modifierGroups.map((modifierGroup: any) =>
+    modifierGroup.modifierId.toString()
+  );
+
+  const productsInCategoriesSet = new Set<string>();
+  categories.forEach((category: any) =>
+    category.productListing.forEach((product: any) =>
+      productsInCategoriesSet.add(product.productId.toString())
+    )
+  );
+
+  const nonExistProductsForCategories = [...productsInCategoriesSet].filter(
+    productInCategory => !productIds.includes(productInCategory.toString())
+  );
+
+  if (nonExistProductsForCategories.length > 0) {
+    nonExistProductsForCategories.forEach(productId => {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Categories: Product ${productId} non exist`
+      });
+    });
+  }
+
+  const modifiersInProductsSet = new Set<string>();
+  products.forEach((product: any) =>
+    product.productModifiers?.forEach((productModifier: any) => {
+      if (typeof productModifier === "string") {
+        modifiersInProductsSet.add(productModifier.toString());
+      }
+
+      if (typeof productModifier === "object") {
+        modifiersInProductsSet.add(productModifier.modifierId.toString());
+      }
+    })
+  );
+
+  const nonExistModifiers = [...modifiersInProductsSet].filter(
+    modifierId => !modifierGroupIds.includes(modifierId.toString())
+  );
+
+  if (nonExistModifiers.length > 0) {
+    nonExistModifiers.forEach(modifierId => {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Products: Modifier ${modifierId} non exist`
+      });
+    });
+  }
+
+  const productInModifierSet = new Set<string>();
+  modifierGroups.forEach((modifierGroup: any) =>
+    modifierGroup.modifierOptions.forEach((modifierOption: any) => {
+      productInModifierSet.add(modifierOption.productId.toString());
+    })
+  );
+
+  const nonExistProductForModifier = [...productInModifierSet].filter(
+    productId => !productIds.includes(productId)
+  );
+
+  if (nonExistProductForModifier.length > 0) {
+    nonExistProductForModifier.forEach(productId => {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `ModifierGroup: Product ${productId} non exist`
+      });
+    });
+  }
+};
+
+/**
+ *
+ * @description Validate lists
+ * @returns {Promise<void>}
+ */
+export const listsValidator = productsValidator.superRefine(listsSuperRefine);

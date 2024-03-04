@@ -1,24 +1,44 @@
-import { Context, SQSEvent } from "aws-lambda";
+import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 
 import { syncStoresService } from "./createStores.service";
-import { CreateStoresProps } from "./createStores.types";
+import { CreateStoreProps } from "./createStores.types";
+import { errorCreateStore } from "./createStores.repository";
 
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { middyWrapper } from "/opt/nodejs/sync-service-layer/utils/middy.utils";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 
-export async function lambdaHandler(event: SQSEvent, context: Context) {
+const handler = async (
+  event: SQSEvent,
+  context: Context
+): Promise<SQSBatchResponse> => {
   context.callbackWaitsForEmptyEventLoop = false;
-  try {
-    const { Records } = event;
-    const [record] = Records;
-    logger.info("creating stores", { record });
+
+  const { Records } = event;
+  const response: SQSBatchResponse = { batchItemFailures: [] };
+  const recordPromises = Records.map(async record => {
+    logger.info("STORE:", { record });
     const { body: bodyRecord } = record ?? {};
-    const props: CreateStoresProps = JSON.parse(bodyRecord ?? "");
-    const { body, headers } = props;
-    const { accountId } = headers;
-    const response = await syncStoresService(body, accountId);
-    return { statusCode: 200, body: JSON.stringify(response) };
-  } catch (error) {
-    logger.error("creating stores error", { error });
-    return error;
-  }
-}
+    const props: CreateStoreProps = JSON.parse(bodyRecord ?? "");
+
+    try {
+      await syncStoresService(props);
+    } catch (error) {
+      logger.error("STORE ERROR:", { error });
+      try {
+        await errorCreateStore(props, error.message);
+      } catch (error) {
+        logger.error("ERROR SYNC REQUEST: ERROR", { error });
+      }
+      response.batchItemFailures.push({ itemIdentifier: record.messageId });
+      return error;
+    }
+  });
+
+  await Promise.all(recordPromises);
+  return response;
+};
+
+export const lambdaHandler = middyWrapper(handler).use(
+  sqsExtendedClient.middleware()
+);

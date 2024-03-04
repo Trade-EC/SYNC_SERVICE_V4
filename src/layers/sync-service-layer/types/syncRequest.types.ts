@@ -1,8 +1,21 @@
 export interface SyncRequest {
-  type: "PRODUCTS" | "LIST" | "CHANNELS_STORES";
+  type: "PRODUCTS" | "LISTS" | "CHANNELS_STORES";
   accountId: string;
   vendorId: string;
+  status: "PENDING" | "ERROR" | "SUCCESS";
+  hash: string;
+  createdAt?: Date;
+  s3Path?: string;
+  metadata: SyncRequestMetadata;
+}
+
+export interface SyncRequestMetadata {
   channelId?: string;
   storesId?: string;
-  status: "PENDING" | "ERROR" | "SUCCESS";
+  listId?: string;
 }
+
+export type ErrorSyncRequest = Pick<
+  SyncRequest,
+  "type" | "accountId" | "vendorId" | "hash" | "metadata"
+>;

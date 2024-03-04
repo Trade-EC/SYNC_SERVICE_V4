@@ -1,14 +1,26 @@
-import _ from "lodash";
+import { cloneDeep, isEqual } from "lodash";
 
 import { DbCategory, DbProduct, DbQuestion } from "../types/products.types";
 import { isUndefined, normalizeProductType } from "../utils/common.utils";
 import { imageHandler } from "../utils/images.utils";
 
-import { Category, ModifierGroup } from "/opt/nodejs/types/lists.types";
-import { PriceInfo, TaxesInfo } from "/opt/nodejs/types/lists.types";
-import { TransformProductsProps } from "/opt/nodejs/types/lists.types";
-import { transformSchedules } from "/opt/nodejs/utils/schedule.utils";
+import { Category } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { PriceInfo } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { ModifierGroup } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { TaxesInfo } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { TransformProductsProps } from "/opt/nodejs/sync-service-layer/types/lists.types";
+import { transformSchedules } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
 
+/**
+ *
+ * @param categories
+ * @param productId
+ * @param storesId
+ * @param channelId
+ * @param vendorId
+ * @description Transform categories by product into DbCategory
+ * @returns {Promise<DbCategory[]>}
+ */
 export const transformCategoriesByProduct = async (
   categories: Category[],
   productId: string,
@@ -27,6 +39,17 @@ export const transformCategoriesByProduct = async (
   return Promise.all(categoriesByProductPromises);
 };
 
+/**
+ *
+ * @param category
+ * @param storesId
+ * @param channelId
+ * @param vendorId
+ * @param productId
+ * @param parentId
+ * @description Transform category into DbCategory
+ * @returns {Promise<DbCategory>}
+ */
 export const transformCategory = async (
   category: Category,
   storesId: string[],
@@ -36,7 +59,8 @@ export const transformCategory = async (
   parentId?: string
 ) => {
   const { name, productCategoryId, schedules, images } = category;
-  const { featured, childCategories = [], productListing } = category;
+  const { featured, productListing, displayInList } = category;
+  const { childCategories = [] } = category;
   const productInCategory = productListing.find(
     listing => listing.productId === productId
   );
@@ -45,7 +69,18 @@ export const transformCategory = async (
   const imagesPromises = images?.map(image =>
     imageHandler(image.fileUrl, "category")
   );
+  const childCategoriesPromises = childCategories.map(childCategory =>
+    transformCategory(
+      childCategory,
+      storesId,
+      channelId,
+      productCategoryId,
+      productId,
+      parentId
+    )
+  );
   const newImages = await Promise.all(imagesPromises ?? []);
+  const newChildCategories = await Promise.all(childCategoriesPromises);
 
   const newCategory: DbCategory = {
     categoryId: productCategoryId,
@@ -54,17 +89,7 @@ export const transformCategory = async (
     schedules: schedules
       ? transformSchedules(schedules, storesId, channelId)
       : [],
-    // subcategories: childCategories.map(childCategory =>
-    //   transformCategory(
-    //     childCategory,
-    //     storesId,
-    //     channelId,
-    //     productCategoryId,
-    //     productId,
-    //     parentId
-    //   )
-    // ),
-    subcategories: [],
+    subcategories: newChildCategories,
     parentId: parentId ? parentId : "",
     standardTime: schedules ? "YES" : "NO",
     reload: false,
@@ -75,40 +100,47 @@ export const transformCategory = async (
     available: true,
     active: true,
     position: position ? position : 0,
-    displayInMenu: "YES",
-    vendorIdStoreIdChannelId: storesId.map(
-      storeId => `${vendorId}#${storeId}#${channelId}`
-    )
+    displayInMenu: displayInList ? "YES" : "NO",
+    vendorIdStoreIdChannelId: storesId
+      .map(storeId => `${vendorId}.${storeId}.${channelId}`)
+      .sort()
   };
   return newCategory;
 };
 
-const getTaxesAndGrossPrice = (
-  price: number,
-  taxesInfo: TaxesInfo | undefined
-) => {
+/**
+ *
+ * @param price
+ * @param taxesInfo
+ * @description Calculate taxes and gross price
+ * @returns {{grossPrice: number, taxes: {name: string, percentage: number}[]}}
+ */
+export const getTaxes = (taxesInfo: TaxesInfo | undefined) => {
   const { taxRate, vatRatePercentage } = taxesInfo ?? {};
   const taxes = [];
-  let vat = 0;
-  if (vatRatePercentage) {
+  if (typeof vatRatePercentage !== "undefined") {
     taxes.push({
-      name: "IVA",
-      percentage: vatRatePercentage
+      type: "IVA",
+      value: vatRatePercentage
     });
-    vat += vatRatePercentage;
   }
-  if (taxRate) {
+  if (typeof taxRate !== "undefined") {
     taxes.push({
-      name: "OTHER",
-      percentage: taxRate
+      type: "OTROS",
+      value: taxRate
     });
-    vat += taxRate;
   }
-  const grossPrice = price * (vat / 100 + 1);
 
-  return { grossPrice, taxes };
+  return taxes;
 };
 
+/**
+ *
+ * @param priceInfo
+ * @param taxesInfo
+ * @description Transform prices into DbProduct["prices"]
+ * @returns {DbProduct["prices"]}
+ */
 export const transformPrices = (
   priceInfo: PriceInfo,
   taxesInfo: TaxesInfo | undefined
@@ -120,11 +152,12 @@ export const transformPrices = (
     category: "NORMAL",
     symbol: "",
     netPrice: price,
-    ...getTaxesAndGrossPrice(price, taxesInfo),
-    discounts: [], // php -> No existe
-    discountGrossPrice: 0, // php -> No existe
-    discountNetPrice: 0, // php -> No existe
-    discount: 0 // php -> No existe
+    taxes: getTaxes(taxesInfo),
+    grossPrice: 0,
+    discounts: [],
+    discountGrossPrice: 0,
+    discountNetPrice: 0,
+    discount: 0
   };
 
   const points = {
@@ -141,7 +174,8 @@ export const transformPrices = (
     category: "SUGGESTED",
     symbol: "",
     netPrice: suggestedPrice ?? 0,
-    ...getTaxesAndGrossPrice(suggestedPrice ?? 0, taxesInfo),
+    taxes: getTaxes(taxesInfo),
+    grossPrice: 0,
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
@@ -161,13 +195,19 @@ export const transformPrices = (
   productPrice["NORMAL"] = normal;
   productPrice["POINTS"] = !isUndefined(pointPrice) ? points : null;
   productPrice["SUGGESTED"] = !isUndefined(suggestedPrice) ? suggested : null;
-  productPrice["SUGGESTED_POINTS"] = !isUndefined(suggestedPoints)
+  productPrice["SUGGESTED_POINTS"] = !isUndefined(suggestedPointPrice)
     ? suggestedPoints
     : null;
 
   return productPrice;
 };
 
+/**
+ *
+ * @param modifierGroup
+ * @description Transform modifier group into DbQuestion
+ * @returns DbQuestion
+ */
 export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
   const { modifier, modifierId, maxOptions } = modifierGroup;
   const { minOptions } = modifierGroup; // type is not using
@@ -185,6 +225,12 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
   return question;
 };
 
+/**
+ *
+ * @param props {@link TransformProductsProps}
+ * @description Transform product into DbProduct
+ * @returns DbProduct
+ */
 export const transformProduct = async (props: TransformProductsProps) => {
   const { product, channelId, storesId, vendorId, modifierGroups } = props;
   const { categories, accountId } = props;
@@ -251,9 +297,10 @@ export const transformProduct = async (props: TransformProductsProps) => {
   );
 
   const newProduct: DbProduct = {
-    productId: `${accountId}#${productId}`,
+    hash: null,
+    productId: `${accountId}.${vendorId}.${productId}`,
     status: "DRAFT",
-    version: "2023-10-06-1",
+    version: null,
     name,
     description,
     type: normalizeProductType(type),
@@ -269,18 +316,18 @@ export const transformProduct = async (props: TransformProductsProps) => {
     },
     images:
       newImages?.map(image => ({
-        vendorIdStoreIdChannelId: storesId.map(
-          storeId => `${vendorId}#${storeId}#${channelId}`
-        ),
+        vendorIdStoreIdChannelId: storesId
+          .map(storeId => `${vendorId}.${storeId}.${channelId}`)
+          .sort(),
         ...image
       })) ?? [],
     additionalInfo: additionalInfo ? additionalInfo : null,
     tags: tags ? tags : [],
     prices: [
       {
-        vendorIdStoreIdChannelId: storesId.map(
-          storeId => `${vendorId}#${storeId}#${channelId}`
-        ),
+        vendorIdStoreIdChannelId: storesId
+          .map(storeId => `${vendorId}.${storeId}.${channelId}`)
+          .sort(),
         prices: transformPrices(priceInfo, taxInfo)
       }
     ],
@@ -294,9 +341,9 @@ export const transformProduct = async (props: TransformProductsProps) => {
     maxAmountForSale: 0,
     statuses: [
       {
-        vendorIdStoreIdChannelId: storesId.map(
-          storeId => `${vendorId}#${storeId}#${channelId}`
-        ),
+        vendorIdStoreIdChannelId: storesId
+          .map(storeId => `${vendorId}.${storeId}.${channelId}`)
+          .sort(),
         availability: true,
         isVisible: true,
         maxInCart: null,
@@ -310,9 +357,9 @@ export const transformProduct = async (props: TransformProductsProps) => {
     questions:
       questions?.map(question => {
         return {
-          vendorIdStoreIdChannelId: storesId.map(
-            storeId => `${vendorId}#${storeId}#${channelId}`
-          ),
+          vendorIdStoreIdChannelId: storesId
+            .map(storeId => `${vendorId}.${storeId}.${channelId}`)
+            .sort(),
           ...question
         };
       }) ?? [],
@@ -321,9 +368,9 @@ export const transformProduct = async (props: TransformProductsProps) => {
     standardTime: standardTime || schedules ? "YES" : "NO", // Si me llegan schedules standardTime YES si no NO
     schedules: schedules
       ? transformSchedules(schedules, storesId, channelId).map(schedule => ({
-          vendorIdStoreIdChannelId: storesId.map(
-            storeId => `${vendorId}#${storeId}#${channelId}`
-          ),
+          vendorIdStoreIdChannelId: storesId
+            .map(storeId => `${vendorId}.${storeId}.${channelId}`)
+            .sort(),
           ...schedule
         }))
       : [],
@@ -338,12 +385,20 @@ export const transformProduct = async (props: TransformProductsProps) => {
   return newProduct;
 };
 
+/**
+ *
+ * @param dbEntities
+ * @param newEntities
+ * @param vendorIdStoreIdChannelId
+ * @description Merge entities
+ * @returns {any}
+ */
 export const mergeEntity = (
   dbEntities: any,
   newEntities: any,
   vendorIdStoreIdChannelId: string[]
 ) => {
-  const temporalEntities = _.cloneDeep(dbEntities);
+  const temporalEntities = cloneDeep(dbEntities);
   // Delete ids with vendor, store and channel id combination.
   const temporalEntitiesCleaned = temporalEntities.map(
     (temporalEntity: any) => {
@@ -359,21 +414,23 @@ export const mergeEntity = (
 
   for (const entity of newEntities) {
     const { vendorIdStoreIdChannelId: ids, ...restNewEntity } = entity;
-    const foundPriceIndex = temporalEntitiesCleaned.findIndex(
+    const foundEntityIndex = temporalEntitiesCleaned.findIndex(
       (dbEntity: any) => {
         const { vendorIdStoreIdChannelId, ...restDbEntity } = dbEntity;
-        return _.isEqual(restDbEntity, restNewEntity);
+        return isEqual(restDbEntity, restNewEntity);
       }
     );
 
-    if (foundPriceIndex === -1) {
+    if (foundEntityIndex === -1) {
       temporalEntitiesCleaned.push(entity);
       continue;
     }
 
-    temporalEntitiesCleaned[foundPriceIndex].vendorIdStoreIdChannelId.push(
+    temporalEntitiesCleaned[foundEntityIndex].vendorIdStoreIdChannelId.push(
       ...vendorIdStoreIdChannelId
     );
+    temporalEntitiesCleaned[foundEntityIndex].vendorIdStoreIdChannelId =
+      temporalEntitiesCleaned[foundEntityIndex].vendorIdStoreIdChannelId.sort();
   }
 
   return temporalEntitiesCleaned;

@@ -1,5 +1,5 @@
 {
-  "name": "validate-stores",
+  "name": "validate-products",
   "version": "1.0.0",
   "description": "Lambda function to validate products for sync process",
   "main": "index.js",

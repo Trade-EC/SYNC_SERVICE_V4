@@ -1,163 +1,282 @@
-import { WithId, Document } from "/opt/nodejs/node_modules/mongodb/mongodb";
-import CONSTANTS from "/opt/nodejs/configs/constants";
-import { s3Client } from "/opt/nodejs/configs/config";
-import { Upload } from "/opt/nodejs/node_modules/@aws-sdk/lib-storage";
-import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
+import { Document } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
+import { WithId } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
+import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
+import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
+import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
-const { BUCKET } = CONSTANTS.GENERAL;
-
-export const saveProductsInHistory = async (
-  vendorId: string,
-  accountId: string
-) => {
-  const dbClient = await connectToDatabase();
-  const response = await dbClient
-    .collection("stores")
-    .aggregate([
-      {
-        $match: {
-          "vendor.id": vendorId,
-          "account.id": accountId,
-          status: "DRAFT"
-        }
-      },
-      { $addFields: { status: "PUBLISHED", deleted_at: new Date() } },
-      { $project: { _id: 0 } },
-      { $merge: { into: "historyStores" } }
-    ])
-    .toArray();
-
-  return response;
-};
-
+const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Save stores in history collection
+ * @returns void
+ */
 export const saveStoresInHistory = async (
   vendorId: string,
-  accountId: string
+  accountId: string,
+  version: number,
+  all: boolean
 ) => {
-  const dbClient = await connectToDatabase();
-  const response = await dbClient
-    .collection("products")
-    .aggregate([
-      {
-        $match: {
-          "vendor.id": vendorId,
-          "account.accountId": accountId,
-          status: "DRAFT"
-        }
-      },
-      { $addFields: { status: "PUBLISHED", deleted_at: new Date() } },
-      { $project: { _id: 0 } },
-      { $merge: { into: "historyProducts" } }
-    ])
-    .toArray();
-
-  return response;
-};
-
-export const fetchStores = async (vendorId: string, accountId: string) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
     .collection("stores")
-    .find({ "vendor.id": vendorId, "account.id": accountId })
-    .toArray();
-
-  return response;
-};
-
-export const fetchProducts = async (vendorId: string, accountId: string) => {
-  const dbClient = await connectToDatabase();
-  const response = dbClient
-    .collection("products")
-    .aggregate([
-      {
-        $graphLookup: {
-          from: "products",
-          startWith: "$attributes.externalId",
-          connectFromField: "questions.answers.productId",
-          connectToField: "attributes.externalId",
-          as: "questionsProducts",
-          maxDepth: 2,
-          restrictSearchWithMatch: {
+    .aggregate(
+      [
+        {
+          $match: {
             "vendor.id": vendorId,
-            "account.accountId": accountId
+            "account.id": accountId,
+            status: !all ? "DRAFT" : undefined
           }
-        }
-      }
-    ])
+        },
+        { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
+        { $project: { _id: 0 } },
+        { $merge: { into: "historyStores" } }
+      ],
+      { ignoreUndefined: true }
+    )
     .toArray();
 
   return response;
 };
 
-export const saveStoresInS3 = async (
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Save stores in history collection
+ * @returns void
+ */
+export const saveProductsInHistory = async (
   vendorId: string,
   accountId: string,
-  stores: WithId<Document>[]
+  version: number,
+  all: boolean
 ) => {
-  const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
-  const storesInput = {
-    Bucket: BUCKET,
-    Key: storesKey,
-    Body: Buffer.from(JSON.stringify(stores))
-  };
-  const uploadStores = new Upload({
-    client: s3Client,
-    params: storesInput
+  const dbClient = await connectToDatabase();
+  const response = await dbClient
+    .collection("products")
+    .aggregate(
+      [
+        {
+          $match: {
+            "vendor.id": vendorId,
+            "account.accountId": accountId,
+            status: !all ? "DRAFT" : undefined
+          }
+        },
+        { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
+        { $project: { _id: 0 } },
+        { $merge: { into: "historyProducts" } }
+      ],
+      { ignoreUndefined: true }
+    )
+    .toArray();
+
+  return response;
+};
+
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Save publish request in publishRequest collection
+ * @returns void
+ */
+export const savePublishRequest = async (
+  vendorId: string,
+  accountId: string,
+  type: "STORES" | "PRODUCTS"
+) => {
+  const dbClient = await connectToDatabase();
+  return await dbClient.collection("publishRequest").insertOne({
+    vendorId,
+    accountId,
+    status: "PENDING",
+    createdAt: new Date(),
+    type
   });
-  const responseStores = await uploadStores.done();
-  const { $metadata: metadata } = responseStores;
+};
+
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Fetch stores by vendorId, accountId and status DRAFT
+ * @returns DBStore[]
+ */
+export const fetchStores = async (
+  vendorId: string,
+  accountId: string,
+  all: boolean
+) => {
+  const dbClient = await connectToDatabase();
+  const response = await dbClient
+    .collection("stores")
+    .find(
+      {
+        "vendor.id": vendorId,
+        "account.id": accountId,
+        status: !all ? "DRAFT" : undefined
+      },
+      { ignoreUndefined: true }
+    )
+    .toArray();
+
+  return response;
+};
+
+export const findShippingCost = async (vendorId: string, accountId: string) => {
+  const dbClient = await connectToDatabase();
+  const shippingCost = await dbClient
+    .collection("shippingCost")
+    .find({ "vendor.id": vendorId, "account.accountId": accountId })
+    .toArray();
+
+  return shippingCost;
+};
+
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Fetch products by vendorId, accountId and status DRAFT
+ * @returns DBStore[]
+ */
+export const fetchProducts = async (
+  vendorId: string,
+  accountId: string,
+  version: number,
+  all: boolean
+) => {
+  const dbClient = await connectToDatabase();
+  const response = await dbClient
+    .collection("products")
+    .aggregate(
+      [
+        {
+          $match: {
+            "vendor.id": vendorId,
+            "account.accountId": accountId,
+            status: !all ? "DRAFT" : undefined
+          }
+        },
+        { $set: { version } },
+        {
+          $graphLookup: {
+            from: "products",
+            startWith: "$attributes.externalId",
+            connectFromField: "questions.answers.productId",
+            connectToField: "attributes.externalId",
+            as: "questionsProducts",
+            maxDepth: 2,
+            restrictSearchWithMatch: {
+              "vendor.id": vendorId,
+              "account.accountId": accountId
+            }
+          }
+        }
+      ],
+      { ignoreUndefined: true }
+    )
+    .toArray();
+
+  return response;
+};
+
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @param documents
+ * @description Save documents in S3
+ * @returns void
+ */
+export const saveDocumentsInS3 = async (
+  documents: WithId<Document>[],
+  s3Url: string
+) => {
+  const documentInput = {
+    Bucket: SYNC_BUCKET,
+    Key: s3Url,
+    Body: Buffer.from(JSON.stringify(documents))
+  };
+  const uploadDocuments = new Upload({
+    client: s3Client,
+    params: documentInput
+  });
+  const responseDocuments = await uploadDocuments.done();
+  const { $metadata: metadata } = responseDocuments;
   const { httpStatusCode } = metadata;
   if (httpStatusCode !== 200) throw new Error("Upload stores failed");
   return {
-    bucket: BUCKET,
-    key: storesKey,
+    bucket: SYNC_BUCKET,
+    key: s3Url,
     status: "DONE"
   };
 };
 
-export const saveProductsInS3 = async (
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Update status stores in stores collection
+ * @returns void
+ */
+export const updateStatusStores = async (
   vendorId: string,
-  accountId: string,
-  products: any
-) => {
-  const productsKey = `sync/${accountId}/${vendorId}/products.json`;
-
-  const productsInput = {
-    Bucket: BUCKET,
-    Key: productsKey,
-    Body: Buffer.from(JSON.stringify(products))
-  };
-
-  const uploadProducts = new Upload({
-    client: s3Client,
-    params: productsInput
-  });
-
-  const responseProducts = await uploadProducts.done();
-
-  const { $metadata: productsMetadata } = responseProducts;
-  if (productsMetadata.httpStatusCode !== 200)
-    throw new Error("Upload stores failed");
-
-  return {
-    Bucket: BUCKET,
-    key: productsKey,
-    status: "DONE"
-  };
-};
-
-export const updateStatus = async (
-  vendorId: string,
-  accountId: string,
-  collection: "products" | "stores"
+  accountId: string
 ) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient
-    .collection(collection)
+    .collection("stores")
     .updateMany(
       { "vendor.id": vendorId, "account.id": accountId, status: "DRAFT" },
       { $set: { status: "PUBLISHED" } }
     );
+
+  return response;
+};
+
+/**
+ *
+ * @param vendorId
+ * @param accountId
+ * @description Update status products in products collection
+ * @returns void
+ */
+export const updateStatusProducts = async (
+  vendorId: string,
+  accountId: string
+) => {
+  const dbClient = await connectToDatabase();
+  const response = await dbClient.collection("products").updateMany(
+    {
+      "vendor.id": vendorId,
+      "account.accountId": accountId,
+      status: "DRAFT"
+    },
+    { $set: { status: "PUBLISHED" } }
+  );
+
+  return response;
+};
+
+export const saveVersion = async (
+  vendorId: string,
+  accountId: string,
+  version: number,
+  type: "STORES" | "PRODUCTS" | "SHIPPING_COSTS"
+) => {
+  const dbClient = await connectToDatabase();
+  const response = await dbClient.collection("versions").insertOne({
+    vendorId,
+    accountId,
+    version,
+    createdAt: new Date(),
+    type
+  });
 
   return response;
 };

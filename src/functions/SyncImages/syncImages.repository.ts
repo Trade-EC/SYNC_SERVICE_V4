@@ -1,24 +1,36 @@
 import { Image } from "./syncImages.types";
 
-import { CompleteMultipartUploadCommandOutput } from "/opt/nodejs/node_modules/@aws-sdk/client-s3";
-import { Upload } from "/opt/nodejs/node_modules/@aws-sdk/lib-storage";
-import { getAwsImageProps } from "/opt/nodejs/utils/images.utils";
-import { s3Client } from "/opt/nodejs/configs/config";
-import { connectToDatabase } from "/opt/nodejs/utils/mongo.utils";
+import { CompleteMultipartUploadCommandOutput } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/client-s3";
+import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
+import { getAwsImageProps } from "/opt/nodejs/sync-service-layer/utils/images.utils";
+import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
+import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
+import CONSTANTS from "/opt/nodejs/sync-service-layer/configs/constants";
 
+const { CLOUDFRONT_URL } = CONSTANTS;
+
+/**
+ *
+ * @param image {@link Image}
+ * @description Create or update image
+ * @returns void
+ */
 export const createOrUpdateImages = async (image: Partial<Image>) => {
   const { externalUrl, name } = image;
   const dbClient = await connectToDatabase();
-  await dbClient.collection("images").updateOne(
-    { externalUrl, name },
-    { $set: { ...image } },
-    {
-      upsert: true
-    }
-  );
+  await dbClient
+    .collection("images")
+    .updateOne({ externalUrl, name }, { $set: { ...image } }, { upsert: true });
   return image;
 };
 
+/**
+ *
+ * @param url
+ * @param imageCategory
+ * @description Save image in s3
+ * @returns void
+ */
 export const saveImage = async (
   url: string,
   imageCategory: string
@@ -26,7 +38,7 @@ export const saveImage = async (
   const rawImage = await fetch(url);
   const imageProps = getAwsImageProps(url, imageCategory);
   const { bucket, key, name, url: s3Url, category } = imageProps;
-  if (!rawImage.body || !name) throw new Error("Image not found");
+  if (!rawImage?.body || !name) throw new Error("Image not found");
   const input = {
     Bucket: bucket,
     Key: key,
@@ -43,7 +55,7 @@ export const saveImage = async (
   if (!Location) throw new Error("file location not found");
 
   return {
-    cloudFrontUrl: "https://d32dna7apnunfh.cloudfront.net",
+    cloudFrontUrl: CLOUDFRONT_URL,
     bucket,
     key,
     name: category,

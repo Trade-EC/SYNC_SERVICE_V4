@@ -1,12 +1,15 @@
-import { TransformProductsProps } from "/opt/nodejs/types/lists.types";
+import { TransformProductsProps } from "/opt/nodejs/sync-service-layer/types/lists.types";
 
 export interface CreateProductsBody extends TransformProductsProps {
   listName: string;
   listId: string;
-  source: "LIST" | "PRODUCT";
+  source: "LISTS" | "PRODUCTS";
+  storeId: string;
 }
 
 export interface CreateProductProps {
   body: CreateProductsBody;
   vendorIdStoreIdChannelId: string[];
+  listHash: string;
+  syncAll: boolean;
 }

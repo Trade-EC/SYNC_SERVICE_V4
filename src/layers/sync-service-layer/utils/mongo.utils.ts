@@ -1,18 +1,19 @@
 import { Db, MongoClient, ServerApiVersion } from "mongodb";
 
 import CONSTANTS from "../configs/constants";
-import { logger } from "../configs/observability.config";
 
 const { DB_NAME } = CONSTANTS.GENERAL;
 
-const MONGODB_URI =
-  "mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority";
+const MONGODB_URI = process.env.MONGODB_URI ?? "";
 
 let cachedDbClient: Db | null = null;
 
+/**
+ * @description Connect to MongoDB
+ * @returns Db
+ */
 export async function connectToDatabase() {
   if (cachedDbClient) {
-    logger.info("MongoDB: Using cached database instance");
     return cachedDbClient;
   }
 
@@ -30,6 +31,39 @@ export async function connectToDatabase() {
   const db = client.db(DB_NAME);
 
   cachedDbClient = db;
-  logger.info("MongoDB: Using new database instance");
   return db;
 }
+
+export const getPaginatedData = async (
+  collection: string,
+  skip: number,
+  limit: number,
+  filter?: Record<string, any>,
+  sort?: Record<string, any>
+) => {
+  const dbClient = await connectToDatabase();
+  const query = await dbClient
+    .collection(collection)
+    .aggregate(
+      [
+        {
+          $facet: {
+            data: [
+              { $match: filter },
+              { $skip: skip },
+              { $limit: limit },
+              { $sort: sort }
+            ],
+            count: [{ $match: filter }, { $count: "total" }]
+          }
+        },
+        { $project: { total: { $first: "$count.total" }, data: 1 } }
+      ],
+      { ignoreUndefined: true }
+    )
+    .toArray();
+
+  const { data, total } = query?.[0] ?? { data: [], total: 0 };
+
+  return { total, skip, limit, data };
+};

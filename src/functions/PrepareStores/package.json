@@ -1,0 +1,10 @@
+{
+  "name": "prepare-stores",
+  "version": "1.0.0",
+  "description": "Lambda function to prepare stores for sync process",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "clear:modules": "rm -rf node_modules"
+  }
+}

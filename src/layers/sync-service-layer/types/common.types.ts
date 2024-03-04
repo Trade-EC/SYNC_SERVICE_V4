@@ -23,3 +23,21 @@ export interface SchemaSchedule
 export interface HeadersProps {
   accountId: string;
 }
+
+export interface SyncProductRecord {
+  productId: string;
+  listId: string;
+  accountId: string;
+  channelId: string;
+  vendorId: string;
+  storeId: string;
+  status: "PENDING" | "SUCCESS" | "ERROR";
+  source: "LISTS" | "PRODUCTS";
+}
+
+export interface SyncStoreRecord {
+  accountId: string;
+  vendorId: string;
+  storeId: string;
+  status: "PENDING" | "SUCCESS" | "ERROR";
+}

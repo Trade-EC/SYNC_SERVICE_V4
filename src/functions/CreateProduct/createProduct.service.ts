@@ -1,19 +1,32 @@
 import { createOrUpdateProduct } from "./createProduct.repository";
+import { verifyCompletedList } from "./createProduct.repository";
 import { CreateProductProps } from "./createProduct.types";
 
-import { findProduct } from "/opt/nodejs/repositories/common.repository";
-import { transformProduct } from "/opt/nodejs/transforms/product.transform";
-import { mergeEntity } from "/opt/nodejs/transforms/product.transform";
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { findProduct } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
+import { transformProduct } from "/opt/nodejs/sync-service-layer/transforms/product.transform";
+import { mergeEntity } from "/opt/nodejs/sync-service-layer/transforms/product.transform";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { SyncProductRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
+// @ts-ignore
+import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
+import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 
+/**
+ *
+ * @param props {@link CreateProductProps}
+ * @description Create product
+ * @returns void
+ */
 export const createProductService = async (props: CreateProductProps) => {
-  const { body, vendorIdStoreIdChannelId } = props;
+  const { body, vendorIdStoreIdChannelId, listHash, syncAll } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
-  const { storesId, vendorId, listName, listId } = body;
+  const { storesId, vendorId, listId, storeId } = body;
+  const { source } = body;
   const { productId } = product;
-  logger.appendKeys({ vendorId, accountId, externalId: productId, listId });
-  logger.info("Creating product initiating");
-  const productDB = await findProduct(productId);
+  const dbProductId = `${accountId}.${vendorId}.${productId}`;
+  const lambdaInfo = { vendorId, accountId, productId, listId };
+  logger.info("PRODUCT: INIT", lambdaInfo);
+  const productDB = await findProduct(dbProductId);
   const transformedProduct = await transformProduct({
     product,
     storesId,
@@ -23,25 +36,43 @@ export const createProductService = async (props: CreateProductProps) => {
     modifierGroups,
     categories
   });
+  const syncProductRequest: SyncProductRecord = {
+    productId: dbProductId,
+    accountId,
+    listId,
+    channelId,
+    vendorId,
+    storeId,
+    status: "SUCCESS" as const,
+    source
+  };
+  const orderedTransformProduct = sortObjectByKeys(transformedProduct);
+
   if (!productDB) {
-    logger.info("Creating product", { product: transformedProduct });
-    return await createOrUpdateProduct(
-      transformedProduct,
-      storesId,
-      vendorId,
-      channelId,
-      listName
-    );
+    const hash = sha1(JSON.stringify(orderedTransformProduct));
+    const version = new Date().getTime();
+    orderedTransformProduct.hash = hash;
+    orderedTransformProduct.version = version;
+    logger.info("PRODUCT: CREATE", {
+      ...lambdaInfo,
+      product: orderedTransformProduct
+    });
+    await createOrUpdateProduct(orderedTransformProduct);
+    logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
+    await verifyCompletedList(syncProductRequest, source, listHash);
+    logger.info("PRODUCT: FINISHED", lambdaInfo);
+    return;
   }
 
-  logger.info("Merging product");
+  logger.info("PRODUCT: MERGE", lambdaInfo);
   const { categories: dbCategories, prices: dbPrices } = productDB;
   const { statuses: dbStatuses, schedules: dbSchedules } = productDB;
   const { questions: dbQuestions, images: dbImages } = productDB;
-  const { categories: newCategories, prices: newPrices } = transformedProduct;
-  const { statuses: newStatuses, images: newImages } = transformedProduct;
-  const { schedules: newSchedules } = transformedProduct;
-  const { questions: newQuestions } = transformedProduct;
+  const { categories: newCategories } = orderedTransformProduct;
+  const { prices: newPrices } = orderedTransformProduct;
+  const { statuses: newStatuses, images: newImages } = orderedTransformProduct;
+  const { schedules: newSchedules } = orderedTransformProduct;
+  const { questions: newQuestions } = orderedTransformProduct;
 
   const mergedCategories = mergeEntity(
     dbCategories,
@@ -73,18 +104,32 @@ export const createProductService = async (props: CreateProductProps) => {
     newImages,
     vendorIdStoreIdChannelId
   );
-  transformedProduct.categories = mergedCategories;
-  transformedProduct.prices = mergedPrices;
-  transformedProduct.statuses = mergedStatuses;
-  transformedProduct.schedules = mergedSchedules;
-  transformedProduct.questions = mergedQuestions;
-  transformedProduct.images = mergedImages;
-  logger.info("Storing product", { product: transformedProduct });
-  return await createOrUpdateProduct(
-    transformedProduct,
-    storesId,
-    vendorId,
-    channelId,
-    listName
-  );
+  orderedTransformProduct.categories = mergedCategories;
+  orderedTransformProduct.prices = mergedPrices;
+  orderedTransformProduct.statuses = mergedStatuses;
+  orderedTransformProduct.schedules = mergedSchedules;
+  orderedTransformProduct.questions = mergedQuestions;
+  orderedTransformProduct.images = mergedImages;
+  const newHash = sha1(JSON.stringify(orderedTransformProduct));
+  const version = new Date().getTime();
+  orderedTransformProduct.hash = newHash;
+  orderedTransformProduct.version = version;
+  const { hash } = productDB;
+  if (hash === newHash && !syncAll) {
+    logger.info("PRODUCT: NO CHANGES", lambdaInfo);
+    logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
+    await verifyCompletedList(syncProductRequest, source, listHash);
+    logger.info("PRODUCT: FINISHED", lambdaInfo);
+    return;
+  }
+
+  logger.info("PRODUCT: UPDATE", {
+    ...lambdaInfo,
+    product: orderedTransformProduct
+  });
+  await createOrUpdateProduct(orderedTransformProduct);
+  logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
+  await verifyCompletedList(syncProductRequest, source, listHash);
+  logger.info("PRODUCT: FINISHED", lambdaInfo);
+  return;
 };

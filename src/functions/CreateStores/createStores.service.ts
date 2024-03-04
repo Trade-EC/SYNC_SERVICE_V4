@@ -1,30 +1,108 @@
-import { saveSyncRequest } from "/opt/nodejs/repositories/syncRequest.repository";
-import { SyncRequest } from "/opt/nodejs/types/syncRequest.types";
-import { logger } from "/opt/nodejs/configs/observability.config";
+import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+// @ts-ignore
+import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 
+import { findStore } from "./createStores.repository";
 import { createOrUpdateStores } from "./createStores.repository";
+import { verifyCompletedStore } from "./createStores.repository";
 import { storeTransformer } from "./createStores.transform";
-import { ChannelsAndStores } from "./createStores.types";
+import { CreateStoreProps } from "./createStores.types";
+import { CreateShippingCostProps } from "../CreateShippingCost/createShippingCost.types";
 
-export const syncStoresService = async (
-  channelsAndStores: ChannelsAndStores,
-  accountId: string
-) => {
-  const { stores, vendorId } = channelsAndStores;
+import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import { SyncStoreRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
+
+/**
+ *
+ * @param props {@link CreateProductProps}
+ * @description Create or update stores in database
+ * @returns void
+ */
+export const syncStoresService = async (props: CreateStoreProps) => {
+  const { body, storeHash, syncAll } = props;
+  const { accountId, store, vendorId, vendorChannels } = body;
+  const { storeId, deliveryInfo, storeChannels } = store;
+  const { deliveryId, shippingCost } = deliveryInfo ?? {};
+  const dbStoreId = `${accountId}.${vendorId}.${storeId}`;
   logger.appendKeys({ vendorId, accountId });
-  logger.info("Creating stores initiating");
-  const syncStores = stores.map(store =>
-    storeTransformer(store, accountId, vendorId)
+  logger.info("STORE: INIT");
+  const vendorStoreChannels = storeChannels
+    .map(storeChannel => {
+      const filterVendorChannels = vendorChannels.filter(
+        vendorChannel => vendorChannel.channelId === storeChannel
+      );
+      const channels = filterVendorChannels.map(vendorChannel => {
+        const { ecommerceChannelId, channelId } = vendorChannel;
+        return ecommerceChannelId ?? channelId;
+      });
+      return channels;
+    })
+    .flat();
+  const uniqueVendorStoreChannels = [...new Set(vendorStoreChannels)];
+  const storeDB = await findStore(dbStoreId);
+  const { shippingCostId } = storeDB ?? {};
+  const transformedStore = storeTransformer(
+    store,
+    accountId,
+    vendorId,
+    uniqueVendorStoreChannels,
+    vendorChannels
   );
-  logger.info("Creating stores storing", { syncStores });
-  const newStores = await createOrUpdateStores(syncStores);
-  const syncRequest: SyncRequest = {
+  const orderedTransformStore = sortObjectByKeys(transformedStore);
+  const syncStoreRequest: SyncStoreRecord = {
     accountId,
     status: "SUCCESS",
-    type: "CHANNELS_STORES",
-    vendorId
+    vendorId,
+    storeId: dbStoreId
   };
-  await saveSyncRequest(syncRequest);
-  logger.info("Creating stores finished");
-  return newStores;
+  if (deliveryId && typeof shippingCost !== "undefined") {
+    const shippingPayload: CreateShippingCostProps = {
+      accountId,
+      deliveryId,
+      shippingCost,
+      storeChannels: uniqueVendorStoreChannels,
+      storeId,
+      vendorId,
+      oldShippingCostId: shippingCostId
+    };
+    logger.info("STORE: SEND SHIPPING COST", { shippingPayload });
+    await sqsExtendedClient.sendMessage({
+      QueueUrl: process.env.SYNC_SHIPPING_COST_SQS_URL ?? "",
+      MessageBody: JSON.stringify(shippingPayload),
+      MessageGroupId: `${accountId}-${vendorId}-${deliveryId}`
+    });
+  }
+  if (!storeDB) {
+    const hash = sha1(JSON.stringify(orderedTransformStore));
+    const version = new Date().getTime();
+    orderedTransformStore.hash = hash;
+    orderedTransformStore.version = version;
+    logger.info("STORE: CREATE", { store: orderedTransformStore });
+    await createOrUpdateStores(orderedTransformStore);
+    logger.info("STORE: VERIFY COMPLETED STORE");
+    await verifyCompletedStore(syncStoreRequest, storeHash);
+    logger.info("STORE: FINISHED");
+    return;
+  }
+
+  const newHash = sha1(JSON.stringify(orderedTransformStore));
+  const version = new Date().getTime();
+  orderedTransformStore.hash = newHash;
+  orderedTransformStore.version = version;
+  const { hash } = storeDB;
+  if (hash === newHash && !syncAll) {
+    logger.info("STORE: NO CHANGES");
+    logger.info("STORE: VERIFY COMPLETED STORE");
+    await verifyCompletedStore(syncStoreRequest, storeHash);
+    logger.info("STORE: FINISHED");
+    return;
+  }
+
+  logger.info("STORE: UPDATE", { store: orderedTransformStore });
+  await createOrUpdateStores(orderedTransformStore);
+  logger.info("STORE: VERIFY COMPLETED STORE");
+  await verifyCompletedStore(syncStoreRequest, storeHash);
+  logger.info("STORE: FINISHED");
+  return;
 };

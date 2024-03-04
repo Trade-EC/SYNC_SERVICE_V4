@@ -3,7 +3,11 @@ import { z } from "zod";
 import { additionalInfoValidator } from "./common.validator";
 import { scheduleValidator } from "./common.validator";
 import { productValidator } from "./lists.validator";
-import { storeServicesValidator } from "./store.validator";
+
+export const dbTaxValidator = z.object({
+  type: z.string(),
+  value: z.number()
+});
 
 // ------------------------------------------ images
 
@@ -57,10 +61,17 @@ export const dbServicesValidator = z.object({
   active: z.boolean()
 });
 
+export const dbCatalogueValidator = z.object({
+  catalogueId: z.string(),
+  name: z.string(),
+  active: z.boolean()
+});
+
 export const dbStoreValidator = z.object({
   storeId: z.string(),
   status: statusValidator,
-  version: z.string(),
+  hash: z.string().nullable(),
+  version: z.number().nullable(),
   storeName: z.string(),
   address: z.string(),
   latitude: z.number(),
@@ -78,20 +89,22 @@ export const dbStoreValidator = z.object({
   minOrder: z.number(),
   minOrderSymbol: z.string().nullable(),
   orderSymbol: z.string().nullable(),
-  catalogues: z.array(z.string()), // TODO:
-  polygons: z.array(z.any()).nullable(), // TODO:
+  catalogues: z.array(dbCatalogueValidator),
+  polygons: z.array(z.any()).nullable(),
   sponsored: z.boolean(),
   tips: z.array(z.any()).nullable(), // TODO:
   timezone: z.string().nullable(),
   schedules: z.array(dbScheduleValidator),
   location: locationValidator,
-  country: z.any().nullable(),
+  country: idValidator.nullable(),
   vendor: idValidator,
   accounts: z.array(accountValidator),
   account: idValidator,
   city: dbCityValidator,
+  taxes: dbTaxValidator.array(),
   services: z.array(dbServicesValidator),
-  additionalInfo: z.object({ externalId: z.string() })
+  additionalInfo: z.record(z.string().min(1), z.any()).optional(),
+  shippingCostId: z.string().nullable()
 });
 
 // ------------------------------------------ list
@@ -148,6 +161,7 @@ export const dbPriceValidator = z.object({
   category: z.enum(["NORMAL", "POINTS", "SUGGESTED", "SUGGESTED_POINTS"]),
   symbol: z.string().max(5),
   grossPrice: z.number(),
+  taxes: dbTaxValidator.array(),
   netPrice: z.number(),
   discounts: z.array(z.any()),
   discountGrossPrice: z.number(),
@@ -201,7 +215,8 @@ export const dbProductValidator = productValidator
     tags: true
   })
   .extend({
-    version: z.string(),
+    hash: z.string().nullable(),
+    version: z.number().nullable(),
     status: statusValidator,
     measure: z.string().nullable(),
     stock: z.number().nullable(),
@@ -228,3 +243,23 @@ export const dbProductValidator = productValidator
     isPriceVip: z.boolean(),
     suggestedPrice: z.number()
   });
+
+// ------------------------------------------ shippingCost
+
+export const dbShippingCostValidator = z.object({
+  shippingCostId: z.string(),
+  name: z.string(),
+  amount: z.number(),
+  symbol: z.string(),
+  vendorIdStoreIdChannelId: z.array(z.string()),
+  grossPrice: z.number(),
+  netPrice: z.number(),
+  subtotalBeforeTaxes: z.number(),
+  taxes: z.array(z.any()),
+  taxTotal: z.number(),
+  discounts: z.array(z.any()),
+  discountTotal: z.number(),
+  total: z.number(),
+  account: z.object({ accountId: z.string() }),
+  vendor: z.object({ id: z.string() })
+});
