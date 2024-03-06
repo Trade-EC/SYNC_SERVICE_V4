@@ -14,6 +14,8 @@ import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
+// @ts-ignore
+import { v4 as uuid } from "/opt/nodejs/sync-service-layer/node_modules/uuid";
 
 /**
  *
@@ -23,6 +25,7 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
  */
 export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   logger.info("STORE VALIDATE: INIT");
+  const requestUid = uuid();
   const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
   const headersValidate = headersValidator.parse(headers);
@@ -30,7 +33,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   // const { Account: accountId = "0" } = headers;
   const channelsAndStores = validateStores(parsedBody, accountId);
   const { vendorId } = channelsAndStores;
-  logger.appendKeys({ vendorId, accountId });
+  logger.appendKeys({ vendorId, accountId, requestId: requestUid });
   logger.info("STORE VALIDATE: VALIDATING");
   const vendor = await fetchVendor(vendorId, accountId);
   if (!vendor) {
@@ -74,7 +77,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
       })
     };
   }
-
+  syncRequest.requestId = requestUid;
   await saveSyncRequest(syncRequest);
 
   logger.info("STORE VALIDATE: SEND TO PREPARE STORES");
@@ -83,7 +86,8 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     channelsAndStores,
     accountId,
     storeHash: hash,
-    vendorChannels
+    vendorChannels,
+    requestId: requestUid
   };
 
   await sqsExtendedClient.sendMessage({

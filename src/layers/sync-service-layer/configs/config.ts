@@ -11,17 +11,24 @@ const REGION = process.env.REGION ?? " ";
 const serviceConfig = { region: REGION };
 const LOGS_BUCKET = process.env.SYNC_BUCKET_LOGS ?? " ";
 
-export const s3Client = tracer.captureAWSv3Client(new S3Client(serviceConfig));
-export const sqsClient = new SQS(serviceConfig);
-export const lambdaClient = tracer.captureAWSv3Client(
-  new Lambda(serviceConfig)
-);
-export const dynamoDBClient = tracer.captureAWSv3Client(
+const s3Client = tracer.captureAWSv3Client(new S3Client(serviceConfig));
+const sqsClient = new SQS(serviceConfig);
+const lambdaClient = tracer.captureAWSv3Client(new Lambda(serviceConfig));
+const dynamoDBClient = tracer.captureAWSv3Client(
   new DynamoDBClient(serviceConfig)
 );
 
-export const sqsExtendedClient = new SqsExtendedClient({
+const sqsExtendedClient = new SqsExtendedClient({
   sqsClientConfig: serviceConfig,
   s3ClientConfig: serviceConfig,
   bucketName: LOGS_BUCKET
 });
+
+sqsExtendedClient.sqsClient = tracer.captureAWSv3Client(
+  sqsExtendedClient.sqsClient
+);
+sqsExtendedClient.s3Client = tracer.captureAWSv3Client(
+  sqsExtendedClient.s3Client
+);
+
+export { sqsExtendedClient, s3Client, sqsClient, lambdaClient, dynamoDBClient };

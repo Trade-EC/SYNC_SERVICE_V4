@@ -15,11 +15,7 @@ export const fetchVendor = async (vendorId: string, accountId: string) => {
   return vendor as unknown as Vendor;
 };
 
-export const fetchVendorTask = async (
-  accountId: string,
-  vendorId: string,
-  url: string
-) => {
+export const fetchVendorTask = async (accountId: string, vendorId: string) => {
   const input: QueryCommandInput = {
     TableName: process.env.TASK_SCHEDULE_TABLE ?? "",
     IndexName: "byVendor",
@@ -33,8 +29,6 @@ export const fetchVendorTask = async (
 
   const vendorTask = await dynamoDBClient.send(new QueryCommand(input));
 
-  console.log(JSON.stringify({ vendorTask }));
-
   if (!vendorTask.Items?.[0]) return undefined;
 
   return unmarshall(vendorTask?.Items[0]);
@@ -46,10 +40,7 @@ export const putVendorTask = async (vendorTask: Record<string, any>) => {
     Item: marshall(vendorTask)
   };
 
-  console.log(JSON.stringify({ input }));
-
-  const response = await dynamoDBClient.send(new PutItemCommand(input));
-  console.log(JSON.stringify({ response }));
+  await dynamoDBClient.send(new PutItemCommand(input));
 };
 
 export const buildVendorTask = async (

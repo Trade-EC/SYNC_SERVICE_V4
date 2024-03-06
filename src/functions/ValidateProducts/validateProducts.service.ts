@@ -8,13 +8,17 @@ import { fetchSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/sy
 import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { tracer } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 //@ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
+// @ts-ignore
+import { v4 as uuid } from "/opt/nodejs/sync-service-layer/node_modules/uuid";
 import { validateProducts } from "/opt/nodejs/transforms-layer/validators/products.validator";
 import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import * as AWSXRay from "/opt/nodejs/sync-service-layer/node_modules/aws-xray-sdk-core";
 
 /**
  *
@@ -24,6 +28,7 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
  */
 export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   logger.info("PRODUCTS VALIDATE: INIT");
+  const requestUid = uuid();
   const { body, headers, queryStringParameters } = event;
   const { type } = productsQueryParamsValidator.parse(
     queryStringParameters ?? {}
@@ -34,8 +39,19 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   const listInfo = validateProducts(parsedBody, accountId);
   const { list } = listInfo;
   const { storeId, vendorId, listId } = list;
-  logger.appendKeys({ vendorId, accountId, listId, storeId });
+  logger.appendKeys({
+    vendorId,
+    accountId,
+    listId,
+    storeId,
+    requestId: requestUid
+  });
   logger.info("PRODUCTS VALIDATE: VALIDATING");
+  const segment = tracer.getSegment() as AWSXRay.Segment;
+  const trace_id = tracer.getRootXrayTraceId();
+  if (segment && trace_id) {
+    segment.trace_id = trace_id;
+  }
   const vendor = await fetchVendor(vendorId, accountId);
   if (!vendor) {
     return {
@@ -91,6 +107,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
       })
     };
   }
+  syncRequest.requestId = requestUid;
   await saveSyncRequest(syncRequest);
 
   logger.info("PRODUCTS VALIDATE: SEND TO SQS");
@@ -101,7 +118,8 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
     listHash: hash,
     channelId,
     syncAll,
-    source: "PRODUCTS"
+    source: "PRODUCTS",
+    requestId: requestUid
   };
 
   await sqsExtendedClient.sendMessage({

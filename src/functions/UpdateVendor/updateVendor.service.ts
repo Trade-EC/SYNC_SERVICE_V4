@@ -29,7 +29,7 @@ export const updateVendorService = async (event: APIGatewayProxyEvent) => {
   const url = `https://${domainName}/api/v4/publish-sync`;
   if (syncTimeUnit && syncTimeValue && taskTableName) {
     const id: string = uuidv4();
-    const vendorTask = await fetchVendorTask(accountId, vendorId, url);
+    const vendorTask = await fetchVendorTask(accountId, vendorId);
     const vendorTaskBuild = await buildVendorTask(
       accountId,
       vendorId,

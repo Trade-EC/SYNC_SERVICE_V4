@@ -9,5 +9,6 @@ export interface PrepareStoresPayload {
   accountId: string;
   storeHash: string;
   vendorChannels: VendorChannels;
+  requestId: string;
   syncAll?: boolean;
 }

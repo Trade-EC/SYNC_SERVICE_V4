@@ -9,28 +9,28 @@
     "clear:modules": "rm -rf node_modules"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^1.16.0",
-    "@aws-lambda-powertools/metrics": "^1.16.0",
-    "@aws-lambda-powertools/tracer": "^1.16.0",
-    "@aws-sdk/client-dynamodb": "^3.507.0",
-    "@aws-sdk/client-lambda": "^3.454.0",
-    "@aws-sdk/client-s3": "^3.454.0",
-    "@aws-sdk/client-sqs": "^3.454.0",
-    "@aws-sdk/lib-storage": "^3.454.0",
-    "@aws-sdk/util-dynamodb": "^3.507.0",
-    "@middy/core": "4.x",
+    "@aws-lambda-powertools/logger": "^2.0.2",
+    "@aws-lambda-powertools/metrics": "^2.0.2",
+    "@aws-lambda-powertools/tracer": "^2.0.2",
+    "@aws-sdk/client-dynamodb": "^3.525.0",
+    "@aws-sdk/client-lambda": "^3.525.0",
+    "@aws-sdk/client-s3": "^3.525.0",
+    "@aws-sdk/client-sqs": "^3.525.0",
+    "@aws-sdk/lib-storage": "^3.525.1",
+    "@aws-sdk/util-dynamodb": "^3.525.0",
+    "@middy/core": "5.x",
     "dayjs": "^1.11.10",
     "lodash": "^4.17.21",
-    "mongodb": "^6.0.0",
+    "mongodb": "^6.4.0",
     "sha1": "^1.1.1",
     "sqs-extended-client": "^1.0.0",
     "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.126",
-    "@types/lodash": "^4.14.198",
-    "@types/sha1": "^1.1.4",
+    "@types/aws-lambda": "^8.10.135",
+    "@types/lodash": "^4.14.202",
+    "@types/sha1": "^1.1.5",
     "@types/uuid": "^9.0.8"
   }
 }

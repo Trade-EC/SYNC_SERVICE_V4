@@ -9,5 +9,6 @@ export interface PrepareProductsPayload {
   listHash: string;
   channelId: string;
   source: "PRODUCTS" | "LISTS";
+  requestId: string;
   syncAll?: boolean;
 }

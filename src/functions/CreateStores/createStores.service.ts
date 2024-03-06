@@ -20,13 +20,13 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
  * @returns void
  */
 export const syncStoresService = async (props: CreateStoreProps) => {
-  const { body, storeHash, syncAll } = props;
+  const { body, storeHash, syncAll, requestId } = props;
   const { accountId, store, vendorId, vendorChannels } = body;
   const { storeId, deliveryInfo, storeChannels } = store;
   const { deliveryId, shippingCost } = deliveryInfo ?? {};
   const dbStoreId = `${accountId}.${vendorId}.${storeId}`;
-  logger.appendKeys({ vendorId, accountId });
-  logger.info("STORE: INIT");
+  const logKeys = { vendorId, accountId, storeId, requestId };
+  logger.info("STORE: INIT", logKeys);
   const vendorStoreChannels = storeChannels
     .map(storeChannel => {
       const filterVendorChannels = vendorChannels.filter(
@@ -54,7 +54,8 @@ export const syncStoresService = async (props: CreateStoreProps) => {
     accountId,
     status: "SUCCESS",
     vendorId,
-    storeId: dbStoreId
+    storeId: dbStoreId,
+    requestId
   };
   if (deliveryId && typeof shippingCost !== "undefined") {
     const shippingPayload: CreateShippingCostProps = {
@@ -66,7 +67,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
       vendorId,
       oldShippingCostId: shippingCostId
     };
-    logger.info("STORE: SEND SHIPPING COST", { shippingPayload });
+    logger.info("STORE: SEND SHIPPING COST", { shippingPayload, ...logKeys });
     await sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_SHIPPING_COST_SQS_URL ?? "",
       MessageBody: JSON.stringify(shippingPayload),
@@ -78,11 +79,11 @@ export const syncStoresService = async (props: CreateStoreProps) => {
     const version = new Date().getTime();
     orderedTransformStore.hash = hash;
     orderedTransformStore.version = version;
-    logger.info("STORE: CREATE", { store: orderedTransformStore });
+    logger.info("STORE: CREATE", { store: orderedTransformStore, ...logKeys });
     await createOrUpdateStores(orderedTransformStore);
-    logger.info("STORE: VERIFY COMPLETED STORE");
+    logger.info("STORE: VERIFY COMPLETED STORE", logKeys);
     await verifyCompletedStore(syncStoreRequest, storeHash);
-    logger.info("STORE: FINISHED");
+    logger.info("STORE: FINISHED", logKeys);
     return;
   }
 
@@ -92,17 +93,17 @@ export const syncStoresService = async (props: CreateStoreProps) => {
   orderedTransformStore.version = version;
   const { hash } = storeDB;
   if (hash === newHash && !syncAll) {
-    logger.info("STORE: NO CHANGES");
-    logger.info("STORE: VERIFY COMPLETED STORE");
+    logger.info("STORE: NO CHANGES", logKeys);
+    logger.info("STORE: VERIFY COMPLETED STORE", logKeys);
     await verifyCompletedStore(syncStoreRequest, storeHash);
-    logger.info("STORE: FINISHED");
+    logger.info("STORE: FINISHED", logKeys);
     return;
   }
 
-  logger.info("STORE: UPDATE", { store: orderedTransformStore });
+  logger.info("STORE: UPDATE", { store: orderedTransformStore, ...logKeys });
   await createOrUpdateStores(orderedTransformStore);
-  logger.info("STORE: VERIFY COMPLETED STORE");
+  logger.info("STORE: VERIFY COMPLETED STORE", logKeys);
   await verifyCompletedStore(syncStoreRequest, storeHash);
-  logger.info("STORE: FINISHED");
+  logger.info("STORE: FINISHED", logKeys);
   return;
 };

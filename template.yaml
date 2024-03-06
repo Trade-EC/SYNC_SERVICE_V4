@@ -302,6 +302,7 @@ Resources:
       Architectures:
         - x86_64
       MemorySize: 256
+      Tracing: Active
       Events:
         SqsTrigger:
           Type: SQS

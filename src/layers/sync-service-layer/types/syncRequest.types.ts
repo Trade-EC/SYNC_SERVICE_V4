@@ -7,6 +7,7 @@ export interface SyncRequest {
   createdAt?: Date;
   s3Path?: string;
   metadata: SyncRequestMetadata;
+  requestId?: string;
 }
 
 export interface SyncRequestMetadata {

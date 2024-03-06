@@ -21,4 +21,5 @@ export interface CreateStoreProps {
   body: CreateStoreBody;
   storeHash: string;
   syncAll: boolean;
+  requestId: string;
 }

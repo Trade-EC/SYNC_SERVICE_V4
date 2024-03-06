@@ -47,6 +47,7 @@ export const verifyCompletedList = async (
 ) => {
   const { status, productId, ...registerFilter } = register;
   const { accountId, channelId, storeId, vendorId, listId } = registerFilter;
+  const { requestId } = registerFilter;
   const commonFilters = {
     vendorId,
     channelId,
@@ -54,7 +55,8 @@ export const verifyCompletedList = async (
     storeId,
     listId,
     source,
-    hash: listHash
+    hash: listHash,
+    requestId
   };
   const dbClient = await connectToDatabase();
   await dbClient
@@ -79,6 +81,7 @@ export const verifyCompletedList = async (
     type: source,
     vendorId,
     hash: listHash,
+    requestId,
     metadata: {
       channelId,
       storesId: storeId,
@@ -113,7 +116,7 @@ export const errorCreateProduct = async (
   props: CreateProductProps,
   errorMessage: string
 ) => {
-  const { listHash, body } = props;
+  const { listHash, body, requestId } = props;
   const { accountId, source, vendorId, listId, channelId, storeId } = body;
   const { product } = body;
   const { productId } = product;
@@ -127,7 +130,8 @@ export const errorCreateProduct = async (
     source,
     hash: listHash,
     status: "PENDING" as const,
-    productId: dbProductId
+    productId: dbProductId,
+    requestId
   };
 
   await updateErrorProductSyncRecord(commonFilters, errorMessage);

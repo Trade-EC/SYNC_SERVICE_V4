@@ -14,10 +14,10 @@ import { fetchDraftStores } from "/opt/nodejs/sync-service-layer/repositories/co
  */
 export const prepareProductsService = async (props: PrepareProductsPayload) => {
   const { listInfo, accountId, listHash, channelId } = props;
-  const { source, syncAll = false } = props;
+  const { source, syncAll = false, requestId } = props;
   const { categories, list, modifierGroups, products } = listInfo;
   const { storeId, vendorId, listName, listId } = list;
-  const logKeys = { vendorId, accountId, listId, storeId };
+  const logKeys = { vendorId, accountId, listId, storeId, requestId };
   let storesId: string[];
   if (storeId === "replicate_in_all") {
     const dbStores = await fetchDraftStores(accountId, vendorId);
@@ -41,6 +41,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
       status: "PENDING" as const,
       source,
       hash: listHash,
+      requestId,
       createdAt: new Date()
     };
   });
@@ -48,13 +49,18 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
   await createSyncRecords(syncProducts);
 
   const productsPromises = products.map((product, index) => {
-    const isLast = products.length - 1 === index;
     const { productId } = product;
     const body1 = { product, storesId, channelId, accountId, vendorId };
     const body2 = { modifierGroups, categories, listName, listId };
-    const body3 = { isLast, storeId };
+    const body3 = { storeId };
     const body = { ...body1, ...body2, ...body3, source };
-    const messageBody = { vendorIdStoreIdChannelId, body, listHash, syncAll };
+    const messageBody = {
+      vendorIdStoreIdChannelId,
+      body,
+      listHash,
+      syncAll,
+      requestId
+    };
     return sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_PRODUCT_SQS_URL ?? "",
       MessageBody: JSON.stringify(messageBody),

@@ -33,6 +33,7 @@ export interface SyncProductRecord {
   storeId: string;
   status: "PENDING" | "SUCCESS" | "ERROR";
   source: "LISTS" | "PRODUCTS";
+  requestId: string;
 }
 
 export interface SyncStoreRecord {
@@ -40,4 +41,5 @@ export interface SyncStoreRecord {
   vendorId: string;
   storeId: string;
   status: "PENDING" | "SUCCESS" | "ERROR";
+  requestId: string;
 }

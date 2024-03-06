@@ -28,11 +28,12 @@ export const saveSyncRequest = async (
   syncRequest: SyncRequest,
   upsert = true
 ) => {
+  const { status, ...restFilters } = syncRequest;
   const dbClient = await connectToDatabase();
   const dbSyncRequest = await dbClient
     .collection("syncRequests")
     .updateMany(
-      { ...syncRequest, status: "PENDING" },
+      { ...restFilters, $or: [{ status: "PENDING" }, { status: "ERROR" }] },
       { $set: { ...syncRequest, updatedAt: new Date() } },
       { upsert, ignoreUndefined: true }
     );

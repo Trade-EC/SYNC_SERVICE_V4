@@ -15,6 +15,8 @@ import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
+// @ts-ignore
+import { v4 as uuid } from "/opt/nodejs/sync-service-layer/node_modules/uuid";
 
 /**
  *
@@ -24,6 +26,7 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
  */
 export const validateListsService = async (event: APIGatewayProxyEvent) => {
   logger.info("LISTS VALIDATE: INIT");
+  const requestUid = uuid();
   const { body, headers, queryStringParameters } = event;
   const { type } = productsQueryParamsValidator.parse(
     queryStringParameters ?? {}
@@ -35,7 +38,13 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   const listInfo = validateLists(parsedBody, accountId);
   const { list } = listInfo;
   const { storeId, vendorId, listId } = list;
-  logger.appendKeys({ vendorId, accountId, listId, storeId });
+  logger.appendKeys({
+    vendorId,
+    accountId,
+    listId,
+    storeId,
+    requestId: requestUid
+  });
   logger.info("LISTS VALIDATE: VALIDATING");
   const vendor = await fetchVendor(vendorId, accountId);
   if (!vendor) {
@@ -96,6 +105,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
       })
     };
   }
+  syncRequest.requestId = requestUid;
   await saveSyncRequest(syncRequest);
   logger.info("LISTS VALIDATE: TRANSFORMING LIST");
   // await syncList(listInfo, accountId, hash, channelId, syncAll);
@@ -105,6 +115,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     listHash: hash,
     channelId,
     syncAll,
+    requestId: requestUid,
     source: "LISTS"
   };
 

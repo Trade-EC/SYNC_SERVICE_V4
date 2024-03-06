@@ -6,9 +6,9 @@ import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.con
 
 export const prepareStoreService = async (payload: PrepareStoresPayload) => {
   const { accountId, channelsAndStores, storeHash, vendorChannels } = payload;
-  const { syncAll = false } = payload;
+  const { syncAll = false, requestId } = payload;
   const { stores, vendorId } = channelsAndStores;
-  const logKeys = { vendorId, accountId };
+  const logKeys = { vendorId, accountId, requestId };
   const syncStores = stores.map(store => {
     const { storeId } = store;
     return {
@@ -17,7 +17,8 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
       vendorId,
       status: "PENDING" as const,
       hash: storeHash,
-      createdAt: new Date()
+      createdAt: new Date(),
+      requestId
     };
   });
   logger.info("STORE PREPARE: CREATING SYNC STORE RECORDS", logKeys);
@@ -26,7 +27,7 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
   const productsPromises = stores.map(async store => {
     const { storeId } = store;
     const body = { store, accountId, vendorId, storeId, vendorChannels };
-    const messageBody = { body, storeHash, syncAll };
+    const messageBody = { body, storeHash, syncAll, requestId };
 
     await sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",

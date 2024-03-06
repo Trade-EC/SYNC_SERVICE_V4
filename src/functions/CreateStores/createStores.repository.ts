@@ -47,8 +47,8 @@ export const verifyCompletedStore = async (
   storeHash: string
 ) => {
   const { status, storeId, ...registerFilter } = register;
-  const { accountId, vendorId } = registerFilter;
-  const commonFilters = { accountId, vendorId };
+  const { accountId, vendorId, requestId } = registerFilter;
+  const commonFilters = { accountId, vendorId, requestId };
   const dbClient = await connectToDatabase();
   await dbClient
     .collection("syncStores")
@@ -72,7 +72,8 @@ export const verifyCompletedStore = async (
     vendorId,
     hash: storeHash,
     type: "CHANNELS_STORES",
-    metadata: {}
+    metadata: {},
+    requestId
   };
   if (allSuccess && !pendingExists) {
     await saveSyncRequest(syncRequest, false);
@@ -98,7 +99,7 @@ export const errorCreateStore = async (
   props: CreateStoreProps,
   errorMessage: string
 ) => {
-  const { storeHash, body } = props;
+  const { storeHash, body, requestId } = props;
   const { accountId, vendorId } = body;
   const { store } = body;
   const { storeId } = store;
@@ -107,11 +108,11 @@ export const errorCreateStore = async (
     accountId,
     vendorId,
     status: "PENDING" as const,
-    hash: storeHash
+    hash: storeHash,
+    requestId
   };
 
   await updateErrorStoreSyncRecord(commonFilters, errorMessage);
-  console.log(JSON.stringify({ commonFilters }));
 
   const dbClient = await connectToDatabase();
   const allRecords = await dbClient
@@ -121,8 +122,6 @@ export const errorCreateStore = async (
       { ignoreUndefined: true }
     )
     .toArray();
-
-  console.log(JSON.stringify({ allRecords }));
 
   const pendingExists = allRecords.some(record => record.status === "PENDING");
   const errorExists = allRecords.some(record => record.status === "ERROR");

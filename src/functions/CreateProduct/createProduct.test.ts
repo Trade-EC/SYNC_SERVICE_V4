@@ -35,6 +35,7 @@ describe("Unit test for app handler", function () {
         storesId,
         storeId: storesId[0]
       },
+      requestId: faker.string.uuid(),
       listHash: faker.string.alphanumeric(40),
       syncAll: faker.datatype.boolean(),
       vendorIdStoreIdChannelId: faker.helpers.multiple(faker.string.uuid, {

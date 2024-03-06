@@ -14,6 +14,7 @@ describe("Unit test for app handler", function () {
     const body: CreateStoreProps = {
       storeHash: faker.string.alphanumeric(40),
       syncAll: faker.datatype.boolean(),
+      requestId: faker.string.uuid(),
       body: {
         accountId: faker.string.uuid(),
         store: buildStore(),

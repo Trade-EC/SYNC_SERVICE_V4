@@ -12,4 +12,5 @@ export interface CreateProductProps {
   vendorIdStoreIdChannelId: string[];
   listHash: string;
   syncAll: boolean;
+  requestId: string;
 }
