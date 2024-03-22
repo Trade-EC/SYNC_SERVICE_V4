@@ -12,6 +12,7 @@ import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 // @ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
+import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 // @ts-ignore
@@ -29,13 +30,16 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
   const { body, headers } = event;
   const parsedBody = JSON.parse(body ?? "");
   const headersValidate = headersValidator.parse(headers);
-  const { account: accountId } = headersValidate;
+  const { account: requestAccountId, country: countryId } = headersValidate;
   // const { Account: accountId = "0" } = headers;
+  let accountId = requestAccountId;
   const channelsAndStores = validateStores(parsedBody, accountId);
   const { vendorId } = channelsAndStores;
   logger.appendKeys({ vendorId, accountId, requestId: requestUid });
   logger.info("STORE VALIDATE: VALIDATING");
-  const vendor = await fetchVendor(vendorId, accountId);
+  const mapAccount = await fetchMapAccount(accountId);
+  if (mapAccount) accountId = mapAccount;
+  const vendor = await fetchVendor(vendorId, accountId, countryId);
   if (!vendor) {
     return {
       statusCode: 404,
@@ -87,13 +91,14 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     accountId,
     storeHash: hash,
     vendorChannels,
-    requestId: requestUid
+    requestId: requestUid,
+    countryId
   };
 
   await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.PREPARE_STORES_SQS_URL ?? "",
     MessageBody: JSON.stringify(payload),
-    MessageGroupId: `${accountId}-${vendorId}`
+    MessageGroupId: `${accountId}-${countryId}-${vendorId}`
   });
 
   logger.info("STORE VALIDATE: FINISHED");

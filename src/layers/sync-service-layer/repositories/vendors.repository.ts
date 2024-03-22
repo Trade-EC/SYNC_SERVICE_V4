@@ -6,11 +6,17 @@ import { dynamoDBClient } from "../configs/config";
 import { Vendor } from "../types/vendor.types";
 import { connectToDatabase } from "../utils/mongo.utils";
 
-export const fetchVendor = async (vendorId: string, accountId: string) => {
+export const fetchVendor = async (
+  vendorId: string,
+  accountId: string,
+  countryId: string
+) => {
   const dbClient = await connectToDatabase();
-  const vendor = await dbClient
-    .collection("vendors")
-    .findOne({ vendorId, "account.accountId": accountId });
+  const vendor = await dbClient.collection("vendors").findOne({
+    externalId: vendorId,
+    "account.accountId": accountId,
+    countryId
+  });
 
   return vendor as unknown as Vendor;
 };
@@ -63,4 +69,13 @@ export const buildVendorTask = async (
     requestBody: { vendorId },
     status: "PENDING"
   };
+};
+
+export const fetchMapAccount = async (accountId: string) => {
+  const url = `${process.env.NEW_PRODUCTS_SERVICE_URL}/api/v4/migration-data?oldId=${accountId}&type=ACCOUNT`;
+  const fetchAccountResponse = await fetch(url);
+  const fetchAccount = await fetchAccountResponse.json();
+  if (!fetchAccount) return undefined;
+  const { newId } = fetchAccount;
+  return newId;
 };

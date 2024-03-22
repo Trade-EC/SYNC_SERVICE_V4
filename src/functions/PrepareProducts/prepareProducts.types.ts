@@ -10,5 +10,6 @@ export interface PrepareProductsPayload {
   channelId: string;
   source: "PRODUCTS" | "LISTS";
   requestId: string;
+  countryId: string;
   syncAll?: boolean;
 }

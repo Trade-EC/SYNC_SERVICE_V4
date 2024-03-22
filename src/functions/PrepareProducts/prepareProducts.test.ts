@@ -30,7 +30,8 @@ describe("Unit test for app handler", function () {
       listHash: faker.string.alphanumeric(40),
       source: "LISTS",
       syncAll: true,
-      requestId: faker.string.uuid()
+      requestId: faker.string.uuid(),
+      countryId: faker.string.uuid()
     };
     const event: SQSEvent = sqsEvent;
     event.Records[0].body = JSON.stringify(body);

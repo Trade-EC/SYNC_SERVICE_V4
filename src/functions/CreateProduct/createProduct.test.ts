@@ -33,7 +33,8 @@ describe("Unit test for app handler", function () {
         modifierGroups: genModifierGroups(),
         product: buildProduct(),
         storesId,
-        storeId: storesId[0]
+        storeId: storesId[0],
+        countryId: faker.string.uuid()
       },
       requestId: faker.string.uuid(),
       listHash: faker.string.alphanumeric(40),

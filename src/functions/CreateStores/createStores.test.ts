@@ -19,7 +19,8 @@ describe("Unit test for app handler", function () {
         accountId: faker.string.uuid(),
         store: buildStore(),
         vendorId: faker.string.uuid(),
-        vendorChannels: []
+        vendorChannels: [],
+        countryId: faker.string.uuid()
       }
     };
     const event: SQSEvent = sqsEvent;

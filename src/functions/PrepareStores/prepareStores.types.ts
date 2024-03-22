@@ -10,5 +10,6 @@ export interface PrepareStoresPayload {
   storeHash: string;
   vendorChannels: VendorChannels;
   requestId: string;
+  countryId: string;
   syncAll?: boolean;
 }

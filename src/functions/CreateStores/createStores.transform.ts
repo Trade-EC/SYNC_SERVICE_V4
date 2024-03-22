@@ -49,7 +49,8 @@ export const storeTransformer = (
   accountId: string,
   vendorId: string,
   storeChannels: string[],
-  vendorChannels: VendorChannels
+  vendorChannels: VendorChannels,
+  countryId: string
 ) => {
   const { storeId, name, contactInfo, locationInfo, schedules } = store;
   const { schedulesByChannel, deliveryInfo } = store;
@@ -68,7 +69,7 @@ export const storeTransformer = (
     : [];
 
   const newStore: DBStore = {
-    storeId: `${accountId}.${vendorId}.${storeId}`,
+    storeId: `${accountId}.${countryId}.${vendorId}.${storeId}`,
     version: null,
     hash: null,
     status: "DRAFT" as const,
@@ -109,12 +110,12 @@ export const storeTransformer = (
     additionalInfo: { externalId: storeId, external_code: storeCode },
     city: { id: "", name: locationInfo.city, active: false },
     country: null,
-    vendor: { id: vendorId },
+    vendor: { id: `${accountId}.${countryId}.${vendorId}` },
     accounts: [{ accountId }],
     account: { id: accountId },
     shippingCostId:
       typeof deliveryId !== "undefined"
-        ? `${accountId}.${vendorId}.${deliveryId}`
+        ? `${accountId}.${countryId}.${vendorId}.${deliveryId}`
         : null
   };
 

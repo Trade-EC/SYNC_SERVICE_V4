@@ -21,10 +21,10 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
  */
 export const syncStoresService = async (props: CreateStoreProps) => {
   const { body, storeHash, syncAll, requestId } = props;
-  const { accountId, store, vendorId, vendorChannels } = body;
+  const { accountId, store, vendorId, vendorChannels, countryId } = body;
   const { storeId, deliveryInfo, storeChannels } = store;
   const { deliveryId, shippingCost } = deliveryInfo ?? {};
-  const dbStoreId = `${accountId}.${vendorId}.${storeId}`;
+  const dbStoreId = `${accountId}.${countryId}.${vendorId}.${storeId}`;
   const logKeys = { vendorId, accountId, storeId, requestId };
   logger.info("STORE: INIT", logKeys);
   const vendorStoreChannels = storeChannels
@@ -47,7 +47,8 @@ export const syncStoresService = async (props: CreateStoreProps) => {
     accountId,
     vendorId,
     uniqueVendorStoreChannels,
-    vendorChannels
+    vendorChannels,
+    countryId
   );
   const orderedTransformStore = sortObjectByKeys(transformedStore);
   const syncStoreRequest: SyncStoreRecord = {
@@ -65,13 +66,14 @@ export const syncStoresService = async (props: CreateStoreProps) => {
       storeChannels: uniqueVendorStoreChannels,
       storeId,
       vendorId,
-      oldShippingCostId: shippingCostId
+      oldShippingCostId: shippingCostId,
+      countryId
     };
     logger.info("STORE: SEND SHIPPING COST", { shippingPayload, ...logKeys });
     await sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_SHIPPING_COST_SQS_URL ?? "",
       MessageBody: JSON.stringify(shippingPayload),
-      MessageGroupId: `${accountId}-${vendorId}-${deliveryId}`
+      MessageGroupId: `${accountId}-${countryId}-${vendorId}-${deliveryId}`
     });
   }
   if (!storeDB) {

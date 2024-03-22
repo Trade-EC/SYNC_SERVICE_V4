@@ -13,6 +13,7 @@ import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 import { validateLists } from "/opt/nodejs/transforms-layer/validators/lists.validator";
 import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
+import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 // @ts-ignore
@@ -33,8 +34,10 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   );
   const syncAll = type === "ALL";
   const parsedBody = JSON.parse(body ?? "");
-  const { account: accountId } = headersValidator.parse(headers);
+  const { account: requestAccountId, country: countryId } =
+    headersValidator.parse(headers);
   // const { Account: accountId = "0" } = headers;
+  let accountId = requestAccountId;
   const listInfo = validateLists(parsedBody, accountId);
   const { list } = listInfo;
   const { storeId, vendorId, listId } = list;
@@ -46,7 +49,9 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     requestId: requestUid
   });
   logger.info("LISTS VALIDATE: VALIDATING");
-  const vendor = await fetchVendor(vendorId, accountId);
+  const mapAccount = await fetchMapAccount(accountId);
+  if (mapAccount) accountId = mapAccount;
+  const vendor = await fetchVendor(vendorId, accountId, countryId);
   if (!vendor) {
     return {
       statusCode: 404,
@@ -116,13 +121,14 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     channelId,
     syncAll,
     requestId: requestUid,
+    countryId,
     source: "LISTS"
   };
 
   await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.PREPARE_PRODUCTS_SQS_URL ?? "",
     MessageBody: JSON.stringify(payload),
-    MessageGroupId: `${accountId}-${vendorId}`
+    MessageGroupId: `${accountId}-${countryId}-${vendorId}`
   });
 
   logger.info("LISTS VALIDATE: FINISHED");

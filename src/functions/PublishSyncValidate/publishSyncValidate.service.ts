@@ -5,6 +5,7 @@ import { publishSyncQueryValidator } from "./publishSyncValidate.validator";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 
 /**
  *
@@ -20,13 +21,23 @@ export const publishSyncValidateService = async (
     queryStringParameters ?? {}
   );
   const parsedBody = JSON.parse(body ?? "");
-  const { account: accountId } = headersValidator.parse(headers);
+  const { account: requestAccountId, country: countryId } =
+    headersValidator.parse(headers);
+  let accountId = requestAccountId;
   const info = publishSyncValidateValidator.parse(parsedBody);
-  const { vendorId } = info;
+  const { vendorId: vendorExternalId } = info;
+  const mapAccount = await fetchMapAccount(accountId);
+  if (mapAccount) accountId = mapAccount;
+  const vendorId = `${accountId}.${countryId}.${vendorExternalId}`;
 
   await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.SYNC_PUBLISH_SQS_URL ?? "",
-    MessageBody: JSON.stringify({ vendorId, accountId, rePublish, all })
+    MessageBody: JSON.stringify({
+      vendorId,
+      accountId,
+      rePublish,
+      all
+    })
   });
 
   return {

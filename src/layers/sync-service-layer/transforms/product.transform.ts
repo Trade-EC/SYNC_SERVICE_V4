@@ -233,7 +233,7 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
  */
 export const transformProduct = async (props: TransformProductsProps) => {
   const { product, channelId, storesId, vendorId, modifierGroups } = props;
-  const { categories, accountId } = props;
+  const { categories, accountId, countryId } = props;
   const { productId, name, description, type, featured } = product;
   const { tags, additionalInfo, standardTime, schedules } = product;
   const { priceInfo, taxInfo, productModifiers, upselling } = product;
@@ -298,7 +298,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
 
   const newProduct: DbProduct = {
     hash: null,
-    productId: `${accountId}.${vendorId}.${productId}`,
+    productId: `${accountId}.${countryId}.${vendorId}.${productId}`,
     status: "DRAFT",
     version: null,
     name,
@@ -375,7 +375,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
         }))
       : [],
     vendor: {
-      id: vendorId
+      id: `${accountId}.${countryId}.${vendorId}`
     },
     account: {
       accountId

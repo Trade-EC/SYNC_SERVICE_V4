@@ -10,20 +10,22 @@ export const syncShippingCostService = async (
 ) => {
   logger.info("SHIPPING COST: TRANSFORM");
   const shippingCost = shippingCostTransformer(props);
-  const { oldShippingCostId, storeId } = props;
+  const { oldShippingCostId, storeId, countryId } = props;
   const { shippingCostId, account, vendor } = shippingCost;
   const { accountId } = account;
   const { id: vendorId } = vendor;
   const dbShippingCost = await findShippingCost(
     shippingCostId,
     vendorId,
-    accountId
+    accountId,
+    countryId
   );
   if (oldShippingCostId && shippingCostId !== oldShippingCostId) {
     const dbShippingCostOld = await findShippingCost(
       oldShippingCostId,
       vendorId,
-      accountId
+      accountId,
+      countryId
     );
 
     dbShippingCostOld.vendorIdStoreIdChannelId =

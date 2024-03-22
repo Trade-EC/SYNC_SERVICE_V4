@@ -10,5 +10,6 @@ export interface CreateShippingCostProps {
   storeId: string;
   accountId: string;
   vendorId: string;
+  countryId: string;
   oldShippingCostId: string | null;
 }

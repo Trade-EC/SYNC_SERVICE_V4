@@ -14,7 +14,7 @@ import { fetchDraftStores } from "/opt/nodejs/sync-service-layer/repositories/co
  */
 export const prepareProductsService = async (props: PrepareProductsPayload) => {
   const { listInfo, accountId, listHash, channelId } = props;
-  const { source, syncAll = false, requestId } = props;
+  const { source, syncAll = false, requestId, countryId } = props;
   const { categories, list, modifierGroups, products } = listInfo;
   const { storeId, vendorId, listName, listId } = list;
   const logKeys = { vendorId, accountId, listId, storeId, requestId };
@@ -32,7 +32,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
   const syncProducts = products.map(product => {
     const { productId } = product;
     return {
-      productId: `${accountId}.${vendorId}.${productId}`,
+      productId: `${accountId}.${countryId}.${vendorId}.${productId}`,
       accountId,
       listId,
       channelId,
@@ -52,7 +52,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
     const { productId } = product;
     const body1 = { product, storesId, channelId, accountId, vendorId };
     const body2 = { modifierGroups, categories, listName, listId };
-    const body3 = { storeId };
+    const body3 = { storeId, countryId };
     const body = { ...body1, ...body2, ...body3, source };
     const messageBody = {
       vendorIdStoreIdChannelId,
@@ -64,7 +64,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
     return sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_PRODUCT_SQS_URL ?? "",
       MessageBody: JSON.stringify(messageBody),
-      MessageGroupId: `${accountId}-${vendorId}-${productId}`
+      MessageGroupId: `${accountId}-${countryId}-${vendorId}-${productId}`
     });
   });
 

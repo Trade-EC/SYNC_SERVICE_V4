@@ -15,6 +15,7 @@ export interface CreateStoreBody {
   accountId: string;
   vendorId: string;
   vendorChannels: Vendor["channels"];
+  countryId: string;
 }
 
 export interface CreateStoreProps {

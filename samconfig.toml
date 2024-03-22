@@ -41,7 +41,7 @@ resolve_s3 = true
 s3_prefix = "sync-service-v4"
 region = "us-west-2"
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "StageName=\"dev\" vpceIds=\"vpce-0955b737b31101992\" securityGroupIds=\"sg-0adb5421e6072c925\" subnetIds=\"subnet-0911a26d71ef84cc0,subnet-0f8ca9799aa4bf654,subnet-062d9351300f5dfd0\" mongoDbUri=\"mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority\" clientName=\"kfc\" taskScheduleTable=\"TaskSchedule-bup3eyjsybh3zd6oqclgsbib7u-develop\" newProductsServiceUrl=\"https://18paa7bo67.execute-api.us-west-2.amazonaws.com/dev\""
+parameter_overrides = "StageName=\"dev\" vpceIds=\"vpce-0955b737b31101992\" securityGroupIds=\"sg-0adb5421e6072c925\" subnetIds=\"subnet-0911a26d71ef84cc0,subnet-0f8ca9799aa4bf654,subnet-062d9351300f5dfd0\" mongoDbUri=\"mongodb+srv://sync_dev:AnVkiEaSsEJ1nhjo@sync-service-dev.nsiunft.mongodb.net/?retryWrites=true&w=majority\" clientName=\"kfc\" taskScheduleTable=\"TaskSchedule-bup3eyjsybh3zd6oqclgsbib7u-develop\" newProductsServiceUrl=\"https://cizmgfoz4g.execute-api.us-west-2.amazonaws.com/dev\""
 image_repositories = []
 confirm_changeset = true
 

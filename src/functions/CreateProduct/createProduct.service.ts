@@ -21,10 +21,10 @@ export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId, listHash, syncAll } = props;
   const { requestId } = props;
   const { product, accountId, categories, channelId, modifierGroups } = body;
-  const { storesId, vendorId, listId, storeId } = body;
+  const { storesId, vendorId, listId, storeId, countryId } = body;
   const { source } = body;
   const { productId } = product;
-  const dbProductId = `${accountId}.${vendorId}.${productId}`;
+  const dbProductId = `${accountId}.${countryId}.${vendorId}.${productId}`;
   const logKeys = { vendorId, accountId, productId, listId };
   logger.info("PRODUCT: INIT", logKeys);
   const productDB = await findProduct(dbProductId);
@@ -35,7 +35,8 @@ export const createProductService = async (props: CreateProductProps) => {
     accountId,
     vendorId,
     modifierGroups,
-    categories
+    categories,
+    countryId
   });
   const syncProductRequest: SyncProductRecord = {
     productId: dbProductId,

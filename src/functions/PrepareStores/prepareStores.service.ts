@@ -6,13 +6,13 @@ import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.con
 
 export const prepareStoreService = async (payload: PrepareStoresPayload) => {
   const { accountId, channelsAndStores, storeHash, vendorChannels } = payload;
-  const { syncAll = false, requestId } = payload;
+  const { syncAll = false, requestId, countryId } = payload;
   const { stores, vendorId } = channelsAndStores;
   const logKeys = { vendorId, accountId, requestId };
   const syncStores = stores.map(store => {
     const { storeId } = store;
     return {
-      storeId: `${accountId}.${vendorId}.${storeId}`,
+      storeId: `${accountId}.${countryId}.${vendorId}.${storeId}`,
       accountId,
       vendorId,
       status: "PENDING" as const,
@@ -26,13 +26,20 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
 
   const productsPromises = stores.map(async store => {
     const { storeId } = store;
-    const body = { store, accountId, vendorId, storeId, vendorChannels };
+    const body = {
+      store,
+      accountId,
+      vendorId,
+      storeId,
+      vendorChannels,
+      countryId
+    };
     const messageBody = { body, storeHash, syncAll, requestId };
 
     await sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",
       MessageBody: JSON.stringify(messageBody),
-      MessageGroupId: `${accountId}-${vendorId}-${storeId}`
+      MessageGroupId: `${accountId}-${countryId}-${vendorId}-${storeId}`
     });
   });
 

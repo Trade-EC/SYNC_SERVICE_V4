@@ -5,9 +5,9 @@ export const shippingCostTransformer = (
   props: CreateShippingCostProps
 ): DBShippingCost => {
   const { shippingCost, deliveryId, storeChannels } = props;
-  const { storeId, accountId, vendorId } = props;
+  const { storeId, accountId, vendorId, countryId } = props;
   return {
-    shippingCostId: `${accountId}.${vendorId}.${deliveryId}`,
+    shippingCostId: `${accountId}.${countryId}.${vendorId}.${deliveryId}`,
     name: "",
     amount: 1,
     symbol: "",
