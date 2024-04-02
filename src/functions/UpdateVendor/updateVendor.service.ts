@@ -6,6 +6,7 @@ import { updateVendorRepository } from "./updateVendor.repository";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { buildVendorTask } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
+import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { fetchVendorTask } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { putVendorTask } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 // @ts-ignore
@@ -15,7 +16,8 @@ const taskTableName = process.env.TASK_SCHEDULE_TABLE ?? "";
 
 export const updateVendorService = async (event: APIGatewayProxyEvent) => {
   const { headers, body, pathParameters } = event;
-  const { account: accountId } = headersValidator.parse(headers);
+  const { account: requestAccountId, country: countryId } =
+    headersValidator.parse(headers);
   const parseBody = JSON.parse(body ?? "");
   const validatedBody = updateVendorValidator.parse(parseBody);
   const { vendorId } = updateVendorPathParameterValidator.parse(
@@ -24,6 +26,15 @@ export const updateVendorService = async (event: APIGatewayProxyEvent) => {
   const { syncTimeUnit, syncTimeValue } = validatedBody;
   const { requestContext } = event;
   const { domainName } = requestContext;
+  let accountId = requestAccountId;
+  const mapAccount = await fetchMapAccount(accountId);
+  if (mapAccount) accountId = mapAccount;
+
+  if (!vendorId.startsWith(`${accountId}.${countryId}.`)) {
+    throw new Error(
+      `VendorId must start with accountId and countryId: ${accountId}.${countryId}.`
+    );
+  }
 
   await updateVendorRepository(validatedBody, accountId, vendorId);
   const url = `https://${domainName}/api/v4/publish-sync`;

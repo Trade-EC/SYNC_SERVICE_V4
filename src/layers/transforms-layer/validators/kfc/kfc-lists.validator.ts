@@ -21,10 +21,23 @@ const kfcListValidator = z.object({
   replicateInAll: z.coerce.boolean().optional()
 });
 
+const nullableToNumber = z
+  .number()
+  .nullable()
+  .transform(value => (value === null ? 0 : value));
+
+const kfcListProductPriceInfoValidator = productPriceInfoValidator.merge(
+  z.object({
+    pointPrice: nullableToNumber.optional(),
+    suggestedPrice: nullableToNumber.optional(),
+    suggestedPointPrice: nullableToNumber.optional()
+  })
+);
+
 const kfcProductListValidator = z.object({
   active: z.boolean().optional(),
   productId: z.number().int(),
-  priceInfo: productPriceInfoValidator.array(),
+  priceInfo: kfcListProductPriceInfoValidator.array(),
   taxInfo: taxesValidator.array().optional(),
   tags: z.string().optional(),
   upselling: z.string().optional()
@@ -33,7 +46,7 @@ const kfcProductListValidator = z.object({
 const kfcProductValidator = kfcProductListValidator.merge(
   z.object({
     taxInfo: taxesValidator.array().optional(),
-    priceInfo: productPriceInfoValidator
+    priceInfo: kfcListProductPriceInfoValidator
   })
 );
 

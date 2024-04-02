@@ -4,6 +4,7 @@ import { fetchHistoryProductsByVersionRepository } from "./fetchHistoryProductsB
 import { fetchHistoryProductsByVersionValidator } from "./fetchHistoryProductsByVersion.validator";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 
 /**
  *
@@ -15,14 +16,17 @@ export const fetchHistoryStoresByVersionService = async (
   event: APIGatewayProxyEvent
 ) => {
   const { headers, queryStringParameters } = event;
-  const { account } = headersValidator.parse(headers);
+  const { account: requestAccountId } = headersValidator.parse(headers);
   const info = fetchHistoryProductsByVersionValidator.parse(
     queryStringParameters ?? {}
   );
   const { vendorId, version, skip = 0, limit = 10 } = info;
+  let accountId = requestAccountId;
+  const mapAccount = await fetchMapAccount(accountId);
+  if (mapAccount) accountId = mapAccount;
 
   const data = await fetchHistoryProductsByVersionRepository(
-    account,
+    accountId,
     vendorId,
     version,
     skip,

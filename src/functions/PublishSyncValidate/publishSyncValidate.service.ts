@@ -25,10 +25,13 @@ export const publishSyncValidateService = async (
     headersValidator.parse(headers);
   let accountId = requestAccountId;
   const info = publishSyncValidateValidator.parse(parsedBody);
-  const { vendorId: vendorExternalId } = info;
+  const { vendorId } = info;
   const mapAccount = await fetchMapAccount(accountId);
   if (mapAccount) accountId = mapAccount;
-  const vendorId = `${accountId}.${countryId}.${vendorExternalId}`;
+
+  if (!vendorId.startsWith(`${accountId}.${countryId}`)) {
+    throw new Error("Vendor not match");
+  }
 
   await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.SYNC_PUBLISH_SQS_URL ?? "",

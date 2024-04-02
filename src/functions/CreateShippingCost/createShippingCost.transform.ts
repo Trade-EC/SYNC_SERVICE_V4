@@ -14,6 +14,7 @@ export const shippingCostTransformer = (
     vendorIdStoreIdChannelId:
       storeChannels?.map(channel => `${vendorId}.${storeId}.${channel}`) ?? [],
     grossPrice: 0.0,
+    externalId: deliveryId,
     netPrice: shippingCost,
     subtotalBeforeTaxes: 0.0,
     taxes: [],

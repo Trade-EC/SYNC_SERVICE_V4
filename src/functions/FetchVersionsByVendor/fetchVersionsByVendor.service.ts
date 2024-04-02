@@ -4,6 +4,7 @@ import { fetchVersionsByVendorRepository } from "./fetchVersionsByVendor.reposit
 import { fetchVersionsByVendorValidator } from "./fetchVersionsByVendor.validator";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 
 /**
  *
@@ -15,15 +16,18 @@ export const fetchVersionsByVendorServices = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   const { queryStringParameters, headers } = event;
-  const { account: accountId } = headersValidator.parse(headers);
+  const { account: requestAccountId } = headersValidator.parse(headers);
   const queryParams = fetchVersionsByVendorValidator.parse(
     queryStringParameters ?? {}
   );
   const { vendorId, type } = queryParams ?? {};
   const { skip = 0, limit = 10 } = queryParams ?? {};
+  let accountId = requestAccountId;
 
   if (!vendorId || !accountId)
     throw new Error("AccountId or VendorId is required");
+  const mapAccount = await fetchMapAccount(accountId);
+  if (mapAccount) accountId = mapAccount;
 
   const data = await fetchVersionsByVendorRepository(
     accountId,

@@ -26,7 +26,7 @@ const handler = async (
     try {
       const { body: bodyRecord } = record;
       const props = JSON.parse(bodyRecord ?? "");
-      const validateProps = await publishSyncValidator.parse(props);
+      const validateProps = publishSyncValidator.parse(props);
       await publishSyncService(validateProps);
     } catch (e) {
       response.batchItemFailures.push({ itemIdentifier: record.messageId });

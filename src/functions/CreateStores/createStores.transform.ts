@@ -107,7 +107,11 @@ export const storeTransformer = (
     tips: [], // Salen del vendor
     timezone: null,
     location: { lat: locationInfo.latitude, lon: locationInfo.longitude },
-    additionalInfo: { externalId: storeId, external_code: storeCode },
+    additionalInfo: {
+      externalId: storeId,
+      externalCode: storeCode,
+      idDeliveryKfc: deliveryId
+    },
     city: { id: "", name: locationInfo.city, active: false },
     country: null,
     vendor: { id: `${accountId}.${countryId}.${vendorId}` },

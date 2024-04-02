@@ -28,7 +28,7 @@ export const fetchProductsByVendorRepository = async (
     "vendor.id": vendorId,
     "account.accountId": accountId,
     status,
-    productId: productId ? `${accountId}.${vendorId}.${productId}` : undefined,
+    productId: productId ? `${vendorId}.${productId}` : undefined,
     "statuses.vendorIdStoreIdChannelId": statusFilter
       ? { $regex: statusFilter }
       : undefined
