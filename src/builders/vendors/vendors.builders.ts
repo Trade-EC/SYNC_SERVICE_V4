@@ -21,13 +21,19 @@ export const genVendorChannels = (quantity = 5) => {
   });
 };
 
-export const buildVendor = (overrides: Partial<Vendor> = {}): Vendor => {
+export const buildVendor = (
+  countryId: string,
+  overrides: Partial<Vendor> = {}
+): Vendor => {
   const time = faker.date.recent();
+  const clientVendorId = faker.string.uuid();
+  const accountId = faker.string.uuid();
+  const vendorId = `${accountId}.${countryId}.${clientVendorId}`;
   return {
+    vendorId,
     active: true,
-    vendorId: faker.string.uuid(),
     name: faker.company.name(),
-    account: { accountId: faker.string.uuid() },
+    account: { accountId },
     syncTimeUnit: "EVERYDAY",
     syncTimeValue: `${time.getHours()}:${time.getMinutes()}`,
     channels: genVendorChannels(),
@@ -35,8 +41,8 @@ export const buildVendor = (overrides: Partial<Vendor> = {}): Vendor => {
   };
 };
 
-export const genVendors = (quantity = 5) => {
-  return faker.helpers.multiple(buildVendor, {
+export const genVendors = (countryId: string, quantity = 5) => {
+  return faker.helpers.multiple(() => buildVendor(countryId), {
     count: { min: 1, max: quantity }
   });
 };

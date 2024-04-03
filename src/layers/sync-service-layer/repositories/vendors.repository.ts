@@ -72,6 +72,7 @@ export const buildVendorTask = async (
 };
 
 export const fetchMapAccount = async (accountId: string) => {
+  if (!process.env.NEW_PRODUCTS_SERVICE_URL) return undefined;
   const url = `${process.env.NEW_PRODUCTS_SERVICE_URL}/api/v4/migration-data?oldId=${accountId}&type=ACCOUNT`;
   const fetchAccountResponse = await fetch(url);
   const fetchAccount = await fetchAccountResponse.json();

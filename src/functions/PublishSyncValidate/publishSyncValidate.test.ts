@@ -20,8 +20,11 @@ describe("Unit test for app handler", function () {
     const sqsSpy = jest.spyOn(sqsExtendedClient, "sendMessage");
     const ctx = context();
     ctx.done();
+    const { headers } = gatewayEvent;
+    const { account, country } = headers;
+    const clientVendorId = faker.string.uuid();
     const body = {
-      vendorId: faker.string.uuid()
+      vendorId: `${account}.${country}.${clientVendorId}`
     };
     const event: APIGatewayProxyEvent = {
       ...gatewayEvent,

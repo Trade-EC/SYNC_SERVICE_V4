@@ -15,7 +15,8 @@ jest.mock(
   () => ({
     fetchVendor: jest.fn(() => ({
       active: true
-    }))
+    })),
+    fetchMapAccount: jest.fn(() => undefined)
   })
 );
 

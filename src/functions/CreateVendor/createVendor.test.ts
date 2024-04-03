@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import context from "aws-lambda-mock-context";
 
@@ -14,7 +15,8 @@ afterAll(() => {
 
 describe("Unit test for app handler", function () {
   it("createVendorService verifies successful response", async () => {
-    const vendor = buildVendor();
+    const countryId = faker.string.uuid();
+    const vendor = buildVendor(countryId);
     const { account } = vendor;
     const { accountId } = account;
     const ctx = context();
@@ -24,7 +26,7 @@ describe("Unit test for app handler", function () {
     const event: APIGatewayProxyEvent = {
       ...gatewayEvent,
       body: JSON.stringify(vendor),
-      headers: { account: accountId }
+      headers: { account: accountId, country: countryId }
     };
 
     const response = await lambdaHandler(event, ctx);

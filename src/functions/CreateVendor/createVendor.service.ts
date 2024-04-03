@@ -34,7 +34,7 @@ export const createVendorService = async (event: APIGatewayProxyEvent) => {
 
   await createVendorRepository(validatedBody, accountId);
   const url = `https://${domainName}/api/v4/publish-sync`;
-  if (syncTimeUnit && syncTimeValue && taskTableName) {
+  if (domainName && syncTimeUnit && syncTimeValue && taskTableName) {
     const id: string = uuidv4();
     const vendorTask = await fetchVendorTask(accountId, vendorId);
     const vendorTaskBuild = await buildVendorTask(

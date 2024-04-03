@@ -47,3 +47,11 @@ jest.mock("@aws-sdk/lib-storage", () => ({
     }))
   }))
 }));
+
+// jest.mock("@middy/core", () => {
+//   return (handler: any) => {
+//     return {
+//       use: jest.fn().mockReturnValue(handler) // ...use(ssm()) will return handler function
+//     };
+//   };
+// });

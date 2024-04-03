@@ -18,10 +18,11 @@ afterAll(() => {
 describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {
     const ctx = context();
+    const countryId = faker.string.uuid();
     ctx.done();
     const event: APIGatewayProxyEvent = {
       ...gatewayEvent,
-      headers: { account: accountId },
+      headers: { account: accountId, country: countryId },
       queryStringParameters: { vendorId, version }
     };
     const result = await lambdaHandler(event, ctx);

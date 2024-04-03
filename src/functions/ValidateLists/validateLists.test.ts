@@ -24,7 +24,8 @@ jest.mock(
           channelReferenceName
         }
       ]
-    }))
+    })),
+    fetchMapAccount: jest.fn(() => undefined)
   })
 );
 
