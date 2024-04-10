@@ -86,6 +86,6 @@ export const generateSyncS3Path = (
 };
 
 export const genErrorResponse = (statusCode: number, message: string) => ({
-  statusCode: 400,
+  statusCode: statusCode,
   body: JSON.stringify({ message })
 });

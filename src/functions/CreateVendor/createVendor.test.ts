@@ -57,7 +57,10 @@ describe("createVendorValidator", () => {
       name: "Test Vendor",
       syncTimeUnit: "HOURS",
       syncTimeValue: 12,
-      channels: ["channel1", "channel2"]
+      channels: ["channel1", "channel2"],
+      countryId: "1",
+      externalId: "1",
+      isSyncActive: true
     };
 
     const result = createVendorValidator.safeParse(vendor);
@@ -74,7 +77,10 @@ describe("createVendorValidator", () => {
       active: true,
       name: "Test Vendor",
       syncTimeUnit: "HOURS",
-      syncTimeValue: 12
+      syncTimeValue: 12,
+      countryId: "1",
+      externalId: "1",
+      isSyncActive: true
     };
 
     const result = createVendorValidator.safeParse(vendor);

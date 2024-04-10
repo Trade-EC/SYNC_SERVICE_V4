@@ -39,7 +39,7 @@ export const buildVendor = (
     channels: genVendorChannels(),
     countryId,
     externalId: clientVendorId,
-    isSyncActive: faker.datatype.boolean(),
+    isSyncActive: true,
     ...overrides
   };
 };

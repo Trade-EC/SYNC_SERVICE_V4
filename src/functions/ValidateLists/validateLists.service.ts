@@ -11,10 +11,8 @@ import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.con
 //@ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 import { validateLists } from "/opt/nodejs/transforms-layer/validators/lists.validator";
-import {
-  genErrorResponse,
-  generateSyncS3Path
-} from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import { genErrorResponse } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";

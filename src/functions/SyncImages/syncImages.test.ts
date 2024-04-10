@@ -7,8 +7,6 @@ import { lambdaHandler } from "./handler";
 import { ImageSync } from "./syncImages.types";
 import * as sqsEvent from "../../events/sqs.json";
 
-fetchMock.enableMocks();
-
 afterAll(() => {
   jest.resetAllMocks();
   fetchMock.resetMocks();

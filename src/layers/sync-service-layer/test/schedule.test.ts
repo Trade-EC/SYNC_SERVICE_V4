@@ -53,7 +53,7 @@ describe("Unit test for transformStoreSchedulesByChannel function", function () 
   it("verifies successful response", async () => {
     const scheduleByChannel: ScheduleByChannel[] = [
       {
-        channelId: "channelId",
+        channelId: "externalChannelId",
         schedules: [
           {
             day: "MONDAY",

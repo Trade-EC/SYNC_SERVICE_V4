@@ -18,6 +18,7 @@ jest.mock(
   () => ({
     fetchVendor: jest.fn(() => ({
       active: true,
+      isSyncActive: true,
       channels: [
         {
           channelId,
@@ -49,6 +50,7 @@ describe("Unit test for app handler", function () {
       body: JSON.stringify(mockProducts)
     };
     const result = await lambdaHandler(event, ctx);
+    console.log({ result });
     expect(result.statusCode).toEqual(200);
   });
   // Error case

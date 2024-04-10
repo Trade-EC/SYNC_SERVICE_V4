@@ -1,3 +1,5 @@
+import { FetchChannelPayload } from "./layers/sync-service-layer/types/channel.types";
+
 jest.mock("mongodb", () => {
   return {
     ServerApiVersion: jest.fn(() => ({
@@ -48,10 +50,27 @@ jest.mock("@aws-sdk/lib-storage", () => ({
   }))
 }));
 
-// jest.mock("@middy/core", () => {
-//   return (handler: any) => {
-//     return {
-//       use: jest.fn().mockReturnValue(handler) // ...use(ssm()) will return handler function
-//     };
-//   };
-// });
+jest.mock(
+  "/opt/nodejs/sync-service-layer/repositories/accounts.repository",
+  () => ({
+    fetchAccount: jest.fn(accountId => ({
+      active: true,
+      isSyncActive: true
+    }))
+  })
+);
+
+jest.mock(
+  "/opt/nodejs/sync-service-layer/repositories/channels.repository",
+  () => ({
+    fetchChannels: jest.fn((payload?: FetchChannelPayload) => {
+      const { ecommerceChannelId, channelReferenceName } = payload ?? {};
+      return [
+        {
+          id: ecommerceChannelId?.toString(),
+          tags: [channelReferenceName]
+        }
+      ];
+    })
+  })
+);

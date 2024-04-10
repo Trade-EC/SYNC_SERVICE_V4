@@ -17,6 +17,7 @@ jest.mock(
   () => ({
     fetchVendor: jest.fn(() => ({
       active: true,
+      isSyncActive: true,
       channels: [
         {
           channelId,
