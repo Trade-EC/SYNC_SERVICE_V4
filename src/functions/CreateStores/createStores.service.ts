@@ -12,6 +12,7 @@ import { CreateShippingCostProps } from "../CreateShippingCost/createShippingCos
 import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { SyncStoreRecord } from "/opt/nodejs/sync-service-layer/types/common.types";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
+import { ChannelMappings } from "/opt/nodejs/sync-service-layer/types/channel.types";
 
 /**
  *
@@ -21,33 +22,47 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
  */
 export const syncStoresService = async (props: CreateStoreProps) => {
   const { body, storeHash, syncAll, requestId } = props;
-  const { accountId, store, vendorId, vendorChannels, countryId } = body;
+  const { accountId, store, vendorId, channels, countryId } = body;
+  const { standardChannels } = body;
   const { storeId, deliveryInfo, storeChannels } = store;
   const { deliveryId, shippingCost } = deliveryInfo ?? {};
   const dbStoreId = `${accountId}.${countryId}.${vendorId}.${storeId}`;
   const logKeys = { vendorId, accountId, storeId, requestId };
   logger.info("STORE: INIT", logKeys);
-  const vendorStoreChannels = storeChannels
+  const channelMappings = storeChannels
     .map(storeChannel => {
-      const filterVendorChannels = vendorChannels.filter(
-        vendorChannel => vendorChannel.channelId === storeChannel
+      const channelsInStores = channels.filter(
+        channel => channel.channelId === storeChannel
       );
-      const channels = filterVendorChannels.map(vendorChannel => {
-        const { ecommerceChannelId, channelId } = vendorChannel;
-        return ecommerceChannelId ?? channelId;
+      const standardChannelInStore = standardChannels.map(standardChannel => {
+        const foundChannel = channelsInStores?.find(channel => {
+          const { channelReferenceName, ecommerceChannelId } = channel;
+          const regex = channelReferenceName
+            ? new RegExp(channelReferenceName, "i")
+            : undefined;
+          return (
+            ecommerceChannelId?.toString() === standardChannel.channelId ||
+            standardChannel.tags.some(tag => regex?.test(tag) ?? false)
+          );
+        });
+        if (!foundChannel) return null;
+        return {
+          id: standardChannel.channelId,
+          externalChannelId: foundChannel.channelId,
+          name: standardChannel.name
+        };
       });
-      return channels;
+      return standardChannelInStore.filter(channel => !!channel);
     })
-    .flat();
-  const uniqueVendorStoreChannels = [...new Set(vendorStoreChannels)];
+    .flat()
+    .filter(channel => !!channel) as ChannelMappings[];
   const storeDB = await findStore(dbStoreId);
   const { shippingCostId } = storeDB ?? {};
   const transformedStore = storeTransformer(
     store,
     accountId,
     vendorId,
-    uniqueVendorStoreChannels,
-    vendorChannels,
+    channelMappings,
     countryId
   );
   const orderedTransformStore = sortObjectByKeys(transformedStore);
@@ -63,7 +78,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
       accountId,
       deliveryId,
       shippingCost,
-      storeChannels: uniqueVendorStoreChannels,
+      channelMappings,
       storeId,
       vendorId,
       oldShippingCostId: shippingCostId,

@@ -4,7 +4,7 @@ import { DBShippingCost } from "./createShippingCost.types";
 export const shippingCostTransformer = (
   props: CreateShippingCostProps
 ): DBShippingCost => {
-  const { shippingCost, deliveryId, storeChannels } = props;
+  const { shippingCost, deliveryId, channelMappings } = props;
   const { storeId, accountId, vendorId, countryId } = props;
   return {
     shippingCostId: `${accountId}.${countryId}.${vendorId}.${deliveryId}`,
@@ -12,7 +12,8 @@ export const shippingCostTransformer = (
     amount: 1,
     symbol: "",
     vendorIdStoreIdChannelId:
-      storeChannels?.map(channel => `${vendorId}.${storeId}.${channel}`) ?? [],
+      channelMappings?.map(channel => `${vendorId}.${storeId}.${channel.id}`) ??
+      [],
     grossPrice: 0.0,
     externalId: deliveryId,
     netPrice: shippingCost,

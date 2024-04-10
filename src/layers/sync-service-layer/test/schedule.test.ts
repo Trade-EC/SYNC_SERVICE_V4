@@ -1,5 +1,5 @@
+import { ChannelMappings } from "../types/channel.types";
 import { Schedule, ScheduleByChannel } from "../types/common.types";
-import { VendorChannels } from "../types/vendor.types";
 import { getHourInSeconds, transformSchedules } from "../utils/schedule.utils";
 import { transformStoreSchedules } from "../utils/schedule.utils";
 import { transformStoreSchedulesByChannel } from "../utils/schedule.utils";
@@ -25,7 +25,13 @@ describe("Unit test for transformStoreSchedules function", function () {
         endDate: "2021-07-31"
       }
     ];
-    const channels = ["channelId"];
+    const channels: ChannelMappings[] = [
+      {
+        id: "channelId",
+        externalChannelId: "externalChannelId",
+        name: "channelName"
+      }
+    ];
     const storeId = "storeId";
     const result = transformStoreSchedules(schedules, channels, storeId);
     expect(result).toEqual([
@@ -60,19 +66,17 @@ describe("Unit test for transformStoreSchedulesByChannel function", function () 
       }
     ];
     const storeId = "storeId";
-    const vendorChannels: VendorChannels = [
+    const channelMappings: ChannelMappings[] = [
       {
-        channelId: "channelId",
-        active: true,
-        name: "channelName",
-        channelReferenceName: null,
-        ecommerceChannelId: null
+        id: "channelId",
+        externalChannelId: "externalChannelId",
+        name: "channelName"
       }
     ];
     const result = transformStoreSchedulesByChannel(
       scheduleByChannel,
       storeId,
-      vendorChannels
+      channelMappings
     );
     expect(result).toEqual([
       {

@@ -5,9 +5,9 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 export const prepareStoreService = async (payload: PrepareStoresPayload) => {
-  const { accountId, channelsAndStores, storeHash, vendorChannels } = payload;
+  const { accountId, channelsAndStores, storeHash, standardChannels } = payload;
   const { syncAll = false, requestId, countryId } = payload;
-  const { stores, vendorId } = channelsAndStores;
+  const { stores, vendorId, channels } = channelsAndStores;
   const logKeys = { vendorId, accountId, requestId };
   const syncStores = stores.map(store => {
     const { storeId } = store;
@@ -31,8 +31,9 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
       accountId,
       vendorId,
       storeId,
-      vendorChannels,
-      countryId
+      channels,
+      countryId,
+      standardChannels
     };
     const messageBody = { body, storeHash, syncAll, requestId };
 

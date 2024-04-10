@@ -7,7 +7,6 @@ import { listValidator } from "/opt/nodejs/sync-service-layer/validators/lists.v
 import { modifierGroupValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { productListingValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
-import { imageValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
 import { kfcPreprocessArray } from "./kfc-common.validator";

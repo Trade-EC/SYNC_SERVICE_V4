@@ -51,5 +51,6 @@ export const vendorValidator = z.object({
   syncTimeValue: z.number().or(timeValidator),
   channels: vendorChannelsValidator.array(),
   countryId: z.string(),
-  externalId: z.string()
+  externalId: z.string(),
+  isSyncActive: z.boolean()
 });

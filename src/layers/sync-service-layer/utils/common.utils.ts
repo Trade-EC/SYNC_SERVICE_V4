@@ -84,3 +84,8 @@ export const generateSyncS3Path = (
       return base + `/products/${dayjs().format("YYYY-MM-DD-HH:mm:ss")}.json`;
   }
 };
+
+export const genErrorResponse = (statusCode: number, message: string) => ({
+  statusCode: 400,
+  body: JSON.stringify({ message })
+});
