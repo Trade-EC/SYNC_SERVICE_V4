@@ -61,6 +61,7 @@ export const transformCategory = async (
   const { name, productCategoryId, schedules, images } = category;
   const { featured, productListing, displayInList } = category;
   const { childCategories = [] } = category;
+  const { position: categoryPosition } = category;
   const productInCategory = productListing.find(
     listing => listing.productId === productId
   );
@@ -99,6 +100,7 @@ export const transformCategory = async (
     featured: featured ? featured : false,
     available: true,
     active: true,
+    categoryPosition: categoryPosition ? categoryPosition : 0,
     position: position ? position : 0,
     displayInMenu: displayInList ? "YES" : "NO",
     vendorIdStoreIdChannelId: storesId
@@ -336,7 +338,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     isPriceVip: false,
     outOfService: false,
     outOfStock: false,
-    sponsored: !featured ? true : featured,
+    sponsored: !!featured,
     suggestedPrice: suggestedPrice ? +suggestedPrice.toPrecision(2) : 0,
     maxAmountForSale: 0,
     statuses: [

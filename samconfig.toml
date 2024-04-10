@@ -64,3 +64,13 @@ confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "StageName=\"prod\" vpceIds=\"vpce-079371f259d5ee01d\" securityGroupIds=\"sg-050c0bf1b765af094\" subnetIds=\"subnet-0345c7d3b7d223883,subnet-005bfb41fa99e2531,subnet-0e9c6885fc4c61a1a\" mongoDbUri=\" \" clientName=\"kfc\" taskScheduleTable=\"TaskSchedule-srdj54q3qzgfdl2jvq2lpmlcaq-production\" newProductsServiceUrl=\"https://phl0xzxwej.execute-api.us-east-1.amazonaws.com/prod\""
 image_repositories = []
+
+[kioskoskfcdev.deploy.parameters]
+stack_name = "sync-service-v4"
+resolve_s3 = true
+s3_prefix = "sync-service-v4"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "StageName=\"dev\" vpceIds=\"vpce-0105b0f83a9eceea7\" securityGroupIds=\"sg-0b0f37b5097eacf22\" subnetIds=\"subnet-09bd86cf8750bae13,subnet-094fcdaac74cc82d4,subnet-0a1f2392f42ec7e6b\" mongoDbUri=\"mongodb+srv://sync_service_kisocos_dev:xIQDPjK9tADgDTQL@sync-service-kioscos-de.ixtuvg7.mongodb.net/?retryWrites=true&w=majority\" clientName=\"kioskos-kfc\" taskScheduleTable=\"\" newProductsServiceUrl=\"https://gehtrg9scc.execute-api.us-east-1.amazonaws.com/dev\""
+image_repositories = []

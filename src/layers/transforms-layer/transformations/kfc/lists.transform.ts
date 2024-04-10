@@ -33,6 +33,7 @@ export const transformProducts = (products: any[]) => {
 export const transformCategories = (categories: any[]) => {
   return categories.map(category => {
     const { images, productListing, childCategories } = category;
+    category.images = images?.filter((image: any) => !!image.fileUrl);
     if (images === null) {
       delete category.images;
     }

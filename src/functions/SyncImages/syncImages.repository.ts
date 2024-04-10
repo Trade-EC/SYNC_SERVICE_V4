@@ -5,9 +5,9 @@ import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib
 import { getAwsImageProps } from "/opt/nodejs/sync-service-layer/utils/images.utils";
 import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
-import CONSTANTS from "/opt/nodejs/sync-service-layer/configs/constants";
 
-const { CLOUDFRONT_URL } = CONSTANTS;
+const cloudfront = process.env.CLOUDFRONT_URL ?? "";
+const cloudFrontUrl = `https://${cloudfront}`;
 
 /**
  *
@@ -55,7 +55,7 @@ export const saveImage = async (
   if (!Location) throw new Error("file location not found");
 
   return {
-    cloudFrontUrl: CLOUDFRONT_URL,
+    cloudFrontUrl,
     bucket,
     key,
     name: category,

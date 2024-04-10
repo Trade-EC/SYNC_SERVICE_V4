@@ -37,6 +37,8 @@ export const buildVendor = (
     syncTimeUnit: "EVERYDAY",
     syncTimeValue: `${time.getHours()}:${time.getMinutes()}`,
     channels: genVendorChannels(),
+    countryId,
+    externalId: clientVendorId,
     ...overrides
   };
 };

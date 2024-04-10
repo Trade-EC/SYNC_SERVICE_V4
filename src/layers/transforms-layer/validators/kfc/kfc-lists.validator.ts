@@ -43,10 +43,16 @@ const kfcProductListValidator = z.object({
   upselling: z.string().optional()
 });
 
+const kfcImageValidator = z.object({
+  imageCategoryId: z.string().max(45).or(z.number().int()),
+  fileUrl: z.string().nullable()
+});
+
 const kfcProductValidator = kfcProductListValidator.merge(
   z.object({
     taxInfo: taxesValidator.array().optional(),
-    priceInfo: kfcListProductPriceInfoValidator
+    priceInfo: kfcListProductPriceInfoValidator,
+    images: z.array(kfcImageValidator).optional()
   })
 );
 
@@ -59,7 +65,7 @@ const kfcBaseCategoryValidator = baseCategoryValidator.merge(
     productListing: productListingValidator
       .merge(kfcProductListingValidator)
       .array(),
-    images: z.array(imageValidator).max(1).nullable().optional()
+    images: z.array(kfcImageValidator).max(1).nullable().optional()
   })
 );
 

@@ -1,8 +1,8 @@
 import { sqsExtendedClient } from "../configs/config";
-import CONSTANTS from "../configs/constants";
 import { fetchImage } from "../repositories/images.repository";
 
-const { CLOUDFRONT_URL } = CONSTANTS;
+const cloudfront = process.env.CLOUDFRONT_URL ?? "";
+const cloudFrontUrl = `https://${cloudfront}`;
 const REGION: string = process.env.REGION ?? "";
 const ADMIN_BUCKET = process.env.SYNC_BUCKET_ADMIN ?? "";
 
@@ -63,7 +63,7 @@ export const getAwsImageProps = (url: string, imageCategory: string) => {
     key: Key,
     url: `https://s3.${REGION}.amazonaws.com/${ADMIN_BUCKET}/${Key}`,
     category: imageCategory,
-    cloudFrontUrl: CLOUDFRONT_URL,
+    cloudFrontUrl,
     name: imageCategory,
     externalUrl: url
   };

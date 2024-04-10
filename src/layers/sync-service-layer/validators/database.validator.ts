@@ -129,7 +129,8 @@ const dbBaseCategoryValidator = z
     available: z.boolean(),
     active: z.boolean(),
     standardTime: z.enum(["YES", "NO"]),
-    reload: z.boolean()
+    reload: z.boolean(),
+    categoryPosition: z.number()
   })
   .merge(catalogueValidator);
 

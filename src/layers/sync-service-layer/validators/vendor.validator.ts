@@ -49,5 +49,7 @@ export const vendorValidator = z.object({
   name: z.string(),
   syncTimeUnit: z.enum(["EVERYDAY", "HOURS"]),
   syncTimeValue: z.number().or(timeValidator),
-  channels: vendorChannelsValidator.array()
+  channels: vendorChannelsValidator.array(),
+  countryId: z.string(),
+  externalId: z.string()
 });
