@@ -68,7 +68,7 @@ export const transformCategory = async (
   const { position } = productInCategory ?? {};
 
   const imagesPromises = images?.map(image =>
-    imageHandler(image.fileUrl, "category")
+    imageHandler(image.fileUrl, image.imageCategoryId ?? "category")
   );
   const childCategoriesPromises = childCategories.map(childCategory =>
     transformCategory(
@@ -286,7 +286,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     })
     ?.filter(modifier => !!modifier);
   const imagesPromises = images?.map(image =>
-    imageHandler(image.fileUrl, "product")
+    imageHandler(image.fileUrl, image.imageCategoryId ?? "product")
   );
   const newImages = await Promise.all(imagesPromises ?? []);
 

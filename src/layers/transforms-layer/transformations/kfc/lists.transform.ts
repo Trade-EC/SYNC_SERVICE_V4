@@ -13,6 +13,7 @@ export const transformProducts = (products: any[]) => {
     product.upselling = product.upselling
       ?.replace("[", "")
       .replace("]", "")
+      .replace("'", "")
       .split(",");
     if (product.priceInfo && product.priceInfo.length > 0) {
       product.priceInfo = product.priceInfo[0];

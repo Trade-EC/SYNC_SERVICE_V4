@@ -91,7 +91,7 @@ export const publishProducts = async (
     const transformedQuestions = transformQuestions(
       product?.questions ?? [],
       questionsProducts,
-      2
+      1
     );
     delete product.questionsProducts;
     return {

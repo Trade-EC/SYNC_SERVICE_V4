@@ -57,6 +57,15 @@ newProductsServiceUrl= Url del new products service con el cuál se comunicará
 
 Una vez desplegado, en la terminal aparecerá la información requerida para configurar los demás microservicios.
 
+### MongoDB
+
+Se deben configurar estos indices en las colecciones de stores y products:
+
+```
+db.getCollection("stores").createIndex({ storeId: 1 }, { unique: true });
+db.getCollection("products").createIndex({ productId: 1 }, { unique: true });
+```
+
 ## Uso
 
 Este microservicio se puede utilizar a través de los endpoints que expone. A continuación un enlace a la colección de [postman](https://drive.google.com/file/d/1G5ULFd4bz5xGf_3TdlZntg42Rs2tDIN5/view?usp=drive_link) de esta solución.

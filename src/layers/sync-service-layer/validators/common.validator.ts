@@ -30,7 +30,7 @@ export const scheduleValidator = z.object({
 });
 
 export const imageValidator = z.object({
-  imageCategoryId: z.string().max(45).or(z.number().int()),
+  imageCategoryId: z.string().max(45),
   fileUrl: z.string()
 });
 
