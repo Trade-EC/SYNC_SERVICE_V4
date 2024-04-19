@@ -87,18 +87,35 @@ export const publishProducts = async (
     };
   }
   const products = rawProducts.map(product => {
-    const { questionsProducts, _id } = product;
+    const { questionsProducts, upsellingProducts, _id } = product;
     const transformedQuestions = transformQuestions(
       product?.questions ?? [],
       questionsProducts,
       1
     );
+    const transformedUpselling = product.upselling.map(
+      (productExternalId: string) => {
+        const upsellingProduct = upsellingProducts.find(
+          (upSellingProduct: any) =>
+            upSellingProduct.attributes.externalId === productExternalId
+        );
+        if (!upsellingProduct) {
+          logger.info("PUBLISH: UPSSELLING PRODUCT NOT FOUND", {
+            productExternalId
+          });
+          return null;
+        }
+        return upsellingProduct;
+      }
+    );
     delete product.questionsProducts;
+    delete product.upsellingProducts;
     return {
       ...product,
       // This is necessary because the product has an _id field
       _id,
-      questions: transformedQuestions
+      questions: transformedQuestions,
+      upselling: transformedUpselling.filter(Boolean)
     };
   });
   logger.info("PUBLISH PRODUCTS: SAVING IN S3", { type: "PRODUCTS" });

@@ -7,7 +7,13 @@ export const transformQuestions = (
   level = 0
 ) => {
   if (level === maxLevel) return questions;
-  return questions?.map(question => {
+  // filter to not get repeated questions
+  const filteredQuestions = questions?.filter(
+    (question, index, array) =>
+      index === array.findIndex(t => t.questionId === question.questionId)
+  );
+
+  return filteredQuestions?.map(question => {
     const { answers } = question;
     const transformedAnswers = answers?.map((answer: any) => {
       const { productId } = answer;

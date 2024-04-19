@@ -167,6 +167,20 @@ export const fetchProducts = async (
           $graphLookup: {
             from: "products",
             startWith: "$attributes.externalId",
+            connectFromField: "upselling",
+            connectToField: "attributes.externalId",
+            as: "upsellingProducts",
+            maxDepth: 2,
+            restrictSearchWithMatch: {
+              "vendor.id": vendorId,
+              "account.accountId": accountId
+            }
+          }
+        },
+        {
+          $graphLookup: {
+            from: "products",
+            startWith: "$attributes.externalId",
             connectFromField: "questions.answers.productId",
             connectToField: "attributes.externalId",
             as: "questionsProducts",
