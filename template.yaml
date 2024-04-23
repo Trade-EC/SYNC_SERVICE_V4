@@ -1220,7 +1220,9 @@ Resources:
             - Effect: Allow
               Action:
                 - dynamodb:*
-              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}/*"
+              Resource: 
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

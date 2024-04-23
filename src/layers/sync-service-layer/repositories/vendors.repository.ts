@@ -51,6 +51,7 @@ export const putVendorTask = async (vendorTask: Record<string, any>) => {
 
 export const buildVendorTask = async (
   accountId: string,
+  countryId: string,
   vendorId: string,
   syncTimeUnit: "EVERYDAY" | "HOURS",
   syncTimeValue: string | number,
@@ -58,6 +59,7 @@ export const buildVendorTask = async (
 ) => {
   return {
     accountId,
+    countryId,
     vendorId,
     interval: syncTimeUnit,
     intervalValue: syncTimeValue,

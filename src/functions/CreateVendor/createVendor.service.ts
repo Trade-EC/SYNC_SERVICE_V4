@@ -39,6 +39,7 @@ export const createVendorService = async (event: APIGatewayProxyEvent) => {
     const vendorTask = await fetchVendorTask(accountId, vendorId);
     const vendorTaskBuild = await buildVendorTask(
       accountId,
+      countryId,
       vendorId,
       syncTimeUnit,
       syncTimeValue,
