@@ -13,9 +13,13 @@ export const handleError = (e: any): APIGatewayProxyResult => {
     const zodError = new z.ZodError(e.issues);
     message = zodError.issues
       .map(
-        issue => `Error in path [${issue.path.join(", ")}]: ${issue.message}`
+        issue => `Error in path [${issue.path.join(", ")}]: ${issue.message}\n`
       )
       .join(". ");
   }
-  return { statusCode: 500, body: JSON.stringify({ message }) };
+  const enhancedMessage = {
+    success: false,
+    message
+  };
+  return { statusCode: 500, body: JSON.stringify(enhancedMessage) };
 };

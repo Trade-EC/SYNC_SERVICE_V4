@@ -57,16 +57,27 @@ export const buildVendorTask = async (
   syncTimeValue: string | number,
   url: string
 ) => {
+  let schedule;
+  if (syncTimeUnit === "EVERYDAY") {
+    schedule = {
+      days: syncTimeUnit,
+      hour: syncTimeValue
+    };
+  } else {
+    schedule = {
+      interval: syncTimeUnit,
+      intervalValue: syncTimeValue
+    };
+  }
+
   return {
     accountId,
-    countryId,
     vendorId,
-    interval: syncTimeUnit,
-    intervalValue: syncTimeValue,
+    ...schedule,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     httpMethod: "POST",
-    headers: { account: accountId },
+    headers: { account: accountId, country: countryId },
     requestUrl: url,
     requestBody: { vendorId },
     status: "PENDING"

@@ -95,6 +95,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
     return {
       statusCode: 200,
       body: JSON.stringify({
+        success: false,
         message: "Another sync is in progress with this configuration"
       })
     };
@@ -125,6 +126,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   return {
     statusCode: 200,
     body: JSON.stringify({
+      success: true,
       message: "We've received your request. We'll notify you when it's done."
     })
   };

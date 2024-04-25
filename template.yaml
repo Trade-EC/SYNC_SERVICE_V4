@@ -50,6 +50,7 @@ Globals:
         TASK_SCHEDULE_TABLE: !Ref taskScheduleTable
         NEW_PRODUCTS_SERVICE_URL: !Ref newProductsServiceUrl
         CLOUDFRONT_URL: !GetAtt SyncServiceV4AdminCloudFront.DomainName
+        STAGE_NAME: !Ref StageName
     VpcConfig:
       SecurityGroupIds:
         - !Ref securityGroupIds
@@ -314,7 +315,7 @@ Resources:
             
             return request;
         }
-      Name: DecodeBase64Function
+      Name: !Sub "DecodeBase64Function-${StageName}"
       FunctionConfig:
         Comment: Decode base64 metadata
         Runtime: cloudfront-js-1.0

@@ -37,7 +37,8 @@ export const updateVendorService = async (event: APIGatewayProxyEvent) => {
   }
 
   await updateVendorRepository(validatedBody, accountId, vendorId);
-  const url = `https://${domainName}/api/v4/publish-sync`;
+  const stageName = process.env.STAGE_NAME ?? "";
+  const url = `https://${domainName}/${stageName}/api/v4/publish-sync`;
   if (syncTimeUnit && syncTimeValue && taskTableName) {
     const id: string = uuidv4();
     const vendorTask = await fetchVendorTask(accountId, vendorId);
