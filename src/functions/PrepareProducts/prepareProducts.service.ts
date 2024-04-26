@@ -36,6 +36,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
       accountId,
       listId,
       channelId,
+      countryId,
       vendorId,
       storeId,
       status: "PENDING" as const,

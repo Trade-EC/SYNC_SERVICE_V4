@@ -47,7 +47,7 @@ export const verifyCompletedStore = async (
   storeHash: string
 ) => {
   const { status, storeId, ...registerFilter } = register;
-  const { accountId, vendorId, requestId } = registerFilter;
+  const { accountId, vendorId, requestId, countryId } = registerFilter;
   const commonFilters = { accountId, vendorId, requestId };
   const dbClient = await connectToDatabase();
   await dbClient
@@ -68,6 +68,7 @@ export const verifyCompletedStore = async (
 
   const syncRequest: SyncRequest = {
     accountId,
+    countryId,
     status: "SUCCESS",
     vendorId,
     hash: storeHash,
@@ -100,12 +101,13 @@ export const errorCreateStore = async (
   errorMessage: string
 ) => {
   const { storeHash, body, requestId } = props;
-  const { accountId, vendorId } = body;
+  const { accountId, vendorId, countryId } = body;
   const { store } = body;
   const { storeId } = store;
   const commonFilters = {
-    storeId: `${accountId}.${vendorId}.${storeId}`,
+    storeId: `${accountId}.${countryId}.${vendorId}.${storeId}`,
     accountId,
+    countryId,
     vendorId,
     status: "PENDING" as const,
     hash: storeHash,

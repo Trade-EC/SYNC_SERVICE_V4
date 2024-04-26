@@ -15,6 +15,7 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
       storeId: `${accountId}.${countryId}.${vendorId}.${storeId}`,
       accountId,
       vendorId,
+      countryId,
       status: "PENDING" as const,
       hash: storeHash,
       createdAt: new Date(),

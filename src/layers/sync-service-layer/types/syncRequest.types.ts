@@ -2,6 +2,7 @@ export interface SyncRequest {
   type: "PRODUCTS" | "LISTS" | "CHANNELS_STORES";
   accountId: string;
   vendorId: string;
+  countryId: string;
   status: "PENDING" | "ERROR" | "SUCCESS";
   hash: string;
   createdAt?: Date;

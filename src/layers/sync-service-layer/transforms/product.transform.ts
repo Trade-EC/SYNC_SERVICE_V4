@@ -435,5 +435,9 @@ export const mergeEntity = (
       temporalEntitiesCleaned[foundEntityIndex].vendorIdStoreIdChannelId.sort();
   }
 
-  return temporalEntitiesCleaned;
+  const temporalEntitiesFiltered = temporalEntitiesCleaned.filter(
+    (temporalEntity: any) => temporalEntity.vendorIdStoreIdChannelId.length
+  );
+
+  return temporalEntitiesFiltered;
 };

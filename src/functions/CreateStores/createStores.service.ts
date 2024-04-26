@@ -68,6 +68,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
   const orderedTransformStore = sortObjectByKeys(transformedStore);
   const syncStoreRequest: SyncStoreRecord = {
     accountId,
+    countryId,
     status: "SUCCESS",
     vendorId,
     storeId: dbStoreId,

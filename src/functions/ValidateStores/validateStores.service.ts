@@ -64,6 +64,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
 
   const syncRequest: SyncRequest = {
     accountId,
+    countryId,
     status: "PENDING",
     type: "CHANNELS_STORES",
     vendorId,

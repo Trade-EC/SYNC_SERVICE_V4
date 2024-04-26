@@ -47,7 +47,7 @@ export const verifyCompletedList = async (
 ) => {
   const { status, productId, ...registerFilter } = register;
   const { accountId, channelId, storeId, vendorId, listId } = registerFilter;
-  const { requestId } = registerFilter;
+  const { requestId, countryId } = registerFilter;
   const commonFilters = {
     vendorId,
     channelId,
@@ -77,6 +77,7 @@ export const verifyCompletedList = async (
 
   const syncRequest: SyncRequest = {
     accountId,
+    countryId,
     status: "SUCCESS",
     type: source,
     vendorId,
@@ -118,13 +119,14 @@ export const errorCreateProduct = async (
 ) => {
   const { listHash, body, requestId } = props;
   const { accountId, source, vendorId, listId, channelId, storeId } = body;
-  const { product } = body;
+  const { product, countryId } = body;
   const { productId } = product;
-  const dbProductId = `${accountId}.${vendorId}.${productId}`;
+  const dbProductId = `${accountId}.${countryId}.${vendorId}.${productId}`;
   const commonFilters = {
     vendorId,
     channelId,
     accountId,
+    countryId,
     storeId,
     listId,
     source,

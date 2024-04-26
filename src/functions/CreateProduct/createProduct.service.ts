@@ -41,6 +41,7 @@ export const createProductService = async (props: CreateProductProps) => {
   const syncProductRequest: SyncProductRecord = {
     productId: dbProductId,
     accountId,
+    countryId,
     listId,
     channelId,
     vendorId,

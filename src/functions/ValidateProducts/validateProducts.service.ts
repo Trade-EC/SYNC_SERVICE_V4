@@ -82,6 +82,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   const { Location } = await createFileS3(s3Path, listInfo);
   const syncRequest: SyncRequest = {
     accountId,
+    countryId,
     status: "PENDING",
     type: "PRODUCTS",
     vendorId,
