@@ -95,8 +95,9 @@ export const transformKFCStores = (channelsAndStores: any) => {
   }
 
   const { stores, channels, vendorId } = transformedChannelsAndStores;
+  const storeVendorId = stores[0].vendorId;
 
-  transformedChannelsAndStores.vendorId = String(vendorId);
+  transformedChannelsAndStores.vendorId = String(vendorId ?? storeVendorId);
   transformedChannelsAndStores.stores = transformStores(stores);
   transformedChannelsAndStores.channels = transformChannels(channels);
 
