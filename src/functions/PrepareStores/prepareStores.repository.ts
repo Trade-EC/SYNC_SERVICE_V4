@@ -20,14 +20,15 @@ export const createSyncStoresRecords = async (stores: SyncStoreRecord[]) => {
 export const deactivateStores = async (
   storeIds: string[],
   accountId: string,
-  vendorId: string
+  vendorId: string,
+  countryId: string
 ) => {
   const dbClient = await connectToDatabase();
-  return dbClient.collection("syncStores").updateMany(
+  return dbClient.collection("stores").updateMany(
     {
       "account.id": accountId,
-      "vendor.id": vendorId,
-      storeId: { $not: { $in: storeIds } }
+      "vendor.id": `${accountId}.${countryId}.${vendorId}`,
+      storeId: { $nin: storeIds }
     },
     { $set: { active: false } }
   );

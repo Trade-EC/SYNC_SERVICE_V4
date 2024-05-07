@@ -5,13 +5,14 @@ export const deactivateStoreInProduct = async (
   productsIds: string[],
   vendorIdStoreIdChannelId: string[],
   accountId: string,
-  vendorId: string
+  vendorId: string,
+  countryId: string
 ) => {
   const dbClient = await connectToDatabase();
   return dbClient.collection<DbProduct>("products").updateMany(
     {
-      "account.id": accountId,
-      "vendor.id": vendorId,
+      "account.accountId": accountId,
+      "vendor.id": `${accountId}.${countryId}.${vendorId}`,
       productId: { $nin: productsIds },
       "statuses.vendorIdStoreIdChannelId": {
         $in: vendorIdStoreIdChannelId

@@ -25,7 +25,7 @@ export const createProductService = async (props: CreateProductProps) => {
   const { source } = body;
   const { productId } = product;
   const dbProductId = `${accountId}.${countryId}.${vendorId}.${productId}`;
-  const logKeys = { vendorId, accountId, productId, listId };
+  const logKeys = { vendorId, accountId, productId, listId, requestId };
   logger.info("PRODUCT: INIT", logKeys);
   const productDB = await findProduct(dbProductId);
   const transformedProduct = await transformProduct({

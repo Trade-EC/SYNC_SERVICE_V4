@@ -35,12 +35,13 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
     const productsIds = products.map(
       product => `${accountId}.${countryId}.${vendorId}.${product.productId}`
     );
-    logger.info(`${source} VALIDATE: DEACTIVATE STORE IN PRODUCT`, logKeys);
+    logger.info(`${source} PREPARE: DEACTIVATE STORE IN PRODUCT`, logKeys);
     await deactivateStoreInProduct(
       productsIds,
       vendorIdStoreIdChannelId,
       accountId,
-      vendorId
+      vendorId,
+      countryId
     );
   }
 
@@ -61,7 +62,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
       createdAt: new Date()
     };
   });
-  logger.info(`${source} VALIDATE: CREATING SYNC LIST RECORDS`, logKeys);
+  logger.info(`${source} PREPARE: CREATING SYNC LIST RECORDS`, logKeys);
   await createSyncRecords(syncProducts);
 
   const productsPromises = products.map((product, index) => {
@@ -84,6 +85,6 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
     });
   });
 
-  logger.info(`${source} VALIDATE: SEND TO SQS`, logKeys);
+  logger.info(`${source} PREPARE: SEND TO SQS`, logKeys);
   return await Promise.all(productsPromises);
 };

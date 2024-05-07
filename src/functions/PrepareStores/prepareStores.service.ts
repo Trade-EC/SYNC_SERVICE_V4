@@ -15,7 +15,7 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
   );
   // deactivate stores that are not in the list
   logger.info("STORE PREPARE: DEACTIVATING STORES", logKeys);
-  await deactivateStores(storeIds, accountId, vendorId);
+  await deactivateStores(storeIds, accountId, vendorId, countryId);
 
   const syncStores = stores.map(store => {
     const { storeId } = store;
