@@ -1,4 +1,5 @@
 import { createSyncStoresRecords } from "./prepareStores.repository";
+import { deactivateStores } from "./prepareStores.repository";
 import { PrepareStoresPayload } from "./prepareStores.types";
 
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
@@ -9,6 +10,13 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
   const { syncAll = false, requestId, countryId } = payload;
   const { stores, vendorId, channels } = channelsAndStores;
   const logKeys = { vendorId, accountId, requestId };
+  const storeIds = stores.map(
+    store => `${accountId}.${countryId}.${vendorId}.${store.storeId}`
+  );
+  // deactivate stores that are not in the list
+  logger.info("STORE PREPARE: DEACTIVATING STORES", logKeys);
+  await deactivateStores(storeIds, accountId, vendorId);
+
   const syncStores = stores.map(store => {
     const { storeId } = store;
     return {

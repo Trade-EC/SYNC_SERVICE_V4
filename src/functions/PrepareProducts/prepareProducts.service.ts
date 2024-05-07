@@ -1,3 +1,4 @@
+import { deactivateStoreInProduct } from "./prepareProducts.repository";
 import { PrepareProductsPayload } from "./prepareProducts.types";
 
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
@@ -28,6 +29,20 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
   const vendorIdStoreIdChannelId = storesId.map(
     storeId => `${vendorId}.${storeId}.${channelId}`
   );
+
+  // Deactivate store in product in products that are not in the list
+  if (source === "LISTS") {
+    const productsIds = products.map(
+      product => `${accountId}.${countryId}.${vendorId}.${product.productId}`
+    );
+    logger.info(`${source} VALIDATE: DEACTIVATE STORE IN PRODUCT`, logKeys);
+    await deactivateStoreInProduct(
+      productsIds,
+      vendorIdStoreIdChannelId,
+      accountId,
+      vendorId
+    );
+  }
 
   const syncProducts = products.map(product => {
     const { productId } = product;

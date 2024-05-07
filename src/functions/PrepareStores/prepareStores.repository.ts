@@ -16,3 +16,19 @@ export const createSyncStoresRecords = async (stores: SyncStoreRecord[]) => {
 
   return dbClient.collection("syncStores").bulkWrite(records);
 };
+
+export const deactivateStores = async (
+  storeIds: string[],
+  accountId: string,
+  vendorId: string
+) => {
+  const dbClient = await connectToDatabase();
+  return dbClient.collection("syncStores").updateMany(
+    {
+      "account.id": accountId,
+      "vendor.id": vendorId,
+      storeId: { $not: { $in: storeIds } }
+    },
+    { $set: { active: false } }
+  );
+};
