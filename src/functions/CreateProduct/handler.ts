@@ -27,7 +27,8 @@ const handler = async (event: SQSEvent, context: Context) => {
 
   const { Records } = event;
   const response: SQSBatchResponse = { batchItemFailures: [] };
-  const recordPromises = Records.map(async record => {
+
+  for (const record of Records) {
     const { body: bodyRecord } = record ?? {};
     const props: CreateProductProps = JSON.parse(bodyRecord ?? "");
 
@@ -41,10 +42,8 @@ const handler = async (event: SQSEvent, context: Context) => {
         logger.error("ERROR SYNC REQUEST: ERROR", { error });
       }
       response.batchItemFailures.push({ itemIdentifier: record.messageId });
-      return error;
     }
-  });
-  await Promise.all(recordPromises);
+  }
 
   return response;
 };

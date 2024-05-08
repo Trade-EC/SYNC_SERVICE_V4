@@ -29,7 +29,8 @@ const handler = async (
   const { Records } = event;
 
   const response: SQSBatchResponse = { batchItemFailures: [] };
-  const recordPromises = Records.map(async record => {
+
+  for (const record of Records) {
     try {
       logger.info("PREPARE STORES:", { record });
       const { body: bodyRecord } = record ?? {};
@@ -37,12 +38,14 @@ const handler = async (
       await prepareStoreService(props);
     } catch (error) {
       logger.error("PREPARE STORES ERROR:", { error });
+      console.log({ response });
       response.batchItemFailures.push({ itemIdentifier: record.messageId });
-      return error;
+      console.log({ response });
     }
-  });
+  }
 
-  await Promise.all(recordPromises);
+  console.log({ afterResponse: response });
+
   return response;
 };
 
