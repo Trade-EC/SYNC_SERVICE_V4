@@ -87,7 +87,8 @@ export const saveProductsInHistory = async (
 export const savePublishRequest = async (
   vendorId: string,
   accountId: string,
-  type: "STORES" | "PRODUCTS"
+  type: "STORES" | "PRODUCTS",
+  publishId: string
 ) => {
   const dbClient = await connectToDatabase();
   return await dbClient.collection("publishRequest").insertOne({
@@ -95,7 +96,8 @@ export const savePublishRequest = async (
     accountId,
     status: "PENDING",
     createdAt: new Date(),
-    type
+    type,
+    publishId
   });
 };
 

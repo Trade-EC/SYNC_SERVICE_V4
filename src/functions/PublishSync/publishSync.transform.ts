@@ -36,7 +36,8 @@ export const transformQuestions = (
       delete product["_id"];
       return {
         ...product,
-        ...answer
+        ...answer,
+        productId: product.productId
       };
     });
     return {

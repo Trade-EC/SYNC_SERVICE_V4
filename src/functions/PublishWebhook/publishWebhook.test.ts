@@ -22,7 +22,8 @@ describe("Unit test for app handler", function () {
       accountId,
       vendorId: faker.string.uuid(),
       status: "SUCCESS",
-      type: "PRODUCTS"
+      type: "PRODUCTS",
+      publishId: faker.string.uuid()
     };
     const event: APIGatewayProxyEvent = {
       ...gatewayEvent,

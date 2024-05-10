@@ -10,14 +10,15 @@ import { PublishValidatorProps } from "./publishWebhook.types";
  * @returns void
  */
 export const savePublishRequest = async (props: PublishValidatorProps) => {
-  const { vendorId, accountId, status, type } = props;
+  const { vendorId, accountId, status, type, publishId } = props;
   const dbClient = await connectToDatabase();
   const response = await dbClient.collection("publishRequest").updateOne(
     {
       vendorId,
       accountId,
       $or: [{ status: "PENDING" }],
-      type
+      type,
+      publishId
     },
     { $set: { updatedAt: new Date(), status } }
   );
