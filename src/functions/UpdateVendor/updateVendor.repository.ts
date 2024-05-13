@@ -8,11 +8,10 @@ export const updateVendorRepository = async (
   vendorId: string
 ) => {
   const filters = { "account.accountId": accountId, vendorId };
-  console.log(JSON.stringify(filters));
   const dbClient = await connectToDatabase();
   const createdProduct = dbClient
     .collection("vendors")
-    .updateOne({ "account.accountId": accountId, vendorId }, { $set: payload });
+    .updateOne(filters, { $set: payload });
 
   return createdProduct;
 };

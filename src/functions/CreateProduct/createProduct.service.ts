@@ -1,4 +1,5 @@
 import { createOrUpdateProduct } from "./createProduct.repository";
+import { deactivateStoreInProduct } from "./createProduct.repository";
 import { verifyCompletedList } from "./createProduct.repository";
 import { CreateProductProps } from "./createProduct.types";
 
@@ -20,24 +21,11 @@ import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.ut
 export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId, listHash, syncAll } = props;
   const { requestId } = props;
-  const { product, accountId, categories, channelId, modifierGroups } = body;
-  const { storesId, vendorId, listId, storeId, countryId } = body;
-  const { source } = body;
-  const { productId } = product;
+  const { accountId, channelId, vendorId, countryId, storeId } = body;
+  const { source, syncType, productId, listId } = body;
   const dbProductId = `${accountId}.${countryId}.${vendorId}.${productId}`;
   const logKeys = { vendorId, accountId, productId, listId, requestId };
   logger.info("PRODUCT: INIT", logKeys);
-  const productDB = await findProduct(dbProductId);
-  const transformedProduct = await transformProduct({
-    product,
-    storesId,
-    channelId,
-    accountId,
-    vendorId,
-    modifierGroups,
-    categories,
-    countryId
-  });
   const syncProductRequest: SyncProductRecord = {
     productId: dbProductId,
     accountId,
@@ -50,6 +38,37 @@ export const createProductService = async (props: CreateProductProps) => {
     source,
     requestId
   };
+
+  if (syncType === "DELETE") {
+    logger.info("PRODUCT: DELETE", logKeys);
+    await deactivateStoreInProduct(
+      dbProductId,
+      vendorIdStoreIdChannelId,
+      accountId,
+      vendorId,
+      countryId
+    );
+    logger.info("PRODUCT: VERIFY COMPLETED LIST", logKeys);
+    logger.info("PRODUCT: INFO", { syncProductRequest }, logKeys);
+    await verifyCompletedList(syncProductRequest, source, listHash);
+    logger.info("PRODUCT: FINISHED", logKeys);
+    return;
+  }
+
+  const { product, storesId, categories, modifierGroups } = body;
+
+  logger.info("PRODUCT: SEARCH", logKeys);
+  const productDB = await findProduct(dbProductId);
+  const transformedProduct = await transformProduct({
+    product,
+    storesId,
+    channelId,
+    accountId,
+    vendorId,
+    modifierGroups,
+    categories,
+    countryId
+  });
   const orderedTransformProduct = sortObjectByKeys(transformedProduct);
 
   if (!productDB) {

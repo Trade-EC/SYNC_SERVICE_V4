@@ -62,7 +62,7 @@ export const verifyCompletedList = async (
   await dbClient
     .collection("syncLists")
     .updateOne(
-      { productId, ...commonFilters },
+      { productId, status: "PENDING", ...commonFilters },
       { $set: { status: "SUCCESS" } },
       { upsert: false }
     );
@@ -119,8 +119,7 @@ export const errorCreateProduct = async (
 ) => {
   const { listHash, body, requestId } = props;
   const { accountId, source, vendorId, listId, channelId, storeId } = body;
-  const { product, countryId } = body;
-  const { productId } = product;
+  const { countryId, productId } = body;
   const dbProductId = `${accountId}.${countryId}.${vendorId}.${productId}`;
   const commonFilters = {
     vendorId,
@@ -163,4 +162,33 @@ export const errorCreateProduct = async (
       }
     });
   }
+};
+
+export const deactivateStoreInProduct = async (
+  productId: string,
+  vendorIdStoreIdChannelId: string[],
+  accountId: string,
+  vendorId: string,
+  countryId: string
+) => {
+  const dbClient = await connectToDatabase();
+  return dbClient.collection<DbProduct>("products").updateMany(
+    {
+      "account.accountId": accountId,
+      "vendor.id": `${accountId}.${countryId}.${vendorId}`,
+      productId,
+      "statuses.vendorIdStoreIdChannelId": {
+        $in: vendorIdStoreIdChannelId
+      }
+    },
+    {
+      $set: { status: "DRAFT" },
+      $pullAll: {
+        "statuses.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId, // Usamos $[] para indicar que se aplique a cada elemento del array statuses
+        "images.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId,
+        "prices.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId,
+        "categories.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId
+      }
+    }
+  );
 };

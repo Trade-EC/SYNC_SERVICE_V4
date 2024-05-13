@@ -199,7 +199,6 @@ Resources:
       ContentBasedDeduplication: true
       FifoQueue: true
       VisibilityTimeout: 180
-      DelaySeconds: 20
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PrepareProductsDLQ.Arn
         maxReceiveCount: 3
@@ -221,7 +220,6 @@ Resources:
       ContentBasedDeduplication: true
       FifoQueue: true
       VisibilityTimeout: 180
-      DelaySeconds: 20
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PrepareStoresDLQ.Arn
         maxReceiveCount: 3

@@ -14,6 +14,10 @@ afterAll(() => {
 });
 
 describe("Unit test for app handler", function () {
+  let dbClient: any;
+  beforeAll(async () => {
+    dbClient = await connectToDatabase();
+  });
   it("createVendorService verifies successful response", async () => {
     const countryId = faker.string.uuid();
     const vendor = buildVendor(countryId);
@@ -21,7 +25,6 @@ describe("Unit test for app handler", function () {
     const { accountId } = account;
     const ctx = context();
     ctx.done();
-    const dbClient = await connectToDatabase();
     const spy = jest.spyOn(dbClient, "collection");
     const event: APIGatewayProxyEvent = {
       ...gatewayEvent,

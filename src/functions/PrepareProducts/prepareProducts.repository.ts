@@ -1,7 +1,7 @@
 import { DbProduct } from "/opt/nodejs/sync-service-layer/types/products.types";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
-export const deactivateStoreInProduct = async (
+export const getDbProductToDeactivate = async (
   productsIds: string[],
   vendorIdStoreIdChannelId: string[],
   accountId: string,
@@ -9,22 +9,15 @@ export const deactivateStoreInProduct = async (
   countryId: string
 ) => {
   const dbClient = await connectToDatabase();
-  return dbClient.collection<DbProduct>("products").updateMany(
-    {
+  return dbClient
+    .collection<DbProduct>("products")
+    .find({
       "account.accountId": accountId,
       "vendor.id": `${accountId}.${countryId}.${vendorId}`,
       productId: { $nin: productsIds },
       "statuses.vendorIdStoreIdChannelId": {
         $in: vendorIdStoreIdChannelId
       }
-    },
-    {
-      $pullAll: {
-        "statuses.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId, // Usamos $[] para indicar que se aplique a cada elemento del array statuses
-        "images.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId,
-        "prices.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId,
-        "categories.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId
-      }
-    }
-  );
+    })
+    .toArray();
 };
