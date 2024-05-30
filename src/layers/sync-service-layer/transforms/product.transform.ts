@@ -214,11 +214,25 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
   const { modifier, modifierId, maxOptions } = modifierGroup;
   const { minOptions } = modifierGroup; // type is not using
 
+  let description = "";
+
+  if (minOptions === 1 && maxOptions === 1) {
+    description = "Es necesario elegir uno";
+  } else if (minOptions === 0 && maxOptions !== 0) {
+    description = `Puede seleccionar hasta ${maxOptions} ${
+      maxOptions === 1 ? "opción" : "opciones"
+    }`;
+  } else if (minOptions !== 0 && maxOptions !== 0) {
+    description = `Seleccione al menos ${minOptions} ${
+      minOptions === 1 ? "opción" : "opciones"
+    } y máximo ${maxOptions} ${maxOptions === 1 ? "opción" : "opciones"}`;
+  }
+
   const question = {
     questionId: modifierId,
     externalId: modifierId,
     name: modifier,
-    description: "",
+    description,
     min: minOptions,
     max: maxOptions,
     additionalInfo: null,
@@ -244,12 +258,14 @@ export const transformProduct = async (props: TransformProductsProps) => {
 
   // @ts-ignore filter check if modifier exists
   const questions: DbQuestion[] = productModifiers
-    ?.map(productModifier => {
+    ?.map((productModifier, questionIndex) => {
       let productModifierId = "";
+      let questionPosition;
       if (typeof productModifier === "string") {
         productModifierId = productModifier;
       } else {
         productModifierId = productModifier.modifierId;
+        questionPosition = productModifier.position;
       }
       const modifierGroup = modifierGroups.find(
         modifierGroup =>
@@ -279,7 +295,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
 
       const question: DbQuestion = {
         ...transformModifierGroup(modifierGroup),
-        position: 0,
+        position: questionPosition ?? questionIndex,
         answers: syncModifiers
       };
       return question;

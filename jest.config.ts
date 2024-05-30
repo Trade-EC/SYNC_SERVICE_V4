@@ -12,6 +12,15 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageProvider: "v8",
+  collectCoverageFrom: [
+    "**/*.{ts,tsx}",
+    "!**/*.d.ts",
+    "!**/*.types.ts",
+    "!**/coverage/**",
+    "!**/node_modules/**",
+    "!**/babel.config.js",
+    "!**/jest.config.js"
+  ],
   testMatch: ["**/*.test.ts"],
   moduleNameMapper: {
     "^/opt/nodejs/(.*)$": "<rootDir>/src/layers/$1",

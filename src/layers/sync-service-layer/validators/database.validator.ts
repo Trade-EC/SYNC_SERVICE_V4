@@ -92,7 +92,7 @@ export const dbStoreValidator = z.object({
   catalogues: z.array(dbCatalogueValidator),
   polygons: z.array(z.any()).nullable(),
   sponsored: z.boolean(),
-  tips: z.array(z.any()).nullable(), // TODO:
+  tips: z.array(z.any()).nullable(),
   timezone: z.string().nullable(),
   schedules: z.array(dbScheduleValidator),
   location: locationValidator,
