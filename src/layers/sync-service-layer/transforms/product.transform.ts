@@ -275,14 +275,8 @@ export const transformProduct = async (props: TransformProductsProps) => {
       const syncModifiers: any = modifierGroup?.modifierOptions
         .map(modifier => {
           const { productId, optionId } = modifier;
-          // TODO: Ver si esto es necesario
-          // const modifierProduct = products.find(
-          //   product => product.productId === productId
-          // );
-          // if (!modifierProduct) return null;
-
           return {
-            productId,
+            productId: `${accountId}.${countryId}.${vendorId}.${productId}`,
             attributes: {
               externalId: productId,
               showInMenu: true,

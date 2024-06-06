@@ -1,4 +1,5 @@
 import { fetchProducts, fetchStores } from "./publishSync.repository";
+import { setDraftStatusForQuestionsParentsProducts } from "./publishSync.repository";
 import { saveVersion } from "./publishSync.repository";
 import { findShippingCost } from "./publishSync.repository";
 import { savePublishRequest } from "./publishSync.repository";
@@ -85,6 +86,10 @@ export const publishProducts = async (
   all: boolean
 ) => {
   logger.info("PUBLISH PRODUCTS: FETCHING DATA", { type: "PRODUCTS" });
+  if (!all) {
+    logger.info("PUBLISH PRODUCTS: FETCHING DATA", { type: "PRODUCTS", all });
+    await setDraftStatusForQuestionsParentsProducts(vendorId, accountId);
+  }
   const rawProducts = await fetchProducts(vendorId, accountId, version, all);
   const productsS3Url = `sync/${accountId}/${vendorId}/products.json`;
   if (rawProducts.length === 0) {

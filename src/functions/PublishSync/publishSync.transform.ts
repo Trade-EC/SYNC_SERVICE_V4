@@ -16,9 +16,10 @@ export const transformQuestions = (
   return filteredQuestions?.map(question => {
     const { answers } = question;
     const transformedAnswers = answers?.map((answer: any) => {
-      const { productId } = answer;
+      const { productId, attributes } = answer;
+      const { externalId } = attributes;
       const product = productQuestions.find(
-        product => product.attributes.externalId === productId
+        product => product.attributes.externalId === externalId
       );
 
       if (!product) {

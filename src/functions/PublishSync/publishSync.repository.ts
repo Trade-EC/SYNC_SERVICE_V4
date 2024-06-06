@@ -183,7 +183,7 @@ export const fetchProducts = async (
           $graphLookup: {
             from: "products",
             startWith: "$attributes.externalId",
-            connectFromField: "questions.answers.productId",
+            connectFromField: "questions.answers.attributes.externalId",
             connectToField: "attributes.externalId",
             as: "questionsProducts",
             maxDepth: 2,
@@ -295,4 +295,34 @@ export const saveVersion = async (
   });
 
   return response;
+};
+
+export const setDraftStatusForQuestionsParentsProducts = async (
+  vendorId: string,
+  accountId: string
+) => {
+  const dbClient = await connectToDatabase();
+  const draftProducts = await dbClient
+    .collection("products")
+    .find(
+      {
+        "vendor.id": vendorId,
+        "account.accountId": accountId
+      },
+      { projection: { productId: 1 } }
+    )
+    .toArray();
+
+  const draftProductsIds = draftProducts.map(product => product.productId);
+
+  await dbClient.collection("products").updateMany(
+    {
+      "vendor.id": vendorId,
+      "account.accountId": accountId,
+      "questions.answers.productId": { $in: draftProductsIds }
+    },
+    {
+      $set: { status: "DRAFT" }
+    }
+  );
 };
