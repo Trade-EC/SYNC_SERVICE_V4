@@ -28,7 +28,7 @@ export const storeDeliveryValidator = z.object({
   minimumOrder: z.number().optional(),
   shippingCost: z.number().optional(),
   cookTime: z.number().int().optional(),
-  deliveryId: z.number().int().optional()
+  deliveryId: z.coerce.number().int().optional()
 });
 
 export const storeLocationValidator = z.object({

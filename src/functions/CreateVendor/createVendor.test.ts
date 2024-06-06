@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import context from "aws-lambda-mock-context";
+import { mockClient } from "aws-sdk-client-mock";
 
 import { lambdaHandler } from "./handler";
 import * as gatewayEvent from "../../events/gateway.json";
@@ -8,8 +9,12 @@ import { buildVendor } from "../../builders/vendors/vendors.builders";
 import { createVendorValidator } from "./createVendor.validator";
 
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
+import { dynamoDBClient } from "/opt/nodejs/sync-service-layer/configs/config";
+
+const dynamoDbMockClient = mockClient(dynamoDBClient);
 
 afterAll(() => {
+  dynamoDbMockClient.reset();
   jest.resetAllMocks();
 });
 
@@ -49,9 +54,6 @@ describe("Unit test for app handler", function () {
 
     expect(response.statusCode).toEqual(500);
   });
-});
-
-describe("createVendorValidator", () => {
   it("should omit account and channels fields when syncTimeUnit is HOURS", () => {
     const vendor = {
       vendorId: "123",
