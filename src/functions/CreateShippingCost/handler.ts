@@ -25,7 +25,6 @@ const handler = async (
     } catch (error) {
       logger.error("SHIPPING COST ERROR:", { error });
       response.batchItemFailures.push({ itemIdentifier: record.messageId });
-      return error;
     }
   }
   return response;

@@ -19,7 +19,8 @@ const config: Config = {
     "!**/coverage/**",
     "!**/node_modules/**",
     "!**/babel.config.js",
-    "!**/jest.config.js"
+    "!**/jest.config.ts",
+    "!**/commitlint.config.ts"
   ],
   testMatch: ["**/*.test.ts"],
   moduleNameMapper: {
