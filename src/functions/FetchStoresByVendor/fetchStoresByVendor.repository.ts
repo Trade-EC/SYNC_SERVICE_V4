@@ -10,7 +10,7 @@ export const fetchStoresByVendorRepository = async (
 ) => {
   const filter = {
     "vendor.id": vendorId,
-    storeId: storeId ? `${accountId}.${vendorId}.${storeId}` : undefined,
+    storeId,
     "account.id": accountId,
     status
   };

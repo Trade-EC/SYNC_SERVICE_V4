@@ -35,6 +35,7 @@ const kfcStoreDeliveryValidator = z.object({
 });
 
 const kfcStoreValidator = z.object({
+  vendorId: z.number().optional(),
   storeId: z.number(),
   default: z.boolean().optional(),
   storeChannels: kfcStoreChannelsValidator.array(),
@@ -52,7 +53,7 @@ const kfcStoreValidator = z.object({
 });
 
 const kfcChannelsAndStoresValidator = z.object({
-  vendorId: z.number(),
+  vendorId: z.number().optional(),
   channels: channelValidator.merge(kfcChannelValidator).array(),
   stores: storeValidator.merge(kfcStoreValidator).array()
 });

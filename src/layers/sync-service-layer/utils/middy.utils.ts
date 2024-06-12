@@ -1,4 +1,4 @@
-import { captureLambdaHandler } from "@aws-lambda-powertools/tracer";
+import { captureLambdaHandler } from "@aws-lambda-powertools/tracer/middleware";
 import middy from "@middy/core";
 
 import { tracer } from "../configs/observability.config";

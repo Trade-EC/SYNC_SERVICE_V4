@@ -61,13 +61,14 @@ export const transformCategory = async (
   const { name, productCategoryId, schedules, images } = category;
   const { featured, productListing, displayInList } = category;
   const { childCategories = [] } = category;
+  const { position: categoryPosition } = category;
   const productInCategory = productListing.find(
     listing => listing.productId === productId
   );
   const { position } = productInCategory ?? {};
 
   const imagesPromises = images?.map(image =>
-    imageHandler(image.fileUrl, "category")
+    imageHandler(image.fileUrl, image.imageCategoryId ?? "category")
   );
   const childCategoriesPromises = childCategories.map(childCategory =>
     transformCategory(
@@ -99,6 +100,7 @@ export const transformCategory = async (
     featured: featured ? featured : false,
     available: true,
     active: true,
+    categoryPosition: categoryPosition ? categoryPosition : 0,
     position: position ? position : 0,
     displayInMenu: displayInList ? "YES" : "NO",
     vendorIdStoreIdChannelId: storesId
@@ -212,11 +214,25 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
   const { modifier, modifierId, maxOptions } = modifierGroup;
   const { minOptions } = modifierGroup; // type is not using
 
+  let description = "";
+
+  if (minOptions === 1 && maxOptions === 1) {
+    description = "Es necesario elegir uno";
+  } else if (minOptions === 0 && maxOptions !== 0) {
+    description = `Puede seleccionar hasta ${maxOptions} ${
+      maxOptions === 1 ? "opción" : "opciones"
+    }`;
+  } else if (minOptions !== 0 && maxOptions !== 0) {
+    description = `Seleccione al menos ${minOptions} ${
+      minOptions === 1 ? "opción" : "opciones"
+    } y máximo ${maxOptions} ${maxOptions === 1 ? "opción" : "opciones"}`;
+  }
+
   const question = {
     questionId: modifierId,
     externalId: modifierId,
     name: modifier,
-    description: "",
+    description,
     min: minOptions,
     max: maxOptions,
     additionalInfo: null,
@@ -233,7 +249,7 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
  */
 export const transformProduct = async (props: TransformProductsProps) => {
   const { product, channelId, storesId, vendorId, modifierGroups } = props;
-  const { categories, accountId } = props;
+  const { categories, accountId, countryId } = props;
   const { productId, name, description, type, featured } = product;
   const { tags, additionalInfo, standardTime, schedules } = product;
   const { priceInfo, taxInfo, productModifiers, upselling } = product;
@@ -242,12 +258,14 @@ export const transformProduct = async (props: TransformProductsProps) => {
 
   // @ts-ignore filter check if modifier exists
   const questions: DbQuestion[] = productModifiers
-    ?.map(productModifier => {
+    ?.map((productModifier, questionIndex) => {
       let productModifierId = "";
+      let questionPosition;
       if (typeof productModifier === "string") {
         productModifierId = productModifier;
       } else {
         productModifierId = productModifier.modifierId;
+        questionPosition = productModifier.position;
       }
       const modifierGroup = modifierGroups.find(
         modifierGroup =>
@@ -257,14 +275,8 @@ export const transformProduct = async (props: TransformProductsProps) => {
       const syncModifiers: any = modifierGroup?.modifierOptions
         .map(modifier => {
           const { productId, optionId } = modifier;
-          // TODO: Ver si esto es necesario
-          // const modifierProduct = products.find(
-          //   product => product.productId === productId
-          // );
-          // if (!modifierProduct) return null;
-
           return {
-            productId,
+            productId: `${accountId}.${countryId}.${vendorId}.${productId}`,
             attributes: {
               externalId: productId,
               showInMenu: true,
@@ -277,14 +289,14 @@ export const transformProduct = async (props: TransformProductsProps) => {
 
       const question: DbQuestion = {
         ...transformModifierGroup(modifierGroup),
-        position: 0,
+        position: questionPosition ?? questionIndex,
         answers: syncModifiers
       };
       return question;
     })
     ?.filter(modifier => !!modifier);
   const imagesPromises = images?.map(image =>
-    imageHandler(image.fileUrl, "product")
+    imageHandler(image.fileUrl, image.imageCategoryId ?? "product")
   );
   const newImages = await Promise.all(imagesPromises ?? []);
 
@@ -298,7 +310,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
 
   const newProduct: DbProduct = {
     hash: null,
-    productId: `${accountId}.${vendorId}.${productId}`,
+    productId: `${accountId}.${countryId}.${vendorId}.${productId}`,
     status: "DRAFT",
     version: null,
     name,
@@ -336,7 +348,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     isPriceVip: false,
     outOfService: false,
     outOfStock: false,
-    sponsored: !featured ? true : featured,
+    sponsored: !!featured,
     suggestedPrice: suggestedPrice ? +suggestedPrice.toPrecision(2) : 0,
     maxAmountForSale: 0,
     statuses: [
@@ -375,7 +387,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
         }))
       : [],
     vendor: {
-      id: vendorId
+      id: `${accountId}.${countryId}.${vendorId}`
     },
     account: {
       accountId
@@ -433,5 +445,9 @@ export const mergeEntity = (
       temporalEntitiesCleaned[foundEntityIndex].vendorIdStoreIdChannelId.sort();
   }
 
-  return temporalEntitiesCleaned;
+  const temporalEntitiesFiltered = temporalEntitiesCleaned.filter(
+    (temporalEntity: any) => temporalEntity.vendorIdStoreIdChannelId.length
+  );
+
+  return temporalEntitiesFiltered;
 };

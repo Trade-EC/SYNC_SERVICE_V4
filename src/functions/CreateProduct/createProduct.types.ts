@@ -5,11 +5,26 @@ export interface CreateProductsBody extends TransformProductsProps {
   listId: string;
   source: "LISTS" | "PRODUCTS";
   storeId: string;
+  syncType: "NORMAL";
+  productId: string;
 }
 
 export interface CreateProductProps {
-  body: CreateProductsBody;
+  body: CreateProductsBody | DeleteProductsBody;
   vendorIdStoreIdChannelId: string[];
   listHash: string;
   syncAll: boolean;
+  requestId: string;
+}
+
+export interface DeleteProductsBody {
+  productId: string;
+  channelId: string;
+  accountId: string;
+  vendorId: string;
+  countryId: string;
+  listId: string;
+  storeId: string;
+  source: "LISTS" | "PRODUCTS";
+  syncType: "DELETE";
 }

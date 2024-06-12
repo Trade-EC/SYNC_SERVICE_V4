@@ -2,7 +2,8 @@
   "httpMethod": "get",
   "body": "dummyBody",
   "headers": {
-    "account": "AAb1"
+    "account": "AAb1",
+    "country": "1"
   },
   "isBase64Encoded": false,
   "multiValueHeaders": {},

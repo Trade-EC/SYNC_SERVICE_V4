@@ -1,4 +1,5 @@
 import { createOrUpdateProduct } from "./createProduct.repository";
+import { deactivateStoreInProduct } from "./createProduct.repository";
 import { verifyCompletedList } from "./createProduct.repository";
 import { CreateProductProps } from "./createProduct.types";
 
@@ -19,13 +20,44 @@ import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.ut
  */
 export const createProductService = async (props: CreateProductProps) => {
   const { body, vendorIdStoreIdChannelId, listHash, syncAll } = props;
-  const { product, accountId, categories, channelId, modifierGroups } = body;
-  const { storesId, vendorId, listId, storeId } = body;
-  const { source } = body;
-  const { productId } = product;
-  const dbProductId = `${accountId}.${vendorId}.${productId}`;
-  const lambdaInfo = { vendorId, accountId, productId, listId };
-  logger.info("PRODUCT: INIT", lambdaInfo);
+  const { requestId } = props;
+  const { accountId, channelId, vendorId, countryId, storeId } = body;
+  const { source, syncType, productId, listId } = body;
+  const dbProductId = `${accountId}.${countryId}.${vendorId}.${productId}`;
+  const logKeys = { vendorId, accountId, productId, listId, requestId };
+  logger.info("PRODUCT: INIT", logKeys);
+  const syncProductRequest: SyncProductRecord = {
+    productId: dbProductId,
+    accountId,
+    countryId,
+    listId,
+    channelId,
+    vendorId,
+    storeId,
+    status: "SUCCESS" as const,
+    source,
+    requestId
+  };
+
+  if (syncType === "DELETE") {
+    logger.info("PRODUCT: DELETE", logKeys);
+    await deactivateStoreInProduct(
+      dbProductId,
+      vendorIdStoreIdChannelId,
+      accountId,
+      vendorId,
+      countryId
+    );
+    logger.info("PRODUCT: VERIFY COMPLETED LIST", logKeys);
+    logger.info("PRODUCT: INFO", { syncProductRequest }, logKeys);
+    await verifyCompletedList(syncProductRequest, source, listHash);
+    logger.info("PRODUCT: FINISHED", logKeys);
+    return;
+  }
+
+  const { product, storesId, categories, modifierGroups } = body;
+
+  logger.info("PRODUCT: SEARCH", logKeys);
   const productDB = await findProduct(dbProductId);
   const transformedProduct = await transformProduct({
     product,
@@ -34,18 +66,9 @@ export const createProductService = async (props: CreateProductProps) => {
     accountId,
     vendorId,
     modifierGroups,
-    categories
+    categories,
+    countryId
   });
-  const syncProductRequest: SyncProductRecord = {
-    productId: dbProductId,
-    accountId,
-    listId,
-    channelId,
-    vendorId,
-    storeId,
-    status: "SUCCESS" as const,
-    source
-  };
   const orderedTransformProduct = sortObjectByKeys(transformedProduct);
 
   if (!productDB) {
@@ -54,17 +77,17 @@ export const createProductService = async (props: CreateProductProps) => {
     orderedTransformProduct.hash = hash;
     orderedTransformProduct.version = version;
     logger.info("PRODUCT: CREATE", {
-      ...lambdaInfo,
+      ...logKeys,
       product: orderedTransformProduct
     });
     await createOrUpdateProduct(orderedTransformProduct);
-    logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
+    logger.info("PRODUCT: VERIFY COMPLETED LIST", logKeys);
     await verifyCompletedList(syncProductRequest, source, listHash);
-    logger.info("PRODUCT: FINISHED", lambdaInfo);
+    logger.info("PRODUCT: FINISHED", logKeys);
     return;
   }
 
-  logger.info("PRODUCT: MERGE", lambdaInfo);
+  logger.info("PRODUCT: MERGE", logKeys);
   const { categories: dbCategories, prices: dbPrices } = productDB;
   const { statuses: dbStatuses, schedules: dbSchedules } = productDB;
   const { questions: dbQuestions, images: dbImages } = productDB;
@@ -116,20 +139,20 @@ export const createProductService = async (props: CreateProductProps) => {
   orderedTransformProduct.version = version;
   const { hash } = productDB;
   if (hash === newHash && !syncAll) {
-    logger.info("PRODUCT: NO CHANGES", lambdaInfo);
-    logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
+    logger.info("PRODUCT: NO CHANGES", logKeys);
+    logger.info("PRODUCT: VERIFY COMPLETED LIST", logKeys);
     await verifyCompletedList(syncProductRequest, source, listHash);
-    logger.info("PRODUCT: FINISHED", lambdaInfo);
+    logger.info("PRODUCT: FINISHED", logKeys);
     return;
   }
 
   logger.info("PRODUCT: UPDATE", {
-    ...lambdaInfo,
+    ...logKeys,
     product: orderedTransformProduct
   });
   await createOrUpdateProduct(orderedTransformProduct);
-  logger.info("PRODUCT: VERIFY COMPLETED LIST", lambdaInfo);
+  logger.info("PRODUCT: VERIFY COMPLETED LIST", logKeys);
   await verifyCompletedList(syncProductRequest, source, listHash);
-  logger.info("PRODUCT: FINISHED", lambdaInfo);
+  logger.info("PRODUCT: FINISHED", logKeys);
   return;
 };

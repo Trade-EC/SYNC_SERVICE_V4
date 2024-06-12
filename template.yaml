@@ -49,6 +49,8 @@ Globals:
         REGION: !Ref "AWS::Region"
         TASK_SCHEDULE_TABLE: !Ref taskScheduleTable
         NEW_PRODUCTS_SERVICE_URL: !Ref newProductsServiceUrl
+        CLOUDFRONT_URL: !GetAtt SyncServiceV4AdminCloudFront.DomainName
+        STAGE_NAME: !Ref StageName
     VpcConfig:
       SecurityGroupIds:
         - !Ref securityGroupIds
@@ -267,6 +269,57 @@ Resources:
     Properties:
       BucketName: !Sub "syncservicev4.${clientName}.logs.${StageName}"
 
+  # CloudFront
+  SyncServiceV4AdminCloudFront:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Ref AWS::StackName
+        Origins:
+          - DomainName: !GetAtt SyncServiceV4AdminBucket.RegionalDomainName
+            Id: bucketOrigin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+        Enabled: true
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          TargetOriginId: bucketOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN:  !GetAtt DecodeBase64Function.FunctionMetadata.FunctionARN
+        PriceClass: PriceClass_All
+
+  # Cloudfront Functions
+  DecodeBase64Function:
+    Type: AWS::CloudFront::Function
+    Properties:
+      AutoPublish: true
+      FunctionCode: |
+        function handler(event) {
+            var eventUri = event.request.uri.split("/").join("");
+            var newURL = eventUri ? String.bytesFrom(eventUri, 'base64'): "";
+            var data = JSON.parse(newURL);
+            var newKey = data.key;
+            // NOTE: This example function is for a viewer request event trigger. 
+            // Choose viewer request for event trigger when you associate this function with a distribution. 
+            var request = event.request;
+            request.uri = "/" + newKey;
+            
+            return request;
+        }
+      Name: !Sub "DecodeBase64Function-${StageName}"
+      FunctionConfig:
+        Comment: Decode base64 metadata
+        Runtime: cloudfront-js-1.0
+
   #Lambdas
   LayerSyncService:
     Type: AWS::Serverless::LayerVersion
@@ -302,6 +355,7 @@ Resources:
       Architectures:
         - x86_64
       MemorySize: 256
+      Tracing: Active
       Events:
         SqsTrigger:
           Type: SQS
@@ -1167,7 +1221,9 @@ Resources:
             - Effect: Allow
               Action:
                 - dynamodb:*
-              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}/*"
+              Resource: 
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

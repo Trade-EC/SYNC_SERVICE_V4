@@ -26,7 +26,9 @@ describe("Unit test for app handler", function () {
       channelsAndStores: buildChannelsAndStores(),
       accountId: faker.string.uuid(),
       storeHash: faker.string.alphanumeric(40),
-      vendorChannels: []
+      standardChannels: [],
+      requestId: faker.string.uuid(),
+      countryId: faker.string.uuid()
     };
 
     const event: SQSEvent = sqsEvent;

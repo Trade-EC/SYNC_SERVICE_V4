@@ -21,6 +21,8 @@ describe("Unit test for app handler", function () {
     const ctx = context();
     ctx.done();
     const storesId = faker.helpers.multiple(faker.string.uuid, { count: 5 });
+    const product = buildProduct();
+    const { productId } = product;
     const body: CreateProductProps = {
       body: {
         accountId: faker.string.uuid(),
@@ -33,8 +35,12 @@ describe("Unit test for app handler", function () {
         modifierGroups: genModifierGroups(),
         product: buildProduct(),
         storesId,
-        storeId: storesId[0]
+        storeId: storesId[0],
+        countryId: faker.string.uuid(),
+        syncType: "NORMAL",
+        productId
       },
+      requestId: faker.string.uuid(),
       listHash: faker.string.alphanumeric(40),
       syncAll: faker.datatype.boolean(),
       vendorIdStoreIdChannelId: faker.helpers.multiple(faker.string.uuid, {

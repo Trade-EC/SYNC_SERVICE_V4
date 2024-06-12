@@ -30,14 +30,18 @@ export interface SyncProductRecord {
   accountId: string;
   channelId: string;
   vendorId: string;
+  countryId: string;
   storeId: string;
   status: "PENDING" | "SUCCESS" | "ERROR";
   source: "LISTS" | "PRODUCTS";
+  requestId: string;
 }
 
 export interface SyncStoreRecord {
   accountId: string;
   vendorId: string;
+  countryId: string;
   storeId: string;
   status: "PENDING" | "SUCCESS" | "ERROR";
+  requestId: string;
 }

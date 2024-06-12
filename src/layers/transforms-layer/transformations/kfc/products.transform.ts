@@ -63,11 +63,13 @@ export const transformKFCProducts = (lists: any) => {
   }
 
   const { list, products, categories, modifierGroups } = transformedLists;
+  const { images } = transformedLists;
 
   transformedLists.list = transformList(list);
   transformedLists.products = transformProducts(products);
   transformedLists.categories = transformCategories(categories);
   transformedLists.modifierGroups = transformModifierGroups(modifierGroups);
+  transformedLists.images = images?.filter((image: any) => !!image.fileUrl);
 
   return transformedLists;
 };

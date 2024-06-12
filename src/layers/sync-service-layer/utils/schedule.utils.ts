@@ -1,6 +1,6 @@
+import { ChannelMappings } from "../types/channel.types";
 import { Schedule, ScheduleByChannel } from "../types/common.types";
 import { SchemaSchedule } from "../types/common.types";
-import { VendorChannels } from "../types/vendor.types";
 
 /**
  *
@@ -27,16 +27,16 @@ export const getHourInSeconds = (hour: string) => {
  */
 export const transformStoreSchedules = (
   schedules: Schedule[],
-  channels: string[],
+  channelsMappings: ChannelMappings[],
   storeId: string
 ) => {
   const newSchedules: SchemaSchedule[] = [];
-  channels.forEach(channel => {
+  channelsMappings.forEach(channel => {
     schedules.forEach(schedule => {
       const { day, startDate, endDate } = schedule;
       const newSchedule = {
         day,
-        catalogueId: `${storeId}.${channel}`,
+        catalogueId: `${storeId}.${channel.id}`,
         from: getHourInSeconds(schedule.startTime),
         to: getHourInSeconds(schedule.endTime),
         startDate,
@@ -59,20 +59,20 @@ export const transformStoreSchedules = (
 export const transformStoreSchedulesByChannel = (
   scheduleByChannel: ScheduleByChannel[],
   storeId: string,
-  vendorChannels: VendorChannels
+  channelMappings: ChannelMappings[]
 ) => {
   const newSchedules: SchemaSchedule[] = [];
   scheduleByChannel.forEach(scheduleByChannel => {
     const { channelId: scheduleChannelId, schedules } = scheduleByChannel;
-    const filterVendorChannels = vendorChannels.filter(
-      vendorChannel => vendorChannel.channelId === scheduleChannelId
+    const filterChannelMappings = channelMappings.filter(
+      vendorChannel => vendorChannel.externalChannelId === scheduleChannelId
     );
-    if (!filterVendorChannels.length) {
+    if (!filterChannelMappings.length) {
       throw new Error(`Channel ${scheduleChannelId} not found`);
     }
-    filterVendorChannels.forEach(vendorChannel => {
-      const { channelId: vendorChannelId, ecommerceChannelId } = vendorChannel;
-      const channelId = ecommerceChannelId ?? vendorChannelId;
+    filterChannelMappings.forEach(channel => {
+      const { externalChannelId, id } = channel;
+      const channelId = id ?? externalChannelId;
       schedules.forEach(schedule => {
         const { day, startDate, endDate } = schedule;
         const newSchedule = {

@@ -14,8 +14,10 @@ jest.mock(
   "/opt/nodejs/sync-service-layer/repositories/vendors.repository",
   () => ({
     fetchVendor: jest.fn(() => ({
-      active: true
-    }))
+      active: true,
+      isSyncActive: true
+    })),
+    fetchMapAccount: jest.fn(() => undefined)
   })
 );
 

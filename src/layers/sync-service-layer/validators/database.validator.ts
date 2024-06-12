@@ -92,7 +92,7 @@ export const dbStoreValidator = z.object({
   catalogues: z.array(dbCatalogueValidator),
   polygons: z.array(z.any()).nullable(),
   sponsored: z.boolean(),
-  tips: z.array(z.any()).nullable(), // TODO:
+  tips: z.array(z.any()).nullable(),
   timezone: z.string().nullable(),
   schedules: z.array(dbScheduleValidator),
   location: locationValidator,
@@ -129,7 +129,8 @@ const dbBaseCategoryValidator = z
     available: z.boolean(),
     active: z.boolean(),
     standardTime: z.enum(["YES", "NO"]),
-    reload: z.boolean()
+    reload: z.boolean(),
+    categoryPosition: z.number()
   })
   .merge(catalogueValidator);
 
@@ -261,5 +262,6 @@ export const dbShippingCostValidator = z.object({
   discountTotal: z.number(),
   total: z.number(),
   account: z.object({ accountId: z.string() }),
-  vendor: z.object({ id: z.string() })
+  vendor: z.object({ id: z.string() }),
+  externalId: z.number().optional()
 });

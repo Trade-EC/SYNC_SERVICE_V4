@@ -5,6 +5,7 @@ import { createVendorRepository } from "./createVendor.repository";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { buildVendorTask } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
+import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { fetchVendorTask } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { putVendorTask } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 // @ts-ignore
@@ -14,21 +15,32 @@ const taskTableName = process.env.TASK_SCHEDULE_TABLE ?? "";
 
 export const createVendorService = async (event: APIGatewayProxyEvent) => {
   const { headers, body } = event;
-  const { account: accountId } = headersValidator.parse(headers);
+  const { account: requestAccountId, country: countryId } =
+    headersValidator.parse(headers);
   const parseBody = JSON.parse(body ?? "");
   const validatedBody = createVendorValidator.parse(parseBody);
   const { syncTimeUnit, syncTimeValue, vendorId } = validatedBody;
   const { requestContext } = event;
   const { domainName } = requestContext;
+  let accountId = requestAccountId;
+  const mapAccount = await fetchMapAccount(accountId);
+  if (mapAccount) accountId = mapAccount;
 
-  console.log({ validatedBody });
+  if (!vendorId.startsWith(`${accountId}.${countryId}.`)) {
+    throw new Error(
+      `VendorId must start with accountId and countryId: ${accountId}.${countryId}.`
+    );
+  }
+
   await createVendorRepository(validatedBody, accountId);
-  const url = `https://${domainName}/api/v4/publish-sync`;
-  if (syncTimeUnit && syncTimeValue && taskTableName) {
+  const stageName = process.env.STAGE_NAME ?? "";
+  const url = `https://${domainName}/${stageName}/api/v4/publish-sync`;
+  if (domainName && syncTimeUnit && syncTimeValue && taskTableName) {
     const id: string = uuidv4();
-    const vendorTask = await fetchVendorTask(accountId, vendorId, url);
+    const vendorTask = await fetchVendorTask(accountId, vendorId);
     const vendorTaskBuild = await buildVendorTask(
       accountId,
+      countryId,
       vendorId,
       syncTimeUnit,
       syncTimeValue,

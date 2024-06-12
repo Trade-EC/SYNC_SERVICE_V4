@@ -15,7 +15,8 @@ const handler = async (
 
   const { Records } = event;
   const response: SQSBatchResponse = { batchItemFailures: [] };
-  const recordPromises = Records.map(async record => {
+
+  for (const record of Records) {
     try {
       logger.info("SHIPPING COST:", { record });
       const { body: bodyRecord } = record ?? {};
@@ -24,11 +25,8 @@ const handler = async (
     } catch (error) {
       logger.error("SHIPPING COST ERROR:", { error });
       response.batchItemFailures.push({ itemIdentifier: record.messageId });
-      return error;
     }
-  });
-
-  await Promise.all(recordPromises);
+  }
   return response;
 };
 

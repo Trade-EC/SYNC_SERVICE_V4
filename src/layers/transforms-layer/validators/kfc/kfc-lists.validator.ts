@@ -7,7 +7,6 @@ import { listValidator } from "/opt/nodejs/sync-service-layer/validators/lists.v
 import { modifierGroupValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { productListingValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
-import { imageValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
 import { kfcPreprocessArray } from "./kfc-common.validator";
@@ -21,19 +20,38 @@ const kfcListValidator = z.object({
   replicateInAll: z.coerce.boolean().optional()
 });
 
+const nullableToNumber = z
+  .number()
+  .nullable()
+  .transform(value => (value === null ? 0 : value));
+
+const kfcListProductPriceInfoValidator = productPriceInfoValidator.merge(
+  z.object({
+    pointPrice: nullableToNumber.optional(),
+    suggestedPrice: nullableToNumber.optional(),
+    suggestedPointPrice: nullableToNumber.optional()
+  })
+);
+
 const kfcProductListValidator = z.object({
   active: z.boolean().optional(),
   productId: z.number().int(),
-  priceInfo: productPriceInfoValidator.array(),
+  priceInfo: kfcListProductPriceInfoValidator.array(),
   taxInfo: taxesValidator.array().optional(),
   tags: z.string().optional(),
   upselling: z.string().optional()
 });
 
+const kfcImageValidator = z.object({
+  imageCategoryId: z.string().max(45).or(z.number().int()),
+  fileUrl: z.string().nullable()
+});
+
 const kfcProductValidator = kfcProductListValidator.merge(
   z.object({
     taxInfo: taxesValidator.array().optional(),
-    priceInfo: productPriceInfoValidator
+    priceInfo: kfcListProductPriceInfoValidator,
+    images: z.array(kfcImageValidator).optional()
   })
 );
 
@@ -46,7 +64,7 @@ const kfcBaseCategoryValidator = baseCategoryValidator.merge(
     productListing: productListingValidator
       .merge(kfcProductListingValidator)
       .array(),
-    images: z.array(imageValidator).max(1).nullable().optional()
+    images: z.array(kfcImageValidator).max(1).nullable().optional()
   })
 );
 

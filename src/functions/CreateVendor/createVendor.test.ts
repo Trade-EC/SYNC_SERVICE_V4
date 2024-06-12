@@ -1,5 +1,7 @@
+import { faker } from "@faker-js/faker";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import context from "aws-lambda-mock-context";
+import { mockClient } from "aws-sdk-client-mock";
 
 import { lambdaHandler } from "./handler";
 import * as gatewayEvent from "../../events/gateway.json";
@@ -7,24 +9,32 @@ import { buildVendor } from "../../builders/vendors/vendors.builders";
 import { createVendorValidator } from "./createVendor.validator";
 
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
+import { dynamoDBClient } from "/opt/nodejs/sync-service-layer/configs/config";
+
+const dynamoDbMockClient = mockClient(dynamoDBClient);
 
 afterAll(() => {
+  dynamoDbMockClient.reset();
   jest.resetAllMocks();
 });
 
 describe("Unit test for app handler", function () {
+  let dbClient: any;
+  beforeAll(async () => {
+    dbClient = await connectToDatabase();
+  });
   it("createVendorService verifies successful response", async () => {
-    const vendor = buildVendor();
+    const countryId = faker.string.uuid();
+    const vendor = buildVendor(countryId);
     const { account } = vendor;
     const { accountId } = account;
     const ctx = context();
     ctx.done();
-    const dbClient = await connectToDatabase();
     const spy = jest.spyOn(dbClient, "collection");
     const event: APIGatewayProxyEvent = {
       ...gatewayEvent,
       body: JSON.stringify(vendor),
-      headers: { account: accountId }
+      headers: { account: accountId, country: countryId }
     };
 
     const response = await lambdaHandler(event, ctx);
@@ -44,9 +54,6 @@ describe("Unit test for app handler", function () {
 
     expect(response.statusCode).toEqual(500);
   });
-});
-
-describe("createVendorValidator", () => {
   it("should omit account and channels fields when syncTimeUnit is HOURS", () => {
     const vendor = {
       vendorId: "123",
@@ -55,7 +62,10 @@ describe("createVendorValidator", () => {
       name: "Test Vendor",
       syncTimeUnit: "HOURS",
       syncTimeValue: 12,
-      channels: ["channel1", "channel2"]
+      channels: ["channel1", "channel2"],
+      countryId: "1",
+      externalId: "1",
+      isSyncActive: true
     };
 
     const result = createVendorValidator.safeParse(vendor);
@@ -72,7 +82,10 @@ describe("createVendorValidator", () => {
       active: true,
       name: "Test Vendor",
       syncTimeUnit: "HOURS",
-      syncTimeValue: 12
+      syncTimeValue: 12,
+      countryId: "1",
+      externalId: "1",
+      isSyncActive: true
     };
 
     const result = createVendorValidator.safeParse(vendor);

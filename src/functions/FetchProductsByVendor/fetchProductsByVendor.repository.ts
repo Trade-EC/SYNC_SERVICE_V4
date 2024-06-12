@@ -11,16 +11,17 @@ export const fetchProductsByVendorRepository = async (
   storeId?: string
 ) => {
   let statusFilter = "";
+  const externalStoreId = storeId ? storeId.split(".")[3] : "";
 
-  if (storeId) {
-    statusFilter += `.${storeId}`;
+  if (externalStoreId) {
+    statusFilter += `.${externalStoreId}`;
   }
 
   if (channelId) {
     statusFilter += `.${channelId}`;
   }
 
-  if (storeId && !channelId) {
+  if (externalStoreId && !channelId) {
     statusFilter = ".";
   }
 
@@ -28,7 +29,7 @@ export const fetchProductsByVendorRepository = async (
     "vendor.id": vendorId,
     "account.accountId": accountId,
     status,
-    productId: productId ? `${accountId}.${vendorId}.${productId}` : undefined,
+    productId,
     "statuses.vendorIdStoreIdChannelId": statusFilter
       ? { $regex: statusFilter }
       : undefined

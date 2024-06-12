@@ -79,7 +79,6 @@ export const listValidator = z.object({
   vendorId: z.string().max(100),
   storeId: z.string().or(z.literal("replicate_in_all")),
   channelId: z.string().max(100),
-  // TODO: revisar en peticiones
   schedules: z.array(scheduleValidator).optional(),
   ecommerceChannelId: z.number().int().optional(),
   channelReferenceName: z.string().optional()

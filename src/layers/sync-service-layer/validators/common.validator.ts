@@ -30,7 +30,7 @@ export const scheduleValidator = z.object({
 });
 
 export const imageValidator = z.object({
-  imageCategoryId: z.string().max(45).or(z.number().int()),
+  imageCategoryId: z.string().max(45),
   fileUrl: z.string()
 });
 
@@ -40,7 +40,8 @@ export const schedulesByChannelValidator = z.object({
 });
 
 export const headersValidator = z.object({
-  account: z.string().min(1)
+  account: z.string().min(1),
+  country: z.string().min(1)
 });
 
 export const syncHeadersValidator = z.object({

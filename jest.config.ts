@@ -12,15 +12,26 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageProvider: "v8",
+  collectCoverageFrom: [
+    "**/*.{ts,tsx}",
+    "!**/*.d.ts",
+    "!**/*.types.ts",
+    "!**/coverage/**",
+    "!**/node_modules/**",
+    "!**/babel.config.js",
+    "!**/jest.config.ts",
+    "!**/commitlint.config.ts"
+  ],
   testMatch: ["**/*.test.ts"],
   moduleNameMapper: {
-    "^/opt/nodejs/(.*)$": "<rootDir>/src/layers/$1"
+    "^/opt/nodejs/(.*)$": "<rootDir>/src/layers/$1",
+    "^@middy/core$":
+      "<rootDir>/src/layers/sync-service-layer/node_modules/@middy/core"
   },
   setupFilesAfterEnv: ["./src/setupTestsAfterEnv.ts"],
   moduleDirectories: [
     "node_modules",
-    "src/layers/sync-service-layer/node_modules",
-    "src/functions/**/node_modules"
+    "src/layers/sync-service-layer/node_modules"
   ]
 };
 

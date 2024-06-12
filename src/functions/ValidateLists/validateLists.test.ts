@@ -17,6 +17,7 @@ jest.mock(
   () => ({
     fetchVendor: jest.fn(() => ({
       active: true,
+      isSyncActive: true,
       channels: [
         {
           channelId,
@@ -24,7 +25,8 @@ jest.mock(
           channelReferenceName
         }
       ]
-    }))
+    })),
+    fetchMapAccount: jest.fn(() => undefined)
   })
 );
 

@@ -1,23 +1,33 @@
 import { createSyncStoresRecords } from "./prepareStores.repository";
+import { deactivateStores } from "./prepareStores.repository";
 import { PrepareStoresPayload } from "./prepareStores.types";
 
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 export const prepareStoreService = async (payload: PrepareStoresPayload) => {
-  const { accountId, channelsAndStores, storeHash, vendorChannels } = payload;
-  const { syncAll = false } = payload;
-  const { stores, vendorId } = channelsAndStores;
-  const logKeys = { vendorId, accountId };
+  const { accountId, channelsAndStores, storeHash, standardChannels } = payload;
+  const { syncAll = false, requestId, countryId } = payload;
+  const { stores, vendorId, channels } = channelsAndStores;
+  const logKeys = { vendorId, accountId, requestId };
+  const storeIds = stores.map(
+    store => `${accountId}.${countryId}.${vendorId}.${store.storeId}`
+  );
+  // deactivate stores that are not in the list
+  logger.info("STORE PREPARE: DEACTIVATING STORES", logKeys);
+  await deactivateStores(storeIds, accountId, vendorId, countryId);
+
   const syncStores = stores.map(store => {
     const { storeId } = store;
     return {
-      storeId: `${accountId}.${vendorId}.${storeId}`,
+      storeId: `${accountId}.${countryId}.${vendorId}.${storeId}`,
       accountId,
       vendorId,
+      countryId,
       status: "PENDING" as const,
       hash: storeHash,
-      createdAt: new Date()
+      createdAt: new Date(),
+      requestId
     };
   });
   logger.info("STORE PREPARE: CREATING SYNC STORE RECORDS", logKeys);
@@ -25,13 +35,21 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
 
   const productsPromises = stores.map(async store => {
     const { storeId } = store;
-    const body = { store, accountId, vendorId, storeId, vendorChannels };
-    const messageBody = { body, storeHash, syncAll };
+    const body = {
+      store,
+      accountId,
+      vendorId,
+      storeId,
+      channels,
+      countryId,
+      standardChannels
+    };
+    const messageBody = { body, storeHash, syncAll, requestId };
 
     await sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",
       MessageBody: JSON.stringify(messageBody),
-      MessageGroupId: `${accountId}-${vendorId}-${storeId}`
+      MessageGroupId: `${accountId}-${countryId}-${vendorId}-${storeId}`
     });
   });
 

@@ -1,4 +1,5 @@
 import { fetchProducts, fetchStores } from "./publishSync.repository";
+import { setDraftStatusForQuestionsParentsProducts } from "./publishSync.repository";
 import { saveVersion } from "./publishSync.repository";
 import { findShippingCost } from "./publishSync.repository";
 import { savePublishRequest } from "./publishSync.repository";
@@ -29,9 +30,16 @@ export const callPublishEP = async (
   type: "STORES" | "PRODUCTS"
 ) => {
   const url = `${NEW_PRODUCTS_SERVICE_URL}/api/v4/publish?bucket=${SYNC_BUCKET}&key=${key}`;
-  await fetch(url, fetchOptions);
+  const response = await fetch(url, fetchOptions);
+  const { status } = response;
+  const body = await response.json();
+  if (status > 399) {
+    logger.error("PUBLISH: ERROR SYNCING", { status, type });
+    throw new Error("Error syncing");
+  }
+  const { publishId } = body;
   logger.info("PUBLISH PRODUCTS: SAVING PUBLISH REQUEST", { type });
-  await savePublishRequest(vendorId, accountId, type);
+  await savePublishRequest(vendorId, accountId, type, publishId);
 };
 
 export const publishStores = async (
@@ -78,6 +86,10 @@ export const publishProducts = async (
   all: boolean
 ) => {
   logger.info("PUBLISH PRODUCTS: FETCHING DATA", { type: "PRODUCTS" });
+  if (!all) {
+    logger.info("PUBLISH PRODUCTS: FETCHING DATA", { type: "PRODUCTS", all });
+    await setDraftStatusForQuestionsParentsProducts(vendorId, accountId);
+  }
   const rawProducts = await fetchProducts(vendorId, accountId, version, all);
   const productsS3Url = `sync/${accountId}/${vendorId}/products.json`;
   if (rawProducts.length === 0) {
@@ -87,18 +99,35 @@ export const publishProducts = async (
     };
   }
   const products = rawProducts.map(product => {
-    const { questionsProducts, _id } = product;
+    const { questionsProducts, upsellingProducts, _id } = product;
     const transformedQuestions = transformQuestions(
       product?.questions ?? [],
       questionsProducts,
-      2
+      1
+    );
+    const transformedUpselling = product.upselling.map(
+      (productExternalId: string) => {
+        const upsellingProduct = upsellingProducts.find(
+          (upSellingProduct: any) =>
+            upSellingProduct.attributes.externalId === productExternalId
+        );
+        if (!upsellingProduct) {
+          logger.info("PUBLISH: UPSSELLING PRODUCT NOT FOUND", {
+            productExternalId
+          });
+          return null;
+        }
+        return upsellingProduct;
+      }
     );
     delete product.questionsProducts;
+    delete product.upsellingProducts;
     return {
       ...product,
       // This is necessary because the product has an _id field
       _id,
-      questions: transformedQuestions
+      questions: transformedQuestions,
+      upselling: transformedUpselling.filter(Boolean)
     };
   });
   logger.info("PUBLISH PRODUCTS: SAVING IN S3", { type: "PRODUCTS" });

@@ -10,10 +10,14 @@ export const transformProducts = (products: any[]) => {
   return products.map(product => {
     product.productId = String(product.productId);
     product.tags = product.tags?.replace("[", "").replace("]", "").split(",");
-    product.upselling = product.upselling
-      ?.replace("[", "")
-      .replace("]", "")
-      .split(",");
+    product.upselling =
+      typeof product.upselling === "string"
+        ? product.upselling
+            ?.replace("[", "")
+            .replace("]", "")
+            .replaceAll("'", "")
+            .split(",")
+        : product.upselling;
     if (product.priceInfo && product.priceInfo.length > 0) {
       product.priceInfo = product.priceInfo[0];
     }
@@ -33,6 +37,7 @@ export const transformProducts = (products: any[]) => {
 export const transformCategories = (categories: any[]) => {
   return categories.map(category => {
     const { images, productListing, childCategories } = category;
+    category.images = images?.filter((image: any) => !!image.fileUrl);
     if (images === null) {
       delete category.images;
     }

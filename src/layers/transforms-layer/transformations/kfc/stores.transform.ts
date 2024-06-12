@@ -46,7 +46,7 @@ const transformStoresDeliveryInfo = (store: any) => {
   if (store.deliveryInfo?.[0] && Array.isArray(store.deliveryInfo[0])) {
     delete store.deliveryInfo;
   } else {
-    store.deliveryInfo = store.deliveryInfo[0];
+    store.deliveryInfo = store.deliveryInfo?.[0];
     if (store.deliveryInfo) {
       if (store.deliveryInfo.minimumOrder) {
         store.deliveryInfo.minimumOrder = Number(
@@ -95,8 +95,9 @@ export const transformKFCStores = (channelsAndStores: any) => {
   }
 
   const { stores, channels, vendorId } = transformedChannelsAndStores;
+  const storeVendorId = stores[0].vendorId;
 
-  transformedChannelsAndStores.vendorId = String(vendorId);
+  transformedChannelsAndStores.vendorId = String(vendorId ?? storeVendorId);
   transformedChannelsAndStores.stores = transformStores(stores);
   transformedChannelsAndStores.channels = transformChannels(channels);
 

@@ -4,26 +4,30 @@ import { shippingCostTransformer } from "./createShippingCost.transform";
 import { CreateShippingCostProps } from "./createShippingCost.types";
 
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+import { dbShippingCostValidator } from "/opt/nodejs/sync-service-layer/validators/database.validator";
 
 export const syncShippingCostService = async (
   props: CreateShippingCostProps
 ) => {
   logger.info("SHIPPING COST: TRANSFORM");
   const shippingCost = shippingCostTransformer(props);
-  const { oldShippingCostId, storeId } = props;
-  const { shippingCostId, account, vendor } = shippingCost;
+  const shippingCostPayload = dbShippingCostValidator.parse(shippingCost);
+  const { oldShippingCostId, storeId, countryId } = props;
+  const { shippingCostId, account, vendor } = shippingCostPayload;
   const { accountId } = account;
   const { id: vendorId } = vendor;
   const dbShippingCost = await findShippingCost(
     shippingCostId,
     vendorId,
-    accountId
+    accountId,
+    countryId
   );
   if (oldShippingCostId && shippingCostId !== oldShippingCostId) {
     const dbShippingCostOld = await findShippingCost(
       oldShippingCostId,
       vendorId,
-      accountId
+      accountId,
+      countryId
     );
 
     dbShippingCostOld.vendorIdStoreIdChannelId =
@@ -36,21 +40,21 @@ export const syncShippingCostService = async (
 
   if (!dbShippingCost) {
     logger.info("SHIPPING COST: CREATE");
-    await createOrUpdateShippingCost(shippingCost);
+    await createOrUpdateShippingCost(shippingCostPayload);
     return;
   }
 
   const ids = [
     ...dbShippingCost.vendorIdStoreIdChannelId,
-    ...shippingCost.vendorIdStoreIdChannelId
+    ...shippingCostPayload.vendorIdStoreIdChannelId
   ];
   const newShippingCost = new Set(ids);
   const newShippingCostArray = Array.from(newShippingCost);
   logger.info("SHIPPING COST: MERGE IDS");
-  shippingCost.vendorIdStoreIdChannelId = newShippingCostArray;
+  shippingCostPayload.vendorIdStoreIdChannelId = newShippingCostArray;
 
   logger.info("SHIPPING COST: CREATE");
-  await createOrUpdateShippingCost(shippingCost);
+  await createOrUpdateShippingCost(shippingCostPayload);
 
   return;
 };

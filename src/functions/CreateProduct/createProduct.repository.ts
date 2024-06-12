@@ -47,6 +47,7 @@ export const verifyCompletedList = async (
 ) => {
   const { status, productId, ...registerFilter } = register;
   const { accountId, channelId, storeId, vendorId, listId } = registerFilter;
+  const { requestId, countryId } = registerFilter;
   const commonFilters = {
     vendorId,
     channelId,
@@ -54,13 +55,14 @@ export const verifyCompletedList = async (
     storeId,
     listId,
     source,
-    hash: listHash
+    hash: listHash,
+    requestId
   };
   const dbClient = await connectToDatabase();
   await dbClient
     .collection("syncLists")
     .updateOne(
-      { productId, ...commonFilters },
+      { productId, status: "PENDING", ...commonFilters },
       { $set: { status: "SUCCESS" } },
       { upsert: false }
     );
@@ -75,10 +77,12 @@ export const verifyCompletedList = async (
 
   const syncRequest: SyncRequest = {
     accountId,
+    countryId,
     status: "SUCCESS",
     type: source,
     vendorId,
     hash: listHash,
+    requestId,
     metadata: {
       channelId,
       storesId: storeId,
@@ -113,21 +117,22 @@ export const errorCreateProduct = async (
   props: CreateProductProps,
   errorMessage: string
 ) => {
-  const { listHash, body } = props;
+  const { listHash, body, requestId } = props;
   const { accountId, source, vendorId, listId, channelId, storeId } = body;
-  const { product } = body;
-  const { productId } = product;
-  const dbProductId = `${accountId}.${vendorId}.${productId}`;
+  const { countryId, productId } = body;
+  const dbProductId = `${accountId}.${countryId}.${vendorId}.${productId}`;
   const commonFilters = {
     vendorId,
     channelId,
     accountId,
+    countryId,
     storeId,
     listId,
     source,
     hash: listHash,
     status: "PENDING" as const,
-    productId: dbProductId
+    productId: dbProductId,
+    requestId
   };
 
   await updateErrorProductSyncRecord(commonFilters, errorMessage);
@@ -157,4 +162,33 @@ export const errorCreateProduct = async (
       }
     });
   }
+};
+
+export const deactivateStoreInProduct = async (
+  productId: string,
+  vendorIdStoreIdChannelId: string[],
+  accountId: string,
+  vendorId: string,
+  countryId: string
+) => {
+  const dbClient = await connectToDatabase();
+  return dbClient.collection<DbProduct>("products").updateMany(
+    {
+      "account.accountId": accountId,
+      "vendor.id": `${accountId}.${countryId}.${vendorId}`,
+      productId,
+      "statuses.vendorIdStoreIdChannelId": {
+        $in: vendorIdStoreIdChannelId
+      }
+    },
+    {
+      $set: { status: "DRAFT" },
+      $pullAll: {
+        "statuses.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId, // Usamos $[] para indicar que se aplique a cada elemento del array statuses
+        "images.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId,
+        "prices.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId,
+        "categories.$[].vendorIdStoreIdChannelId": vendorIdStoreIdChannelId
+      }
+    }
+  );
 };
