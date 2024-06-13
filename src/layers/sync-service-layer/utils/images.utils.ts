@@ -37,7 +37,8 @@ export const imageHandler = async (url: string, imageCategory: string) => {
   const image = await fetchImage(url, imageCategory);
   const imageProps = getAwsImageProps(url, imageCategory);
   const { bucket, cloudFrontUrl, key, name, url: s3Url } = imageProps;
-  const response = { bucket, cloudFrontUrl, key, name, url: s3Url };
+  const transformedUrl = s3Url?.replace(key, encodeURIComponent(key)) ?? null;
+  const response = { bucket, cloudFrontUrl, key, name, url: transformedUrl };
   if (image) return response;
   await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.SYNC_IMAGES_SQS_URL ?? "",

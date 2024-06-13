@@ -38,6 +38,10 @@ export const transformQuestions = (
       return {
         ...product,
         ...answer,
+        additionalInfo: {
+          ...product?.additionalInfo,
+          ...answer?.additionalInfo
+        },
         productId: product.productId
       };
     });
