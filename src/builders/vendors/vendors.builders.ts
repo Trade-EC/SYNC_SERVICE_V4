@@ -40,6 +40,7 @@ export const buildVendor = (
     countryId,
     externalId: clientVendorId,
     isSyncActive: true,
+    description: faker.lorem.sentence(),
     ...overrides
   };
 };

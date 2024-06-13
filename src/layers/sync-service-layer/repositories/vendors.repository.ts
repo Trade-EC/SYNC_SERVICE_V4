@@ -93,3 +93,12 @@ export const fetchMapAccount = async (accountId: string) => {
   const { newId } = fetchAccount;
   return newId;
 };
+
+export const fetchVendorById = async (vendorId: string) => {
+  const dbClient = await connectToDatabase();
+  const vendor = await dbClient.collection("vendors").findOne({
+    vendorId
+  });
+
+  return vendor as unknown as Vendor;
+};

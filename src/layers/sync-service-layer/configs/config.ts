@@ -2,6 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { Lambda } from "@aws-sdk/client-lambda";
 import { S3Client } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
+import { OpenAI } from "openai";
 // @ts-ignore
 import SqsExtendedClient from "sqs-extended-client";
 
@@ -31,4 +32,15 @@ sqsExtendedClient.s3Client = tracer.captureAWSv3Client(
   sqsExtendedClient.s3Client
 );
 
-export { sqsExtendedClient, s3Client, sqsClient, lambdaClient, dynamoDBClient };
+const openaiClient = new OpenAI({
+  apiKey: ""
+});
+
+export {
+  sqsExtendedClient,
+  s3Client,
+  sqsClient,
+  lambdaClient,
+  dynamoDBClient,
+  openaiClient
+};
