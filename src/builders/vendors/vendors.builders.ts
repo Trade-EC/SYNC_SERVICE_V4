@@ -29,7 +29,6 @@ export const buildVendor = (
   const clientVendorId = faker.string.uuid();
   const accountId = faker.string.uuid();
   const vendorId = `${accountId}.${countryId}.${clientVendorId}`;
-  1;
   const vendorTaxes = { vatRatePercentage: 15 };
   return {
     vendorId,
