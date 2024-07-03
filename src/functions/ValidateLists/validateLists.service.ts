@@ -64,7 +64,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
 
   const vendor = await fetchVendor(vendorId, accountId, countryId);
   if (!vendor) return genErrorResponse(404, "Vendor not found");
-  const { active, isSyncActive } = vendor;
+  const { active, isSyncActive, taxes: vendorTaxes } = vendor;
   if (!active) return genErrorResponse(404, "Vendor is not active");
   if (!isSyncActive) return genErrorResponse(404, "Vendor sync is not active");
   // Fin validaciones
@@ -119,7 +119,8 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     syncAll,
     requestId: requestUid,
     countryId,
-    source: "LISTS"
+    source: "LISTS",
+    vendorTaxes
   };
 
   await sqsExtendedClient.sendMessage({

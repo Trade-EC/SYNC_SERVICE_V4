@@ -26,4 +26,5 @@ export interface TransformProductsProps {
   product: Product;
   modifierGroups: ModifierGroup[];
   categories: Category[];
+  vendorTaxes: TaxesInfo | undefined;
 }

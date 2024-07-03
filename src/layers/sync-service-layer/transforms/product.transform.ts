@@ -122,18 +122,37 @@ export const getTaxes = (taxesInfo: TaxesInfo | undefined) => {
   const taxes = [];
   if (typeof vatRatePercentage !== "undefined") {
     taxes.push({
-      type: "IVA",
-      value: vatRatePercentage
+      percentage: vatRatePercentage,
+      name: `IVA ${vatRatePercentage}%`,
+      vatRateCode: vatRatePercentage,
+      code: vatRatePercentage,
+      vatRate: `${vatRatePercentage}%`
     });
   }
   if (typeof taxRate !== "undefined") {
     taxes.push({
-      type: "OTROS",
-      value: taxRate
+      percentage: taxRate,
+      name: `OTROS ${taxRate}%`,
+      vatRateCode: taxRate,
+      code: taxRate,
+      vatRate: `${taxRate}%`
     });
   }
 
   return taxes;
+};
+
+export const calculateGrossPrice = (
+  price: number,
+  taxes: TaxesInfo | undefined
+) => {
+  if (!taxes) return price;
+  const { taxRate = 0, vatRatePercentage = 0 } = taxes;
+  const sumTaxes = taxRate + vatRatePercentage;
+  console.log({ sumTaxes });
+  const totalTaxes = 1 + sumTaxes / 100;
+  const grossPrice = Math.floor((price / totalTaxes) * 10000) / 10000;
+  return grossPrice;
 };
 
 /**
@@ -145,17 +164,19 @@ export const getTaxes = (taxesInfo: TaxesInfo | undefined) => {
  */
 export const transformPrices = (
   priceInfo: PriceInfo,
-  taxesInfo: TaxesInfo | undefined
+  taxesInfo: TaxesInfo | undefined,
+  vendorTaxes: TaxesInfo | undefined
 ) => {
   const { price, pointPrice, suggestedPointPrice, suggestedPrice } = priceInfo;
   const productPrice: any = {};
+  const taxes = taxesInfo ?? vendorTaxes;
 
   const normal = {
     category: "NORMAL",
     symbol: "",
     netPrice: price,
-    taxes: getTaxes(taxesInfo),
-    grossPrice: 0,
+    taxes: getTaxes(taxes),
+    grossPrice: calculateGrossPrice(price, taxes),
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
@@ -177,7 +198,7 @@ export const transformPrices = (
     symbol: "",
     netPrice: suggestedPrice ?? 0,
     taxes: getTaxes(taxesInfo),
-    grossPrice: 0,
+    grossPrice: calculateGrossPrice(suggestedPrice ?? 0, taxes),
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
@@ -249,7 +270,7 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
  */
 export const transformProduct = async (props: TransformProductsProps) => {
   const { product, channelId, storesId, vendorId, modifierGroups } = props;
-  const { categories, accountId, countryId } = props;
+  const { categories, accountId, countryId, vendorTaxes } = props;
   const { productId, name, description, type, featured } = product;
   const { tags, additionalInfo, standardTime, schedules } = product;
   const { priceInfo, taxInfo, productModifiers, upselling } = product;
@@ -340,7 +361,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
         vendorIdStoreIdChannelId: storesId
           .map(storeId => `${vendorId}.${storeId}.${channelId}`)
           .sort(),
-        prices: transformPrices(priceInfo, taxInfo)
+        prices: transformPrices(priceInfo, taxInfo, vendorTaxes)
       }
     ],
     categories: syncCategories,

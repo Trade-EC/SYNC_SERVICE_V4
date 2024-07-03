@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { timeValidator } from "./common.validator";
+import { taxesValidator, timeValidator } from "./common.validator";
 
 export const vendorChannelsValidator = z.object({
   channelId: z.string(),
@@ -49,8 +49,8 @@ export const vendorValidator = z.object({
   name: z.string(),
   syncTimeUnit: z.enum(["EVERYDAY", "HOURS"]),
   syncTimeValue: z.number().or(timeValidator),
-  channels: vendorChannelsValidator.array(),
   countryId: z.string(),
   externalId: z.string(),
-  isSyncActive: z.boolean()
+  isSyncActive: z.boolean(),
+  taxes: taxesValidator.optional()
 });

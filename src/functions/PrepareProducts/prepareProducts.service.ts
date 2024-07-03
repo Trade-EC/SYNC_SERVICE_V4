@@ -48,7 +48,7 @@ const buildSyncRecords = async (
  * @returns void
  */
 export const prepareProductsService = async (props: PrepareProductsPayload) => {
-  const { listInfo, accountId, listHash, channelId } = props;
+  const { listInfo, accountId, listHash, channelId, vendorTaxes } = props;
   const { source, syncAll = false, requestId, countryId } = props;
   const { categories, list, modifierGroups, products } = listInfo;
   const { storeId, vendorId, listName, listId } = list;
@@ -143,8 +143,8 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
   const productsPromises = products.map(product => {
     const { productId } = product;
     const body1 = { product, storesId, channelId, accountId, vendorId, listId };
-    const body2 = { modifierGroups, categories, listName, productId };
-    const body3 = { storeId, countryId, source, syncType: "NORMAL" };
+    const body2 = { modifierGroups, categories, listName, productId, storeId };
+    const body3 = { countryId, source, syncType: "NORMAL", vendorTaxes };
     const body = { ...body1, ...body2, ...body3 } as CreateProductsBody;
     const messageBody: CreateProductProps = {
       vendorIdStoreIdChannelId,

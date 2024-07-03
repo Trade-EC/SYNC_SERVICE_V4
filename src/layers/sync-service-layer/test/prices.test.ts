@@ -1,5 +1,6 @@
 // FILEPATH: /home/alex/Documentos/Trabajo/trade/SYNC_SERVICE_V4/SYNC_SERVICE_V4/src/layers/sync-service-layer/transforms/product.transform.test.ts
 
+import { calculateGrossPrice } from "../transforms/product.transform";
 import { transformPrices } from "../transforms/product.transform";
 
 describe("transformPrices", () => {
@@ -11,8 +12,9 @@ describe("transformPrices", () => {
       suggestedPrice: 125
     };
     const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
+    const vendorTaxes = { vatRatePercentage: 3 };
 
-    const result = transformPrices(priceInfo, taxesInfo);
+    const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
     expect(result).toEqual({
       NORMAL: expect.objectContaining({ netPrice: 100 }),
@@ -30,8 +32,9 @@ describe("transformPrices", () => {
       suggestedPrice: 125
     };
     const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
+    const vendorTaxes = { vatRatePercentage: 3 };
 
-    const result = transformPrices(priceInfo, taxesInfo);
+    const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
     expect(result.POINTS).toBeNull();
   });
@@ -44,8 +47,9 @@ describe("transformPrices", () => {
       suggestedPrice: undefined
     };
     const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
+    const vendorTaxes = { vatRatePercentage: 3 };
 
-    const result = transformPrices(priceInfo, taxesInfo);
+    const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
     expect(result.SUGGESTED).toBeNull();
   });
@@ -58,9 +62,33 @@ describe("transformPrices", () => {
       suggestedPrice: 125
     };
     const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
+    const vendorTaxes = { vatRatePercentage: 3 };
 
-    const result = transformPrices(priceInfo, taxesInfo);
+    const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
     expect(result.SUGGESTED_POINTS).toBeNull();
+  });
+  it("should correctly transform prices (grossPrices) when all price types are defined", () => {
+    const priceInfo = {
+      price: 100,
+      pointPrice: 50,
+      suggestedPointPrice: 75,
+      suggestedPrice: 125
+    };
+    const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
+    const vendorTaxes = { vatRatePercentage: 3 };
+
+    const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        NORMAL: expect.objectContaining({
+          grossPrice: calculateGrossPrice(100, taxesInfo)
+        }),
+        SUGGESTED: expect.objectContaining({
+          grossPrice: calculateGrossPrice(125, taxesInfo)
+        })
+      })
+    );
   });
 });
