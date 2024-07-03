@@ -29,6 +29,7 @@ export const buildVendor = (
   const clientVendorId = faker.string.uuid();
   const accountId = faker.string.uuid();
   const vendorId = `${accountId}.${countryId}.${clientVendorId}`;
+  const vendorTaxes = { vatRatePercentage: 15 };
   return {
     vendorId,
     active: true,
@@ -36,10 +37,10 @@ export const buildVendor = (
     account: { accountId },
     syncTimeUnit: "EVERYDAY",
     syncTimeValue: `${time.getHours()}:${time.getMinutes()}`,
-    channels: genVendorChannels(),
     countryId,
     externalId: clientVendorId,
     isSyncActive: true,
+    taxes: vendorTaxes,
     ...overrides
   };
 };

@@ -5,8 +5,11 @@ import { scheduleValidator } from "./common.validator";
 import { productValidator } from "./lists.validator";
 
 export const dbTaxValidator = z.object({
-  type: z.string(),
-  value: z.number()
+  percentage: z.number(),
+  name: z.string(),
+  vatRateCode: z.number(),
+  code: z.number(),
+  vatRate: z.string()
 });
 
 // ------------------------------------------ images

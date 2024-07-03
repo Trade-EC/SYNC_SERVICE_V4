@@ -55,7 +55,7 @@ export const createProductService = async (props: CreateProductProps) => {
     return;
   }
 
-  const { product, storesId, categories, modifierGroups } = body;
+  const { product, storesId, categories, modifierGroups, vendorTaxes } = body;
 
   logger.info("PRODUCT: SEARCH", logKeys);
   const productDB = await findProduct(dbProductId);
@@ -67,7 +67,8 @@ export const createProductService = async (props: CreateProductProps) => {
     vendorId,
     modifierGroups,
     categories,
-    countryId
+    countryId,
+    vendorTaxes
   });
   const orderedTransformProduct = sortObjectByKeys(transformedProduct);
 
