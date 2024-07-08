@@ -240,18 +240,18 @@ Resources:
     Properties:
       StageName: !Ref StageName
       TracingEnabled: true
-      Auth:
-        ResourcePolicy:
-          CustomStatements:
-            [{
-              Effect: "Allow",
-              Action: "execute-api:Invoke",
-              Resource: ["execute-api:/*/*/*"],
-              Principal: "*",
-            }]
-      EndpointConfiguration:
-        Type: PRIVATE
-        VPCEndpointIds: !Split [",", !Ref vpceIds]
+      # Auth:
+      #   ResourcePolicy:
+      #     CustomStatements:
+      #       [{
+      #         Effect: "Allow",
+      #         Action: "execute-api:Invoke",
+      #         Resource: ["execute-api:/*/*/*"],
+      #         Principal: "*",
+      #       }]
+      # EndpointConfiguration:
+      #   Type: PRIVATE
+      #   VPCEndpointIds: !Split [",", !Ref vpceIds]
 
   # S3 Buckets
   SyncServiceV4AdminBucket:
@@ -1205,6 +1205,7 @@ Resources:
     Properties:
       CodeUri: src/functions/UpdateVendor/
       Handler: handler.lambdaHandler
+      FunctionName: !Sub "${AWS::StackName}-UpdateVendor-${StageName}"
       Runtime: nodejs18.x
       Tracing: Active
       Architectures:
@@ -1224,6 +1225,35 @@ Resources:
               Resource: 
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}/*"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${taskScheduleTable}"
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
+
+  CompareResponse:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/functions/CompareResponse/
+      Handler: handler.lambdaHandler
+      FunctionName: !Sub "${AWS::StackName}-CompareResponse-${StageName}"
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/compare-response"
+            Method: POST
+            RestApiId: !Ref SyncServiceV4Api
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
