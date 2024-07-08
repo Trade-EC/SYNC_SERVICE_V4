@@ -30,12 +30,13 @@ export const syncShippingCostService = async (
       countryId
     );
 
-    dbShippingCostOld.vendorIdStoreIdChannelId =
-      dbShippingCostOld.vendorIdStoreIdChannelId.filter(
-        id => !id.startsWith(`${vendorId}.${storeId}`)
-      );
-
-    await createOrUpdateShippingCost(dbShippingCostOld);
+    if (dbShippingCostOld) {
+      dbShippingCostOld.vendorIdStoreIdChannelId =
+        dbShippingCostOld.vendorIdStoreIdChannelId.filter(
+          id => !id.startsWith(`${vendorId}.${storeId}`)
+        );
+      await createOrUpdateShippingCost(dbShippingCostOld);
+    }
   }
 
   if (!dbShippingCost) {
