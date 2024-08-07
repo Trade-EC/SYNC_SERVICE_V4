@@ -7,7 +7,7 @@ import { productsValidator } from "/opt/nodejs/sync-service-layer/validators/lis
 import { modifierGroupValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 
 const sushicorpModifierGroupOptionValidator = z.object({
-  name: z.string(),
+  name: z.string().optional(),
   productId: z.coerce.string()
 });
 

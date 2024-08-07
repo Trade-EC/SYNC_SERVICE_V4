@@ -5,15 +5,13 @@ import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.ut
 export const findShippingCost = async (
   shippingCostId: string,
   vendorId: string,
-  accountId: string,
-  countryId: string
+  accountId: string
 ) => {
   const dbClient = await connectToDatabase();
   const shippingCost = await dbClient.collection("shippingCost").findOne({
     shippingCostId,
     "vendor.id": vendorId,
-    "account.accountId": accountId,
-    countryId: countryId
+    "account.accountId": accountId
   });
 
   return shippingCost as unknown as DBShippingCost;
