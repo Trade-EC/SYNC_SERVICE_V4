@@ -1,8 +1,7 @@
-import { Image } from "./syncImages.types";
+import { Image, ImageSync } from "./syncImages.types";
 
 import { CompleteMultipartUploadCommandOutput } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/client-s3";
 import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
-import { getAwsImageProps } from "/opt/nodejs/sync-service-layer/utils/images.utils";
 import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
@@ -31,12 +30,10 @@ export const createOrUpdateImages = async (image: Partial<Image>) => {
  * @description Save image in s3
  * @returns void
  */
-export const saveImage = async (
-  url: string,
-  imageCategory: string
-): Promise<Image> => {
-  const rawImage = await fetch(url);
-  const imageProps = getAwsImageProps(url, imageCategory);
+export const saveImage = async (imageProps: ImageSync): Promise<Image> => {
+  const { externalUrl } = imageProps;
+  const rawImage = await fetch(externalUrl ?? "");
+
   const { bucket, key, name, url: s3Url, category } = imageProps;
   if (!rawImage?.body || !name) throw new Error("Image not found");
   const input = {
@@ -60,7 +57,7 @@ export const saveImage = async (
     key,
     name: category,
     url: s3Url,
-    externalUrl: url,
+    externalUrl,
     status: "DONE"
   };
 };
