@@ -74,7 +74,10 @@ export const syncStoresService = async (props: CreateStoreProps) => {
     storeId: dbStoreId,
     requestId
   };
-  if (deliveryId && typeof shippingCost !== "undefined") {
+  if (
+    typeof deliveryId !== "undefined" &&
+    typeof shippingCost !== "undefined"
+  ) {
     const shippingPayload: CreateShippingCostProps = {
       accountId,
       deliveryId,
