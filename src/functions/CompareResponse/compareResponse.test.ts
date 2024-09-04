@@ -5,14 +5,14 @@ describe("compareJsonProperties", () => {
     const base = { a: 1, b: 2 };
     const compare = { a: 1, b: 3 };
     const result = compareJsonProperties(base, compare);
-    expect(result).toEqual([{ key: "b", firstValue: 2, secondValue: 3 }]);
+    expect(result).toEqual([{ key: "b", baseValue: 2, compareValue: 3 }]);
   });
 
   test("compara objetos anidados", () => {
     const base = { a: 1, b: { c: 2, d: 3 } };
     const compare = { a: 1, b: { c: 2, d: 4 } };
     const result = compareJsonProperties(base, compare);
-    expect(result).toEqual([{ key: "b.d", firstValue: 3, secondValue: 4 }]);
+    expect(result).toEqual([{ key: "b.d", baseValue: 3, compareValue: 4 }]);
   });
 
   test("compara arrays sin matchBy", () => {
@@ -20,8 +20,8 @@ describe("compareJsonProperties", () => {
     const compare = [1, 3, 4];
     const result = compareJsonProperties(base, compare);
     expect(result).toEqual([
-      { key: "[1]", firstValue: 2, secondValue: 3 },
-      { key: "[2]", firstValue: 3, secondValue: 4 }
+      { key: "[1]", baseValue: 2, compareValue: 3 },
+      { key: "[2]", baseValue: 3, compareValue: 4 }
     ]);
   });
 
@@ -37,11 +37,11 @@ describe("compareJsonProperties", () => {
     ];
     const result = compareJsonProperties(base, compare, { matchBy: "id" });
     expect(result).toEqual([
-      { key: "[1].age", firstValue: 25, secondValue: 26 },
+      { key: "[1].age", baseValue: 25, compareValue: 26 },
       {
         key: "[2]",
-        firstValue: undefined,
-        secondValue: { id: 3, name: "Bob", age: 40 }
+        baseValue: undefined,
+        compareValue: { id: 3, name: "Bob", age: 40 }
       }
     ]);
   });
@@ -60,8 +60,8 @@ describe("compareJsonProperties", () => {
     const compare = { a: "1", b: 2 };
     const result = compareJsonProperties(base, compare);
     expect(result).toEqual([
-      { key: "a", firstValue: 1, secondValue: "1" },
-      { key: "b", firstValue: "2", secondValue: 2 }
+      { key: "a", baseValue: 1, compareValue: "1" },
+      { key: "b", baseValue: "2", compareValue: 2 }
     ]);
   });
 
@@ -70,8 +70,8 @@ describe("compareJsonProperties", () => {
     const compare = { a: 1, c: 3 };
     const result = compareJsonProperties(base, compare);
     expect(result).toEqual([
-      { key: "b", firstValue: 2, secondValue: undefined },
-      { key: "c", firstValue: undefined, secondValue: 3 }
+      { key: "b", baseValue: 2, compareValue: undefined },
+      { key: "c", baseValue: undefined, compareValue: 3 }
     ]);
   });
 
@@ -80,7 +80,7 @@ describe("compareJsonProperties", () => {
     const compare = [1, 2, 3, 4];
     const result = compareJsonProperties(base, compare);
     expect(result).toEqual([
-      { key: "[3]", firstValue: undefined, secondValue: 4 }
+      { key: "[3]", baseValue: undefined, compareValue: 4 }
     ]);
   });
 
@@ -89,8 +89,8 @@ describe("compareJsonProperties", () => {
     const compare = { a: 1, b: null };
     const result = compareJsonProperties(base, compare);
     expect(result).toEqual([
-      { key: "a", firstValue: null, secondValue: 1 },
-      { key: "b", firstValue: 2, secondValue: null }
+      { key: "a", baseValue: null, compareValue: 1 },
+      { key: "b", baseValue: 2, compareValue: null }
     ]);
   });
 
@@ -102,11 +102,11 @@ describe("compareJsonProperties", () => {
     ];
     const result = compareJsonProperties(base, compare, { matchBy: "id" });
     expect(result).toEqual([
-      { key: "[1]", firstValue: { name: "Jane" }, secondValue: undefined },
+      { key: "[1]", baseValue: { name: "Jane" }, compareValue: undefined },
       {
         key: "[1]",
-        firstValue: undefined,
-        secondValue: { id: 2, name: "Jane" }
+        baseValue: undefined,
+        compareValue: { id: 2, name: "Jane" }
       }
     ]);
   });
