@@ -3,7 +3,6 @@ import { SQSEvent, SQSBatchResponse } from "aws-lambda";
 import { createOrUpdateImages, saveImage } from "./syncImages.repository";
 import { ImageSync } from "./syncImages.types";
 
-import { fetchImage } from "/opt/nodejs/sync-service-layer/repositories/images.repository";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 /**
