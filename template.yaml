@@ -18,6 +18,7 @@ Globals:
         SYNC_STORES_SQS_URL: !Ref StoresSyncSQS
         SYNC_PRODUCT_SQS_URL: !Ref ProductSyncSQS
         SYNC_SHIPPING_COST_SQS_URL: !Ref ShippingCostSyncSQS
+        UPDATE_STATUS_SQS_URL: !Ref UpdateStatusSQS
         SYNC_PUBLISH_SQS_URL: !Ref PublishSyncSQS
         PREPARE_PRODUCTS_SQS_URL: !Ref PrepareProductsSQS
         PREPARE_STORES_SQS_URL: !Ref PrepareStoresSQS
@@ -38,8 +39,7 @@ Globals:
         SYNC_IMAGES_SQS_ARN: !GetAtt SyncImagesSQS.Arn
         SYNC_STORES_SQS_ARN: !GetAtt StoresSyncSQS.Arn
         SYNC_PRODUCT_SQS_ARN: !GetAtt ProductSyncSQS.Arn
-        SYNC_SHIPPING_COST_SQS_ARN: !GetAtt ShippingCostSyncSQS.Arn
-        SYNC_PUBLISH_SQS_ARN: !GetAtt PublishSyncSQS.Arn        
+        SYNC_SHIPPING_COST_SQS_ARN: !GetAtt ShippingCostSyncSQS.Arn 
         PREPARE_PRODUCTS_SQS_ARN: !GetAtt PrepareProductsSQS.Arn
         PREPARE_STORES_SQS_ARN: !GetAtt PrepareStoresSQS.Arn 
         SYNC_BUCKET_ADMIN: !Ref SyncServiceV4AdminBucket
@@ -191,6 +191,23 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "${AWS::StackName}-publish-sync-${StageName}-dlq"
+  
+  UpdateStatusSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-update-status-${StageName}-sqs"
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt UpdateStatusDLQ.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-update-status-${StageName}-sqs"
+
+  UpdateStatusDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-update-status-${StageName}-dlq"
 
   PrepareProductsSQS:
     Type: AWS::SQS::Queue
@@ -528,7 +545,49 @@ Resources:
             - Effect: Allow
               Action:
                 - s3:*
-              Resource: !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
+                - sqs:SendMessage
+              Resource: 
+                - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
+                - !GetAtt UpdateStatusSQS.Arn
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+  
+  UpdateStatus:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-UpdateStatus-${StageName}"
+      CodeUri: src/functions/PublishSyncUpdateStatus/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      MemorySize: 1024
+      Architectures:
+        - x86_64
+      Events:
+        SqsTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt UpdateStatusSQS.Arn
+            BatchSize: 1
+            FunctionResponseTypes: 
+              - ReportBatchItemFailures
+            ScalingConfig:
+               MaximumConcurrency: 2
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: 
+                - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

@@ -1,0 +1,11 @@
+{
+    "name": "publish-sync-update-status",
+    "version": "1.0.0",
+    "description": "Lambda function to update status in publish sync for sync process",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+      "clear:modules": "rm -rf node_modules"
+    }
+  }
+  
