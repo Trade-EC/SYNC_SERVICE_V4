@@ -15,26 +15,31 @@ export const saveStoresInHistory = async (
   all: boolean
 ) => {
   const dbClient = await connectToDatabase();
-  const response = await dbClient
+  const stores = await dbClient
     .collection("stores")
-    .aggregate(
-      [
-        {
-          $match: {
-            "vendor.id": vendorId,
-            "account.id": accountId,
-            status: !all ? "DRAFT" : undefined
-          }
-        },
-        { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
-        { $project: { _id: 0 } },
-        { $merge: { into: "historyStores" } }
-      ],
-      { ignoreUndefined: true }
-    )
+    .find({
+      "vendor.id": vendorId,
+      "account.id": accountId,
+      status: !all ? "DRAFT" : undefined
+    })
     .toArray();
+  if (stores.length > 0) {
+    const modifiedStores = stores.map(store => ({
+      ...store,
+      status: "DELETED",
+      deletedAt: new Date(),
+      version,
+      _id: undefined
+    }));
 
-  return response;
+    await dbClient.collection("historyStores").insertMany(modifiedStores);
+
+    logger.info("UPDATE STATUS STORES: DATA", {
+      storesProcess: modifiedStores.length
+    });
+  } else {
+    logger.info("No stores found for the given criteria.");
+  }
 };
 
 /**
@@ -51,43 +56,34 @@ export const saveProductsInHistory = async (
   all: boolean
 ) => {
   const dbClient = await connectToDatabase();
-  const batchSize = 50;
-  let skip = 0;
-  let hasMore = true;
 
-  while (hasMore) {
-    const response = await dbClient
-      .collection("products")
-      .aggregate(
-        [
-          {
-            $match: {
-              "vendor.id": vendorId,
-              "account.accountId": accountId,
-              status: !all ? "DRAFT" : undefined
-            }
-          },
-          { $addFields: { status: "DELETED", deletedAt: new Date(), version } },
-          { $project: { _id: 0 } },
-          { $skip: skip },
-          { $limit: batchSize },
-          { $merge: { into: "historyProducts" } }
-        ],
-        { ignoreUndefined: true }
-      )
-      .toArray();
+  // Primero, obtenemos todos los productos que coinciden con los criterios
+  const products = await dbClient
+    .collection("products")
+    .find({
+      "vendor.id": vendorId,
+      "account.accountId": accountId,
+      status: !all ? "DRAFT" : undefined
+    })
+    .toArray();
 
-    if (response.length < batchSize) {
-      hasMore = false;
-      skip += response.length;
-    } else {
-      skip += batchSize;
-    }
+  if (products.length > 0) {
+    const modifiedProducts = products.map(product => ({
+      ...product,
+      status: "DELETED",
+      deletedAt: new Date(),
+      version,
+      _id: undefined
+    }));
+
+    await dbClient.collection("historyProducts").insertMany(modifiedProducts);
+
+    logger.info("UPDATE STATUS PRODUCTS: DATA", {
+      productsProcess: modifiedProducts.length
+    });
+  } else {
+    logger.info("No products found for the given criteria.");
   }
-  logger.info("UPDATE STATUS PRODUCTS: DATA", {
-    productsProcess: skip,
-    batchSize
-  });
 };
 
 /**
