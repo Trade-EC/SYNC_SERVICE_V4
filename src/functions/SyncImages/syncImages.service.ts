@@ -3,7 +3,6 @@ import { SQSEvent, SQSBatchResponse } from "aws-lambda";
 import { createOrUpdateImages, saveImage } from "./syncImages.repository";
 import { ImageSync } from "./syncImages.types";
 
-import { fetchImage } from "/opt/nodejs/sync-service-layer/repositories/images.repository";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 /**
@@ -23,11 +22,11 @@ export const syncImagesService = async (event: SQSEvent) => {
       logger.appendKeys({ externalUrl, name });
 
       logger.info("IMAGE: QUERYING", { externalUrl, name });
-      const dbImage = await fetchImage(externalUrl, name);
-      if (dbImage) return;
+      /* const dbImage = await fetchImage(externalUrl, name);
+      if (dbImage) return; */
       await createOrUpdateImages({ externalUrl, name, status: "PROCESSING" });
       logger.info("IMAGE: CREATING", { imageInfo });
-      const image = await saveImage(externalUrl, name);
+      const image = await saveImage(imageInfo);
       await createOrUpdateImages(image);
       logger.info("IMAGE: FINISHING");
     } catch (error) {

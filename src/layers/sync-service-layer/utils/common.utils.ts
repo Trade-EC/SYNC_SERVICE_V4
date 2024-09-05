@@ -75,13 +75,16 @@ export const generateSyncS3Path = (
   const base = `requests/${accountId}/${vendorId}`;
   switch (type) {
     case "LISTS":
-      return base + `/lists/${dayjs().format("YYYY-MM-DD-HH:mm:ss")}.json`;
+      return base + `/lists/${dayjs().format("YYYY-MM-DD")}-${Date.now()}.json`;
     case "CHANNELS_STORES":
       return (
-        base + `/channels_stores/${dayjs().format("YYYY-MM-DD-HH:mm:ss")}.json`
+        base +
+        `/channels_stores/${dayjs().format("YYYY-MM-DD")}-${Date.now()}.json`
       );
     case "PRODUCTS":
-      return base + `/products/${dayjs().format("YYYY-MM-DD-HH:mm:ss")}.json`;
+      return (
+        base + `/products/${dayjs().format("YYYY-MM-DD")}-${Date.now()}.json`
+      );
   }
 };
 
