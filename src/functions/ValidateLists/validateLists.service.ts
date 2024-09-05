@@ -39,9 +39,8 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   const parsedBody = JSON.parse(body ?? "");
   const { account: requestAccountId, country: countryId } =
     headersValidator.parse(headers);
-  // const { Account: accountId = "0" } = headers;
   let accountId = requestAccountId;
-  const listInfo = validateLists(parsedBody, accountId);
+  const listInfo = await validateLists(parsedBody, accountId);
   const { list } = listInfo;
   const { storeId, vendorId, listId } = list;
   logger.appendKeys({

@@ -432,6 +432,10 @@ Resources:
               Action:
                 - s3:*
               Resource: !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+      Environment:
+        Variables:
+          API_ENDPOINT: 
+            Fn::Sub: https://${SyncServiceV4Api}.execute-api.${AWS::Region}.amazonaws.com/${StageName}
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -527,7 +531,7 @@ Resources:
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
       Tracing: Active
-      MemorySize: 1024
+      MemorySize: 2048
       Architectures:
         - x86_64
       Events:

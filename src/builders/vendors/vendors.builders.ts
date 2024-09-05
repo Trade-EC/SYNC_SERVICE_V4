@@ -41,6 +41,7 @@ export const buildVendor = (
     externalId: clientVendorId,
     isSyncActive: true,
     taxes: vendorTaxes,
+    automaticallyPublishSync: false,
     ...overrides
   };
 };

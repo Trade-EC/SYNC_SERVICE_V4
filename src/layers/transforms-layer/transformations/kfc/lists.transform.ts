@@ -38,9 +38,16 @@ export const transformCategories = (categories: any[]) => {
   return categories.map(category => {
     const { images, productListing, childCategories } = category;
     category.images = images?.filter((image: any) => !!image.fileUrl);
+
     if (images === null) {
       delete category.images;
     }
+
+    category.images = category.images.map((image: any) => {
+      image.fileUrl = `${image.fileUrl}?tz=${new Date().getTime()}`;
+      return image;
+    });
+
     category.productListing = productListing?.map((productListing: any) => {
       productListing.productId = String(productListing.productId);
       return productListing;
@@ -79,7 +86,6 @@ export const transformKFCList = (lists: any) => {
   }
 
   const { list, products, categories, modifierGroups } = transformedLists;
-
   transformedLists.list = transformList(list);
   transformedLists.products = transformProducts(products);
   transformedLists.categories = transformCategories(categories);

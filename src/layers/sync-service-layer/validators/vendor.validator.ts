@@ -52,5 +52,6 @@ export const vendorValidator = z.object({
   countryId: z.string(),
   externalId: z.string(),
   isSyncActive: z.boolean(),
-  taxes: taxesValidator.optional()
+  taxes: taxesValidator.optional(),
+  automaticallyPublishSync: z.boolean().optional().default(false)
 });

@@ -6,6 +6,7 @@ import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syn
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 
 import { CreateProductProps } from "./createProduct.types";
+import { Vendor } from "../../layers/sync-service-layer/types/vendor.types";
 
 /**
  *
@@ -92,6 +93,7 @@ export const verifyCompletedList = async (
   if (allSuccess && !pendingExists) {
     await saveSyncRequest(syncRequest, false);
     await dbClient.collection("syncLists").deleteMany(commonFilters);
+    await automaticallyPublishSync(vendorId, accountId, countryId);
   }
 
   if (errorExists && !pendingExists) {
@@ -191,4 +193,57 @@ export const deactivateStoreInProduct = async (
       }
     }
   );
+};
+
+const fetchVendor = async (
+  vendorId: string,
+  accountId: string,
+  countryId: string
+) => {
+  const dbClient = await connectToDatabase();
+  const vendor = await dbClient.collection("vendors").findOne({
+    externalId: vendorId,
+    "account.accountId": accountId,
+    countryId
+  });
+  return vendor as unknown as Vendor;
+};
+
+export const automaticallyPublishSync = async (
+  vendorId: string,
+  accountId: string,
+  countryId: string
+) => {
+  try {
+    const vendor = await fetchVendor(vendorId, accountId, countryId);
+    if (!vendor) return;
+    const { automaticallyPublishSync } = vendor;
+    if (automaticallyPublishSync) {
+      const host = process.env.API_ENDPOINT;
+      const url = `${host}/api/v4/publish-sync`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          account: accountId,
+          country: countryId
+        },
+        body: JSON.stringify({ vendorId: vendor.vendorId })
+      });
+      console.log(
+        JSON.stringify({
+          message: "Automatic publishing sync",
+          status: response.status,
+          body: await response.text()
+        })
+      );
+    }
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        message: "Error in automatic publishing sync",
+        error
+      })
+    );
+  }
 };
