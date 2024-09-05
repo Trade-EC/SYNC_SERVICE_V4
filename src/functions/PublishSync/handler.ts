@@ -29,7 +29,6 @@ const handler = async (
       const validateProps = publishSyncValidator.parse(props);
       await publishSyncService(validateProps);
     } catch (e) {
-      logger.error("error", { e });
       response.batchItemFailures.push({ itemIdentifier: record.messageId });
       logger.error("error", { response });
       return e;
