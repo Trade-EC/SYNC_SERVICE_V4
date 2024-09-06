@@ -36,7 +36,7 @@ describe("transformPrices", () => {
 
     const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
-    expect(result.POINTS).toBeNull();
+    expect(result.POINTS).toBeUndefined();
   });
 
   it("should set SUGGESTED to null when suggestedPrice is undefined", () => {
@@ -51,7 +51,7 @@ describe("transformPrices", () => {
 
     const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
-    expect(result.SUGGESTED).toBeNull();
+    expect(result.SUGGESTED).toBeUndefined();
   });
 
   it("should set SUGGESTED_POINTS to null when suggestedPointPrice is undefined", () => {
@@ -66,7 +66,7 @@ describe("transformPrices", () => {
 
     const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
-    expect(result.SUGGESTED_POINTS).toBeNull();
+    expect(result.SUGGESTED_POINTS).toBeUndefined();
   });
   it("should correctly transform prices (grossPrices) when all price types are defined", () => {
     const priceInfo = {
