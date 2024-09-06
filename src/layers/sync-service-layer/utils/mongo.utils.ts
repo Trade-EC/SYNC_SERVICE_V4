@@ -7,14 +7,22 @@ const { DB_NAME } = CONSTANTS.GENERAL;
 const MONGODB_URI = process.env.MONGODB_URI ?? "";
 
 let cachedDbClient: Db | null = null;
-
+let cachedClient: MongoClient | null = null;
 /**
  * @description Connect to MongoDB
  * @returns Db
  */
 export async function connectToDatabase() {
   if (cachedDbClient) {
-    return cachedDbClient;
+    try {
+      // Realizar un ping para verificar si la conexión sigue activa
+      await cachedClient?.db("admin").command({ ping: 1 });
+      return cachedDbClient;
+    } catch (error) {
+      console.warn("Cached connection is no longer active. Reconnecting...");
+      cachedDbClient = null; // Invalida la conexión en caché
+      cachedClient = null;
+    }
   }
 
   // TODO: Ver lo de topologia para pruebas locales.
@@ -31,6 +39,7 @@ export async function connectToDatabase() {
   const db = client.db(DB_NAME);
 
   cachedDbClient = db;
+  cachedClient = client;
   return db;
 }
 

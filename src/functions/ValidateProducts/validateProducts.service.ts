@@ -87,7 +87,9 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
     type: "PRODUCTS",
     vendorId,
     hash,
-    createdAt: new Date(),
+    createdAt: new Date(
+      new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+    ),
     metadata: { channelId, storesId: storeId, listId },
     s3Path: Location
   };

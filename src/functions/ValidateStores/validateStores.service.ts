@@ -69,7 +69,9 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     type: "CHANNELS_STORES",
     vendorId,
     hash,
-    createdAt: new Date(),
+    createdAt: new Date(
+      new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+    ),
     s3Path: Location,
     metadata: {}
   };

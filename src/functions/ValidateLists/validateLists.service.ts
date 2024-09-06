@@ -88,7 +88,9 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     type: "LISTS",
     vendorId,
     hash,
-    createdAt: new Date(),
+    createdAt: new Date(
+      new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+    ),
     metadata: {
       channelId,
       storesId: storeId,

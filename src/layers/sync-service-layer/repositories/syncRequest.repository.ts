@@ -30,13 +30,18 @@ export const saveSyncRequest = async (
 ) => {
   const { status, ...restFilters } = syncRequest;
   const dbClient = await connectToDatabase();
-  const dbSyncRequest = await dbClient
-    .collection("syncRequests")
-    .updateMany(
-      { ...restFilters, $or: [{ status: "PENDING" }, { status: "ERROR" }] },
-      { $set: { ...syncRequest, updatedAt: new Date() } },
-      { upsert, ignoreUndefined: true }
-    );
+  const dbSyncRequest = await dbClient.collection("syncRequests").updateMany(
+    { ...restFilters, $or: [{ status: "PENDING" }, { status: "ERROR" }] },
+    {
+      $set: {
+        ...syncRequest,
+        updatedAt: new Date(
+          new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+        )
+      }
+    },
+    { upsert, ignoreUndefined: true }
+  );
 
   return dbSyncRequest;
 };
@@ -50,7 +55,9 @@ export const saveErrorSyncRequest = async (
     {
       $set: {
         status: "ERROR",
-        updatedAt: new Date()
+        updatedAt: new Date(
+          new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+        )
       }
     }
   );

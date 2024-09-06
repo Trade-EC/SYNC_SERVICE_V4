@@ -17,11 +17,14 @@ export const saveStoresInHistory = async (
   const dbClient = await connectToDatabase();
   const stores = await dbClient
     .collection("stores")
-    .find({
-      "vendor.id": vendorId,
-      "account.id": accountId,
-      status: !all ? "DRAFT" : undefined
-    })
+    .find(
+      {
+        "vendor.id": vendorId,
+        "account.id": accountId,
+        status: !all ? "DRAFT" : undefined
+      },
+      { ignoreUndefined: true }
+    )
     .toArray();
   if (stores.length > 0) {
     const modifiedStores = stores.map(store => ({
@@ -60,11 +63,14 @@ export const saveProductsInHistory = async (
   // Primero, obtenemos todos los productos que coinciden con los criterios
   const products = await dbClient
     .collection("products")
-    .find({
-      "vendor.id": vendorId,
-      "account.accountId": accountId,
-      status: !all ? "DRAFT" : undefined
-    })
+    .find(
+      {
+        "vendor.id": vendorId,
+        "account.accountId": accountId,
+        status: !all ? "DRAFT" : undefined
+      },
+      { ignoreUndefined: true }
+    )
     .toArray();
 
   if (products.length > 0) {
@@ -143,7 +149,9 @@ export const saveVersion = async (
     vendorId,
     accountId,
     version,
-    createdAt: new Date(),
+    createdAt: new Date(
+      new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+    ),
     type
   });
 

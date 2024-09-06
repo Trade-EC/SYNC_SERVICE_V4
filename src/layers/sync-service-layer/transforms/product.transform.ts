@@ -1,7 +1,7 @@
 import { cloneDeep, isEqual } from "lodash";
 
 import { DbCategory, DbProduct, DbQuestion } from "../types/products.types";
-import { isUndefined, normalizeProductType } from "../utils/common.utils";
+import { normalizeProductType } from "../utils/common.utils";
 import { imageHandler } from "../utils/images.utils";
 
 import { Category } from "/opt/nodejs/sync-service-layer/types/lists.types";
@@ -216,11 +216,16 @@ export const transformPrices = (
   };
 
   productPrice["NORMAL"] = normal;
-  productPrice["POINTS"] = !isUndefined(pointPrice) ? points : null;
-  productPrice["SUGGESTED"] = !isUndefined(suggestedPrice) ? suggested : null;
-  productPrice["SUGGESTED_POINTS"] = !isUndefined(suggestedPointPrice)
-    ? suggestedPoints
-    : null;
+
+  if (pointPrice && pointPrice > 0) {
+    productPrice["POINTS"] = points;
+  }
+  if (suggestedPrice && suggestedPrice > 0) {
+    productPrice["SUGGESTED"] = suggested;
+  }
+  if (suggestedPointPrice && suggestedPointPrice > 0) {
+    productPrice["SUGGESTED_POINTS"] = suggestedPoints;
+  }
 
   return productPrice;
 };
@@ -334,7 +339,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     productId: `${accountId}.${countryId}.${vendorId}.${productId}`,
     status: "DRAFT",
     version: null,
-    name,
+    name: name.trim(),
     description,
     type: normalizeProductType(type),
     measure: null,

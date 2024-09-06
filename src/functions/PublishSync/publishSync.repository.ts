@@ -24,7 +24,9 @@ export const savePublishRequest = async (
     vendorId,
     accountId,
     status: "PENDING",
-    createdAt: new Date(),
+    createdAt: new Date(
+      new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+    ),
     type,
     publishId
   });
