@@ -1,3 +1,5 @@
+import { isUndefined } from "../../../sync-service-layer/utils/common.utils";
+
 export const transformList = (list: any) => {
   delete list.stores;
   list.vendorId = String(list.vendorId);
@@ -68,6 +70,11 @@ export const transformModifierGroups = (modifierGroups: any[]) => {
       })
       .filter((modifierOption: any) => {
         if (Array.isArray(modifierOption)) return false;
+        if (
+          isUndefined(modifierOption.productId) ||
+          isUndefined(modifierOption.optionId)
+        )
+          return false;
         return true;
       });
     return modifierGroup;
