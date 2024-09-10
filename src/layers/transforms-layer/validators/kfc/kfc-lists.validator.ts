@@ -10,6 +10,7 @@ import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
 import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
 import { kfcPreprocessArray } from "./kfc-common.validator";
+import { isUndefined } from "../../../sync-service-layer/utils/common.utils";
 
 const kfcListValidator = z.object({
   vendorId: z.number(),
@@ -80,8 +81,9 @@ const kfcCategoryValidator: z.ZodType<KfcCategory> =
   });
 
 const kfcModifierGroupOptionValidator = z.object({
-  name: z.string(),
-  productId: z.number().int()
+  name: z.string().optional(),
+  productId: z.number().int().optional(),
+  optionId: z.string().max(100).optional()
 });
 
 const kfcModifierGroupValidator = z.object({
@@ -183,7 +185,8 @@ export const kfcListsValidatorMerge = productsValidator
     );
 
     const nonExistProductForModifier = [...productInModifierSet].filter(
-      productId => !productIds.includes(productId)
+      productId =>
+        !isUndefined(productId) ? !productIds.includes(productId) : false
     );
 
     if (nonExistProductForModifier.length > 0) {

@@ -1,5 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
+import { handleError } from "/opt/nodejs/sync-service-layer/utils/error.utils";
+
 import { PrepareProductsPayload } from "../PrepareProducts/prepareProducts.types";
 
 import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
@@ -29,7 +31,6 @@ import { fetchChannels } from "/opt/nodejs/sync-service-layer/repositories/chann
  * @returns {Promise<{statusCode: number, body: string}>}
  */
 export const validateListsService = async (event: APIGatewayProxyEvent) => {
-  logger.info("LISTS VALIDATE: INIT");
   const requestUid = uuid();
   const { body, headers, queryStringParameters } = event;
   const { type } = productsQueryParamsValidator.parse(
@@ -40,102 +41,129 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
   const { account: requestAccountId, country: countryId } =
     headersValidator.parse(headers);
   let accountId = requestAccountId;
-  const listInfo = await validateLists(parsedBody, accountId);
-  const { list } = listInfo;
-  const { storeId, vendorId, listId } = list;
-  logger.appendKeys({
-    vendorId,
-    accountId,
-    listId,
-    storeId,
-    requestId: requestUid
-  });
-  logger.info("LISTS VALIDATE: VALIDATING");
-  const mapAccount = await fetchMapAccount(accountId);
-  if (mapAccount) accountId = mapAccount;
-  const account = await fetchAccount(accountId);
-  // Validaciones
-  if (!account) return genErrorResponse(404, "Account not found");
-  const { active: accountActive, isSyncActive: accountIsSyncActive } = account;
-  if (!accountActive) return genErrorResponse(404, "Account is not active");
-  if (!accountIsSyncActive)
-    return genErrorResponse(404, "Account sync is not active");
+  try {
+    logger.info("LISTS VALIDATE: INIT");
+    const listInfo = await validateLists(parsedBody, accountId);
+    const { list } = listInfo;
+    const { storeId, vendorId, listId } = list;
+    logger.appendKeys({
+      vendorId,
+      accountId,
+      listId,
+      storeId,
+      requestId: requestUid
+    });
+    logger.info("LISTS VALIDATE: VALIDATING");
+    const mapAccount = await fetchMapAccount(accountId);
+    if (mapAccount) accountId = mapAccount;
+    const account = await fetchAccount(accountId);
+    // Validaciones
+    if (!account) return genErrorResponse(404, "Account not found");
+    const { active: accountActive, isSyncActive: accountIsSyncActive } =
+      account;
+    if (!accountActive) return genErrorResponse(404, "Account is not active");
+    if (!accountIsSyncActive)
+      return genErrorResponse(404, "Account sync is not active");
 
-  const vendor = await fetchVendor(vendorId, accountId, countryId);
-  if (!vendor) return genErrorResponse(404, "Vendor not found");
-  const { active, isSyncActive, taxes: vendorTaxes } = vendor;
-  if (!active) return genErrorResponse(404, "Vendor is not active");
-  if (!isSyncActive) return genErrorResponse(404, "Vendor sync is not active");
-  // Fin validaciones
+    const vendor = await fetchVendor(vendorId, accountId, countryId);
+    if (!vendor) return genErrorResponse(404, "Vendor not found");
+    const { active, isSyncActive, taxes: vendorTaxes } = vendor;
+    if (!active) return genErrorResponse(404, "Vendor is not active");
+    if (!isSyncActive)
+      return genErrorResponse(404, "Vendor sync is not active");
+    // Fin validaciones
 
-  const { channelReferenceName } = list;
-  const { ecommerceChannelId } = list;
-  const channels = await fetchChannels({
-    ecommerceChannelId,
-    channelReferenceName
-  });
-  if (channels.length === 0) return genErrorResponse(404, "Channel not found");
-  const [channel] = channels;
-  const { channelId } = channel;
+    const { channelReferenceName } = list;
+    const { ecommerceChannelId } = list;
+    const channels = await fetchChannels({
+      ecommerceChannelId,
+      channelReferenceName
+    });
+    if (channels.length === 0)
+      return genErrorResponse(404, "Channel not found");
+    const [channel] = channels;
+    const { channelId } = channel;
 
-  const hash = sha1(JSON.stringify(parsedBody));
-  const s3Path = generateSyncS3Path(accountId, vendorId, "LISTS");
-  const { Location } = await createFileS3(s3Path, listInfo);
-  const syncRequest: SyncRequest = {
-    accountId,
-    countryId,
-    status: "PENDING",
-    type: "LISTS",
-    vendorId,
-    hash,
-    createdAt: new Date(
-      new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-    ),
-    metadata: {
+    const hash = sha1(JSON.stringify(parsedBody));
+    const s3Path = generateSyncS3Path(accountId, vendorId, "LISTS");
+    const { Location } = await createFileS3(s3Path, listInfo);
+    const syncRequest: SyncRequest = {
+      accountId,
+      countryId,
+      status: "PENDING",
+      type: "LISTS",
+      vendorId,
+      hash,
+      createdAt: new Date(
+        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+      ),
+      metadata: {
+        channelId,
+        storesId: storeId,
+        listId
+      },
+      s3Path: Location
+    };
+    const dbSyncRequest = await fetchSyncRequest(syncRequest);
+    if (dbSyncRequest) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          success: false,
+          message: "Another sync is in progress with this configuration"
+        })
+      };
+    }
+    syncRequest.requestId = requestUid;
+    await saveSyncRequest(syncRequest);
+    logger.info("LISTS VALIDATE: TRANSFORMING LIST");
+    // await syncList(listInfo, accountId, hash, channelId, syncAll);
+    const payload: PrepareProductsPayload = {
+      listInfo,
+      accountId,
+      listHash: hash,
       channelId,
-      storesId: storeId,
-      listId
-    },
-    s3Path: Location
-  };
-  const dbSyncRequest = await fetchSyncRequest(syncRequest);
-  if (dbSyncRequest) {
+      syncAll,
+      requestId: requestUid,
+      countryId,
+      source: "LISTS",
+      vendorTaxes
+    };
+
+    await sqsExtendedClient.sendMessage({
+      QueueUrl: process.env.PREPARE_PRODUCTS_SQS_URL ?? "",
+      MessageBody: JSON.stringify(payload),
+      MessageGroupId: `${accountId}-${countryId}-${vendorId}`
+    });
+
+    logger.info("LISTS VALIDATE: FINISHED");
     return {
       statusCode: 200,
       body: JSON.stringify({
-        success: false,
-        message: "Another sync is in progress with this configuration"
+        success: true,
+        message: "We've received your request. We'll notify you when it's done."
       })
     };
+  } catch (e) {
+    const error = handleError(e);
+    logger.error("LISTS VALIDATE: ERROR", { error });
+    const s3Path = generateSyncS3Path(accountId, "NAN", "LISTS");
+    const { Location } = await createFileS3(s3Path, parsedBody);
+    const syncRequest: SyncRequest = {
+      accountId,
+      countryId,
+      status: "ERROR",
+      type: "LISTS",
+      vendorId: "NAN",
+      hash: "",
+      error: JSON.stringify({ error }),
+      createdAt: new Date(
+        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+      ),
+      metadata: {},
+      s3Path: Location
+    };
+    await saveSyncRequest(syncRequest);
+    throw e;
   }
-  syncRequest.requestId = requestUid;
-  await saveSyncRequest(syncRequest);
-  logger.info("LISTS VALIDATE: TRANSFORMING LIST");
-  // await syncList(listInfo, accountId, hash, channelId, syncAll);
-  const payload: PrepareProductsPayload = {
-    listInfo,
-    accountId,
-    listHash: hash,
-    channelId,
-    syncAll,
-    requestId: requestUid,
-    countryId,
-    source: "LISTS",
-    vendorTaxes
-  };
-
-  await sqsExtendedClient.sendMessage({
-    QueueUrl: process.env.PREPARE_PRODUCTS_SQS_URL ?? "",
-    MessageBody: JSON.stringify(payload),
-    MessageGroupId: `${accountId}-${countryId}-${vendorId}`
-  });
-
-  logger.info("LISTS VALIDATE: FINISHED");
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      success: true,
-      message: "We've received your request. We'll notify you when it's done."
-    })
-  };
 };

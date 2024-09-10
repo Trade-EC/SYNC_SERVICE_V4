@@ -44,8 +44,8 @@ export const productValidator = z.object({
 });
 
 export const modifierOptionValidator = z.object({
-  optionId: z.string().max(100).optional(),
-  productId: z.string().max(100).optional(),
+  optionId: z.string().max(100),
+  productId: z.string().max(100),
   position: z.number().int().optional(),
   default: z.boolean().or(z.number()).optional(),
   additionalInfo: z.record(z.string().min(1), z.any()).optional()
