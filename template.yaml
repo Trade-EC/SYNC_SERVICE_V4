@@ -102,7 +102,7 @@ Resources:
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt SyncImagesDLQ.Arn
-        maxReceiveCount: 3
+        maxReceiveCount: 1
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-sync-images-${StageName}-sqs"
@@ -121,7 +121,7 @@ Resources:
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt StoresSyncDLQ.Arn
-        maxReceiveCount: 3
+        maxReceiveCount: 1
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-stores-sync-${StageName}-sqs.fifo"
@@ -142,7 +142,7 @@ Resources:
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt ProductSyncDLQ.Arn
-        maxReceiveCount: 3
+        maxReceiveCount: 1
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-product-sync-${StageName}-sqs.fifo"
@@ -163,7 +163,7 @@ Resources:
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt ShippingCostSyncDLQ.Arn
-        maxReceiveCount: 3
+        maxReceiveCount: 1
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-shipping-cost-sync-${StageName}-sqs.fifo"
@@ -182,7 +182,7 @@ Resources:
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PublishSyncDLQ.Arn
-        maxReceiveCount: 3
+        maxReceiveCount: 1
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-publish-sync-${StageName}-sqs"
@@ -199,7 +199,7 @@ Resources:
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt UpdateStatusDLQ.Arn
-        maxReceiveCount: 3
+        maxReceiveCount: 1
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-update-status-${StageName}-sqs"
@@ -218,7 +218,7 @@ Resources:
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PrepareProductsDLQ.Arn
-        maxReceiveCount: 3
+        maxReceiveCount: 1
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-prepare-products-${StageName}-sqs.fifo"
@@ -239,7 +239,7 @@ Resources:
       VisibilityTimeout: 180
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PrepareStoresDLQ.Arn
-        maxReceiveCount: 3
+        maxReceiveCount: 1
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-prepare-stores-${StageName}-sqs.fifo"

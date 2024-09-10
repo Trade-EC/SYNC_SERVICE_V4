@@ -1,5 +1,6 @@
 import { cloneDeep, isEqual } from "lodash";
 
+import { logger } from "../configs/observability.config";
 import { DbCategory, DbProduct, DbQuestion } from "../types/products.types";
 import { normalizeProductType } from "../utils/common.utils";
 import { imageHandler } from "../utils/images.utils";
@@ -333,6 +334,10 @@ export const transformProduct = async (props: TransformProductsProps) => {
     channelId,
     vendorId
   );
+
+  if (type === "PRODUCTO" && priceInfo.price === 0) {
+    logger.warn("PRODUCT: PRICE IS 0", { productId });
+  }
 
   const newProduct: DbProduct = {
     hash: null,
