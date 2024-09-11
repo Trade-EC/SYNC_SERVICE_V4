@@ -86,7 +86,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
 
     const hash = sha1(JSON.stringify(parsedBody));
     const s3Path = generateSyncS3Path(accountId, vendorId, "LISTS");
-    const { Location } = await createFileS3(s3Path, listInfo);
+    const { Location } = await createFileS3(s3Path, parsedBody);
     const syncRequest: SyncRequest = {
       accountId,
       countryId,

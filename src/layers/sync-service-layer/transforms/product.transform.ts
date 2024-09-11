@@ -336,7 +336,9 @@ export const transformProduct = async (props: TransformProductsProps) => {
   );
 
   if (type === "PRODUCTO" && priceInfo.price === 0) {
-    logger.warn("PRODUCT: PRICE IS 0", { productId });
+    logger.warn("PRODUCT: PRICE IS 0", {
+      productId: `${accountId}.${countryId}.${vendorId}.${productId}`
+    });
   }
 
   const newProduct: DbProduct = {
