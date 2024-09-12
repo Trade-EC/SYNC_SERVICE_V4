@@ -146,7 +146,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     };
   } catch (e) {
     const error = handleError(e);
-    logger.error("LISTS VALIDATE: ERROR", { error });
+    logger.error("LISTS VALIDATE: ERROR", { e });
     const s3Path = generateSyncS3Path(accountId, "NAN", "LISTS");
     const { Location } = await createFileS3(s3Path, parsedBody);
     const syncRequest: SyncRequest = {

@@ -45,10 +45,12 @@ export const transformCategories = (categories: any[]) => {
       delete category.images;
     }
 
-    category.images = category.images.map((image: any) => {
-      image.fileUrl = `${image.fileUrl}?tz=${new Date().getTime()}`;
-      return image;
-    });
+    category.images = category.images
+      ? category.images.map((image: any) => {
+          image.fileUrl = `${image.fileUrl}?tz=${new Date().getTime()}`;
+          return image;
+        })
+      : [];
 
     category.productListing = productListing?.map((productListing: any) => {
       productListing.productId = String(productListing.productId);

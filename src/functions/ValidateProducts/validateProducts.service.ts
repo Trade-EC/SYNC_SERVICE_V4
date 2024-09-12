@@ -142,7 +142,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
     };
   } catch (e) {
     const error = handleError(e);
-    logger.error("PRODUCTS VALIDATE: ERROR", { error });
+    logger.error("PRODUCTS VALIDATE: ERROR", { e });
     const s3Path = generateSyncS3Path(accountId, "NAN", "PRODUCTS");
     const { Location } = await createFileS3(s3Path, parsedBody);
     const syncRequest: SyncRequest = {

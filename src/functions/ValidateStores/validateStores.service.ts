@@ -121,7 +121,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     };
   } catch (e) {
     const error = handleError(e);
-    logger.error("STORE VALIDATE: ERROR", { error });
+    logger.error("STORE VALIDATE: ERROR", { e });
     const s3Path = generateSyncS3Path(accountId, "NAN", "CHANNELS_STORES");
     const { Location } = await createFileS3(s3Path, parsedBody);
     const syncRequest: SyncRequest = {
