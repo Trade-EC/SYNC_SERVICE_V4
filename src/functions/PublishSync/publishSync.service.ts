@@ -1,16 +1,12 @@
 import { fetchProducts, fetchStores } from "./publishSync.repository";
 import { setDraftStatusForQuestionsParentsProducts } from "./publishSync.repository";
-import { saveVersion } from "./publishSync.repository";
 import { findShippingCost } from "./publishSync.repository";
 import { savePublishRequest } from "./publishSync.repository";
-import { updateStatusProducts } from "./publishSync.repository";
-import { updateStatusStores } from "./publishSync.repository";
-import { saveStoresInHistory } from "./publishSync.repository";
-import { saveProductsInHistory } from "./publishSync.repository";
 import { saveDocumentsInS3 } from "./publishSync.repository";
 import { transformQuestions } from "./publishSync.transform";
 import { PublishSyncServiceProps } from "./publishSync.types";
 
+import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
 const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
@@ -70,12 +66,13 @@ export const publishStores = async (
   const { key: storesKey } = storeResponse;
   logger.info("PUBLISH STORES: SYNCING", { type: "STORES" });
   await callPublishEP(storesKey, accountId, vendorId, "STORES");
-  logger.info("PUBLISH STORES: HISTORY", { type: "STORES" });
-  await saveStoresInHistory(vendorId, accountId, version, all);
-  logger.info("PUBLISH STORES: UPDATING STATUS", { type: "STORES" });
-  await updateStatusStores(vendorId, accountId);
-  await saveVersion(vendorId, accountId, version, "STORES");
-  await saveVersion(vendorId, accountId, version, "SHIPPING_COSTS");
+  await sendMessageToUpdateStatusSQS(
+    vendorId,
+    accountId,
+    version,
+    all,
+    "STORES"
+  );
   return storeResponse;
 };
 
@@ -135,12 +132,35 @@ export const publishProducts = async (
   const { key: productsKey } = productResponse;
   logger.info("PUBLISH PRODUCTS: SYNCING", { type: "PRODUCTS" });
   await callPublishEP(productsKey, accountId, vendorId, "PRODUCTS");
-  logger.info("PUBLISH PRODUCTS: HISTORY", { type: "PRODUCTS" });
-  await saveProductsInHistory(vendorId, accountId, version, all);
-  logger.info("PUBLISH PRODUCTS: UPDATING STATUS", { type: "PRODUCTS" });
-  await updateStatusProducts(vendorId, accountId);
-  await saveVersion(vendorId, accountId, version, "PRODUCTS");
+  await sendMessageToUpdateStatusSQS(
+    vendorId,
+    accountId,
+    version,
+    all,
+    "PRODUCTS"
+  );
   return productResponse;
+};
+
+export const sendMessageToUpdateStatusSQS = async (
+  vendorId: string,
+  accountId: string,
+  version: number,
+  all: boolean,
+  type: "STORES" | "PRODUCTS"
+) => {
+  const messageBody = {
+    vendorId,
+    accountId,
+    version,
+    all,
+    type
+  };
+
+  await sqsExtendedClient.sendMessage({
+    QueueUrl: process.env.UPDATE_STATUS_SQS_URL ?? "",
+    MessageBody: JSON.stringify(messageBody)
+  });
 };
 
 /**

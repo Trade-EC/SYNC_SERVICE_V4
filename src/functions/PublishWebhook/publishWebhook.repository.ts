@@ -20,7 +20,14 @@ export const savePublishRequest = async (props: PublishValidatorProps) => {
       type,
       publishId
     },
-    { $set: { updatedAt: new Date(), status } }
+    {
+      $set: {
+        updatedAt: new Date(
+          new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+        ),
+        status
+      }
+    }
   );
 
   return response;

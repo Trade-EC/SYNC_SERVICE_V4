@@ -9,6 +9,7 @@ export interface SyncRequest {
   s3Path?: string;
   metadata: SyncRequestMetadata;
   requestId?: string;
+  error?: string;
 }
 
 export interface SyncRequestMetadata {

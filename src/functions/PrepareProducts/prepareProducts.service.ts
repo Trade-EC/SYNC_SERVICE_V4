@@ -34,7 +34,9 @@ const buildSyncRecords = async (
       source,
       hash: listHash,
       requestId,
-      createdAt: new Date()
+      createdAt: new Date(
+        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+      )
     };
   });
   return syncProducts;

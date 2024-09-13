@@ -26,7 +26,9 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
       countryId,
       status: "PENDING" as const,
       hash: storeHash,
-      createdAt: new Date(),
+      createdAt: new Date(
+        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+      ),
       requestId
     };
   });
