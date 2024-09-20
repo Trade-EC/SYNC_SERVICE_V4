@@ -1,3 +1,5 @@
+import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
@@ -81,12 +83,13 @@ export const saveProductsInHistory = async (
       version,
       _id: undefined
     }));
-
-    await dbClient.collection("historyProducts").insertMany(modifiedProducts);
+    const s3Path = generateSyncS3Path(accountId, vendorId, "PRODUCTS", true);
+    const { Location } = await createFileS3(s3Path, modifiedProducts);
 
     logger.info("UPDATE STATUS PRODUCTS: DATA", {
       productsProcess: modifiedProducts.length
     });
+    return Location;
   } else {
     logger.info("No products found for the given criteria.");
   }
@@ -142,7 +145,8 @@ export const saveVersion = async (
   vendorId: string,
   accountId: string,
   version: number,
-  type: "STORES" | "PRODUCTS" | "SHIPPING_COSTS"
+  type: "STORES" | "PRODUCTS" | "SHIPPING_COSTS",
+  location?: string
 ) => {
   const dbClient = await connectToDatabase();
   const response = await dbClient.collection("versions").insertOne({
@@ -152,6 +156,7 @@ export const saveVersion = async (
     createdAt: new Date(
       new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
     ),
+    location,
     type
   });
 

@@ -34,10 +34,15 @@ export const updateStatusForProducts = async (
 ) => {
   const { vendorId, accountId, all = false, type, version } = props;
   logger.info("PUBLISH PRODUCTS: HISTORY", { type });
-  await saveProductsInHistory(vendorId, accountId, version, all);
+  const location = await saveProductsInHistory(
+    vendorId,
+    accountId,
+    version,
+    all
+  );
   logger.info("PUBLISH PRODUCTS: UPDATING STATUS", { type });
   await updateStatusProducts(vendorId, accountId);
-  await saveVersion(vendorId, accountId, version, type);
+  await saveVersion(vendorId, accountId, version, type, location);
 };
 
 export const updateStatusForStores = async (
