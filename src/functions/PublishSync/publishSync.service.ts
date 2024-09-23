@@ -1,3 +1,5 @@
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+
 import { fetchProducts, fetchStores } from "./publishSync.repository";
 import { setDraftStatusForQuestionsParentsProducts } from "./publishSync.repository";
 import { findShippingCost } from "./publishSync.repository";
@@ -154,7 +156,8 @@ export const sendMessageToUpdateStatusSQS = async (
     accountId,
     version,
     all,
-    type
+    type,
+    limitDate: getDateNow()
   };
 
   await sqsExtendedClient.sendMessage({

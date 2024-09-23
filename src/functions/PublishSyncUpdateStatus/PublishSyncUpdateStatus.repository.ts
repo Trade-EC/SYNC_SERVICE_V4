@@ -58,6 +58,7 @@ export const saveProductsInHistory = async (
   vendorId: string,
   accountId: string,
   version: number,
+  limitDate: string | Date,
   all: boolean
 ) => {
   const dbClient = await connectToDatabase();
@@ -69,7 +70,8 @@ export const saveProductsInHistory = async (
       {
         "vendor.id": vendorId,
         "account.accountId": accountId,
-        status: !all ? "DRAFT" : undefined
+        status: !all ? "DRAFT" : undefined,
+        createdAt: { $lt: new Date(limitDate) }
       },
       { ignoreUndefined: true }
     )

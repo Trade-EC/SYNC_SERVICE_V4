@@ -95,3 +95,9 @@ export const genErrorResponse = (statusCode: number, message: string) => ({
   statusCode: statusCode,
   body: JSON.stringify({ message })
 });
+
+export const getDateNow = () => {
+  return new Date(
+    new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+  );
+};
