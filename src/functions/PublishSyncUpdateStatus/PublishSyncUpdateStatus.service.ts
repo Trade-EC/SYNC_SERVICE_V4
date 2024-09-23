@@ -1,4 +1,5 @@
-import { getDateNow } from "../../layers/sync-service-layer/utils/common.utils";
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+
 import {
   saveProductsInHistory,
   saveStoresInHistory,
