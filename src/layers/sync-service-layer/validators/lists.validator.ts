@@ -14,7 +14,8 @@ export const productPriceInfoValidator = z.object({
 
 export const productModifier = z.object({
   modifierId: z.string().max(100),
-  position: z.number().int()
+  position: z.number().int(),
+  default: z.boolean().optional().default(false)
 });
 
 export const productValidator = z.object({
@@ -33,6 +34,8 @@ export const productValidator = z.object({
   images: z.array(imageValidator).optional(),
   schedules: z.array(scheduleValidator).optional(),
   additionalInfo: z.record(z.string().min(1), z.any()).optional(),
+  minAmountForSale: z.number().int().optional().default(0),
+  maxAmountForSale: z.number().int().optional().default(0),
   type: z.enum([
     "PRODUCT",
     "MODIFIER",
@@ -47,7 +50,7 @@ export const modifierOptionValidator = z.object({
   optionId: z.string().max(100),
   productId: z.string().max(100),
   position: z.number().int().optional(),
-  default: z.boolean().or(z.number()).optional(),
+  default: z.boolean().or(z.number()).optional().default(false),
   additionalInfo: z.record(z.string().min(1), z.any()).optional()
 });
 

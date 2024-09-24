@@ -176,7 +176,8 @@ export const dbPriceValidator = z.object({
 export const dbAnswerAttributesValidator = z.object({
   externalId: z.string(),
   showInMenu: z.boolean(),
-  answerExternalId: z.string()
+  answerExternalId: z.string(),
+  default: z.boolean().optional().default(false)
 });
 
 export const dbAnswerValidator = z.object({
@@ -230,6 +231,7 @@ export const dbProductValidator = productValidator
     additionalInfo: additionalInfoValidator.nullable(),
     sponsored: z.boolean(),
     maxAmountForSale: z.number(),
+    minAmountForSale: z.number(),
     available: z.boolean(),
     outOfStock: z.boolean(),
     outOfService: z.boolean(),

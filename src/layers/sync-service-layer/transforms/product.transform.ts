@@ -280,6 +280,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
   const { productId, name, description, type, featured } = product;
   const { tags, additionalInfo, standardTime, schedules } = product;
   const { priceInfo, taxInfo, productModifiers, upselling } = product;
+  const { minAmountForSale, maxAmountForSale } = product;
   const { images } = product;
   const { suggestedPrice } = priceInfo;
 
@@ -301,13 +302,14 @@ export const transformProduct = async (props: TransformProductsProps) => {
       if (!modifierGroup) return undefined;
       const syncModifiers: any = modifierGroup?.modifierOptions
         .map(modifier => {
-          const { productId, optionId } = modifier;
+          const { productId, optionId, default: isDefault } = modifier;
           return {
             productId: `${accountId}.${countryId}.${vendorId}.${productId}`,
             attributes: {
               externalId: productId,
               showInMenu: true,
-              answerExternalId: optionId
+              answerExternalId: optionId,
+              default: !!isDefault
             },
             questionId: modifierGroup.modifierId
           };
@@ -383,7 +385,8 @@ export const transformProduct = async (props: TransformProductsProps) => {
     outOfStock: false,
     sponsored: !!featured,
     suggestedPrice: suggestedPrice ? +suggestedPrice.toPrecision(2) : 0,
-    maxAmountForSale: 0,
+    maxAmountForSale: maxAmountForSale,
+    minAmountForSale: minAmountForSale,
     statuses: [
       {
         vendorIdStoreIdChannelId: storesId
