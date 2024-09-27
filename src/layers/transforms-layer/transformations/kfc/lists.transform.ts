@@ -38,9 +38,9 @@ export const transformProducts = (products: any[]) => {
 
 export const transformCategories = (categories: any[]) => {
   return categories.map(category => {
-    const { images, productListing, childCategories } = category;
+    const { images, productListing, childCategories, schedules } = category;
     category.images = images?.filter((image: any) => !!image.fileUrl);
-
+    category.schedules = transformSchedules(schedules);
     if (images === null) {
       delete category.images;
     }
@@ -101,4 +101,28 @@ export const transformKFCList = (lists: any) => {
   transformedLists.modifierGroups = transformModifierGroups(modifierGroups);
 
   return transformedLists;
+};
+
+export const transformSchedules = (schedules: any) => {
+  const daysOfWeek = [
+    "SUNDAY",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY"
+  ];
+  const completeSchedules = daysOfWeek.map(day => {
+    const schedule = schedules.find((schedule: any) => schedule.day === day);
+    if (schedule) {
+      return schedule;
+    }
+    return {
+      dayOfWeek: day,
+      startTime: "00:00",
+      endTime: "00:00"
+    };
+  });
+  return completeSchedules;
 };
