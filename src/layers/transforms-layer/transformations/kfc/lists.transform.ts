@@ -40,9 +40,12 @@ export const transformCategories = (categories: any[]) => {
   return categories.map(category => {
     const { images, productListing, childCategories, schedules } = category;
     category.images = images?.filter((image: any) => !!image.fileUrl);
-    category.schedules = transformSchedules(schedules);
     if (images === null) {
       delete category.images;
+    }
+
+    if (schedules) {
+      category.schedules = transformSchedules(schedules);
     }
 
     category.images = category.images
@@ -119,7 +122,7 @@ export const transformSchedules = (schedules: any) => {
       return schedule;
     }
     return {
-      dayOfWeek: day,
+      day,
       startTime: "00:00",
       endTime: "00:00"
     };
