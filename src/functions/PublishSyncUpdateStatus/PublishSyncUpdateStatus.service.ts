@@ -1,3 +1,5 @@
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+
 import {
   saveProductsInHistory,
   saveStoresInHistory,
@@ -32,12 +34,25 @@ export const publishSyncUpStatusService = async (
 export const updateStatusForProducts = async (
   props: PublishSyncUpStatusServiceProps
 ) => {
-  const { vendorId, accountId, all = false, type, version } = props;
+  const {
+    vendorId,
+    accountId,
+    all = false,
+    type,
+    version,
+    limitDate = getDateNow()
+  } = props;
   logger.info("PUBLISH PRODUCTS: HISTORY", { type });
-  await saveProductsInHistory(vendorId, accountId, version, all);
+  const location = await saveProductsInHistory(
+    vendorId,
+    accountId,
+    version,
+    limitDate,
+    all
+  );
   logger.info("PUBLISH PRODUCTS: UPDATING STATUS", { type });
   await updateStatusProducts(vendorId, accountId);
-  await saveVersion(vendorId, accountId, version, type);
+  await saveVersion(vendorId, accountId, version, type, location);
 };
 
 export const updateStatusForStores = async (

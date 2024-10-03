@@ -24,8 +24,6 @@ export const fetchVersionsByVendorServices = async (
   const { skip = 0, limit = 10 } = queryParams ?? {};
   let accountId = requestAccountId;
 
-  if (!vendorId || !accountId)
-    throw new Error("AccountId or VendorId is required");
   const mapAccount = await fetchMapAccount(accountId);
   if (mapAccount) accountId = mapAccount;
 

@@ -5,5 +5,6 @@ export const publishSyncUpStatusValidator = z.object({
   accountId: z.string(),
   version: z.number(),
   all: z.boolean().optional(),
+  limitDate: z.string().optional(),
   type: z.enum(["STORES", "PRODUCTS"])
 });

@@ -1196,6 +1196,18 @@ Resources:
             Path: "/api/v4/rollback"
             Method: POST
             RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+              - s3:ListBucket   # Permiso para listar objetos en el bucket
+            Resource: 
+              - !GetAtt SyncServiceV4SyncBucket.Arn  # Se aplica solo al bucket, no a los objetos
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource: 
+              - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

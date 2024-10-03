@@ -45,3 +45,12 @@ export interface SyncStoreRecord {
   status: "PENDING" | "SUCCESS" | "ERROR";
   requestId: string;
 }
+
+export interface DBVersion {
+  vendorId: string;
+  accountId: string;
+  type: "STORES" | "PRODUCTS" | "SHIPPING_COSTS";
+  version: number;
+  location?: string;
+  createdAt: string;
+}

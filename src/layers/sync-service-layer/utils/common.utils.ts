@@ -70,9 +70,12 @@ export const sortObjectByKeys = <T extends Record<string, any>>(obj: T) => {
 export const generateSyncS3Path = (
   accountId: string,
   vendorId: string,
-  type: "LISTS" | "CHANNELS_STORES" | "PRODUCTS"
+  type: "LISTS" | "CHANNELS_STORES" | "PRODUCTS",
+  isHistory = false
 ) => {
-  const base = `requests/${accountId}/${vendorId}`;
+  const base = !isHistory
+    ? `requests/${accountId}/${vendorId}`
+    : `history/${accountId}/${vendorId}`;
   switch (type) {
     case "LISTS":
       return base + `/lists/${dayjs().format("YYYY-MM-DD")}-${Date.now()}.json`;
@@ -92,3 +95,9 @@ export const genErrorResponse = (statusCode: number, message: string) => ({
   statusCode: statusCode,
   body: JSON.stringify({ message })
 });
+
+export const getDateNow = () => {
+  return new Date(
+    new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+  );
+};

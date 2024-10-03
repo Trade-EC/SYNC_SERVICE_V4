@@ -31,7 +31,7 @@ describe("Unit test for app handler", () => {
 
     expect(result.statusCode).toEqual(200);
   });
-  it("verifies successful response with products", async () => {
+  it("verifies error response with products for version not found", async () => {
     //const dbClient = await connectToDatabase();
     //const spy = jest.spyOn(dbClient, "collection");
     const ctx = context();
@@ -44,7 +44,7 @@ describe("Unit test for app handler", () => {
     const result = await lambdaHandler(event, ctx);
 
     //expect(spy).toBeCalledWith("historyProducts");
-    expect(result.statusCode).toEqual(200);
+    expect(result.statusCode).toEqual(500);
   });
   // Error case
   it("verifies error response with invalid type", async () => {
