@@ -13,7 +13,8 @@ export const syncShippingCostService = async (
   const shippingCost = shippingCostTransformer(props);
   const shippingCostPayload = dbShippingCostValidator.parse(shippingCost);
   const { oldShippingCostId, storeId, vendorId: onlyVendorId } = props;
-  const { shippingCostId, account, vendor } = shippingCostPayload;
+  const { shippingCostId, account, vendor, additionalServices } =
+    shippingCostPayload;
   const { accountId } = account;
   const { id: vendorId } = vendor;
   const dbShippingCost = await findShippingCost(
@@ -34,6 +35,14 @@ export const syncShippingCostService = async (
         dbShippingCostOld.vendorIdStoreIdChannelId.filter(
           id => !id.startsWith(`${onlyVendorId}.${storeId}`)
         );
+      if (additionalServices && dbShippingCostOld.additionalServices) {
+        dbShippingCostOld.additionalServices = [
+          ...dbShippingCostOld.additionalServices,
+          ...additionalServices
+        ];
+      } else {
+        dbShippingCostOld.additionalServices = additionalServices;
+      }
       await createOrUpdateShippingCost(dbShippingCostOld);
     }
   }

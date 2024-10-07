@@ -41,7 +41,12 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
     logger.info("STORE VALIDATE: INIT");
     const channelsAndStores = validateStores(parsedBody, accountId);
     const { vendorId } = channelsAndStores;
-    logger.appendKeys({ vendorId, accountId, requestId: requestUid });
+    logger.appendKeys({
+      vendorId,
+      accountId,
+      requestId: requestUid,
+      countryId
+    });
     logger.info("STORE VALIDATE: VALIDATING");
     const mapAccount = await fetchMapAccount(accountId);
     if (mapAccount) accountId = mapAccount;
