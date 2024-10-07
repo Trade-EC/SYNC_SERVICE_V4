@@ -8,6 +8,8 @@ import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.ty
 import { CreateProductProps } from "./createProduct.types";
 import { Vendor } from "../../layers/sync-service-layer/types/vendor.types";
 
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+
 /**
  *
  * @param product
@@ -25,7 +27,7 @@ export const createOrUpdateProduct = async (product: DbProduct) => {
   const createdProduct = dbClient.collection("products").updateOne(
     { productId, $or: [{ status: "DRAFT" }, { status: "PUBLISHED" }] },
     {
-      $set: { ...product }
+      $set: { ...product, createdAt: getDateNow() }
     },
     { upsert: true }
   );
