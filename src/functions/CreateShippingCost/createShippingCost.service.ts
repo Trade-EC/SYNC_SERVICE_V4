@@ -1,7 +1,11 @@
+import { DeliveryServices } from "../CreateStores/createStores.types";
 import { createOrUpdateShippingCost } from "./createShippingCost.repository";
 import { findShippingCost } from "./createShippingCost.repository";
 import { shippingCostTransformer } from "./createShippingCost.transform";
-import { CreateShippingCostProps } from "./createShippingCost.types";
+import {
+  CreateShippingCostProps,
+  DBShippingCost
+} from "./createShippingCost.types";
 
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { dbShippingCostValidator } from "/opt/nodejs/sync-service-layer/validators/database.validator";
@@ -53,6 +57,10 @@ export const syncShippingCostService = async (
     return;
   }
 
+  shippingCostPayload.additionalServices = mergeAdditionalServices(
+    additionalServices,
+    dbShippingCost
+  );
   const ids = [
     ...dbShippingCost.vendorIdStoreIdChannelId,
     ...shippingCostPayload.vendorIdStoreIdChannelId
@@ -64,6 +72,22 @@ export const syncShippingCostService = async (
 
   logger.info("SHIPPING COST: CREATE");
   await createOrUpdateShippingCost(shippingCostPayload);
+};
 
-  return;
+const mergeAdditionalServices = (
+  additionalServices: DeliveryServices[],
+  dbShippingCost: DBShippingCost
+) => {
+  if (dbShippingCost.additionalServices.length === 0) {
+    return additionalServices;
+  }
+
+  const newServices = dbShippingCost.additionalServices.filter(
+    service =>
+      !additionalServices.some(
+        s => s.vendorIdStoreIdChannelId === service.vendorIdStoreIdChannelId
+      )
+  );
+
+  return [...additionalServices, ...newServices];
 };

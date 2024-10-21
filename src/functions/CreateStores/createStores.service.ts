@@ -83,7 +83,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
       additionalServices.forEach(service => {
         additionalServicesTransform.push({
           ...service,
-          vendorIdStoreIdChannelId: [`${vendorId}.${dbStoreId}.${deliveryId}`]
+          vendorIdStoreIdChannelId: [`${vendorId}.${storeId}.${deliveryId}`]
         });
       });
     }

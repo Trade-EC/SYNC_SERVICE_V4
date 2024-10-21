@@ -282,5 +282,8 @@ export const dbShippingCostValidator = z.object({
   account: z.object({ accountId: z.string() }),
   vendor: z.object({ id: z.string() }),
   externalId: z.number().optional(),
-  additionalServices: z.array(dbDeliveryAdditionalServicesValidator).optional()
+  additionalServices: z
+    .array(dbDeliveryAdditionalServicesValidator)
+    .optional()
+    .default([])
 });
