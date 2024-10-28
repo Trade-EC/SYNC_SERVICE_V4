@@ -245,7 +245,8 @@ export const dbProductValidator = productValidator
     questions: z.array(dbQuestionsValidator),
     externalData: z.string().nullable(),
     isPriceVip: z.boolean(),
-    suggestedPrice: z.number()
+    suggestedPrice: z.number(),
+    metadata: z.record(z.string().min(1), z.any()).default({})
   });
 
 // ------------------------------------------ shippingCost
