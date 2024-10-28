@@ -25,7 +25,6 @@ export const buildVendor = (
   countryId: string,
   overrides: Partial<Vendor> = {}
 ): Vendor => {
-  const time = faker.date.recent();
   const clientVendorId = faker.string.uuid();
   const accountId = faker.string.uuid();
   const vendorId = `${accountId}.${countryId}.${clientVendorId}`;
@@ -36,12 +35,12 @@ export const buildVendor = (
     name: faker.company.name(),
     account: { accountId },
     syncTimeUnit: "EVERYDAY",
-    syncTimeValue: `${time.getHours()}:${time.getMinutes()}`,
     countryId,
     externalId: clientVendorId,
     isSyncActive: true,
     taxes: vendorTaxes,
     automaticallyPublishSync: false,
+    syncTimeValue: "00:00",
     ...overrides
   };
 };
