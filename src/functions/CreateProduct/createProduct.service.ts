@@ -128,7 +128,7 @@ export const createProductService = async (props: CreateProductProps) => {
     newImages,
     vendorIdStoreIdChannelId
   );
-  const mergedMetadaTags = mergeEntity(
+  const mergedMetadataTags = mergeEntity(
     productDB.metadata.tags ?? [],
     orderedTransformProduct.metadata.tags ?? [],
     vendorIdStoreIdChannelId
@@ -139,7 +139,7 @@ export const createProductService = async (props: CreateProductProps) => {
   orderedTransformProduct.schedules = mergedSchedules;
   orderedTransformProduct.questions = mergedQuestions;
   orderedTransformProduct.images = mergedImages;
-  orderedTransformProduct.metadata.tags = mergedMetadaTags;
+  orderedTransformProduct.metadata.tags = mergedMetadataTags;
   const newHash = sha1(JSON.stringify(orderedTransformProduct));
   const version = new Date().getTime();
   orderedTransformProduct.hash = newHash;
