@@ -129,8 +129,8 @@ export const createProductService = async (props: CreateProductProps) => {
     vendorIdStoreIdChannelId
   );
   const mergedMetadaTags = mergeEntity(
-    productDB.metadata.tags,
-    orderedTransformProduct.metadata.tags,
+    productDB.metadata.tags ?? [],
+    orderedTransformProduct.metadata.tags ?? [],
     vendorIdStoreIdChannelId
   );
   orderedTransformProduct.categories = mergedCategories;
