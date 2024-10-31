@@ -13,7 +13,10 @@ import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.con
 //@ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 import { validateLists } from "/opt/nodejs/transforms-layer/validators/lists.validator";
-import { genErrorResponse } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import {
+  blackListValidator,
+  genErrorResponse
+} from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
@@ -53,6 +56,20 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
       storeId,
       requestId: requestUid
     });
+    logger.info("BLACKLIST VALIDATE: VALIDATING");
+    const blacklist = process.env.SYNC_BLACK_LIST?.split(",") ?? [];
+    const accountIdVendorIdCountryId = `${accountId}-${vendorId}-${countryId}`;
+    if (blackListValidator(blacklist, accountIdVendorIdCountryId)) {
+      logger.info("LISTS VALIDATE: BLACKLISTED");
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          success: true,
+          message:
+            "We've received your request. We'll notify you when it's done."
+        })
+      };
+    }
     logger.info("LISTS VALIDATE: VALIDATING");
     const mapAccount = await fetchMapAccount(accountId);
     if (mapAccount) accountId = mapAccount;
