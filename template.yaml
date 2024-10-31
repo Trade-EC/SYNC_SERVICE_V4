@@ -22,20 +22,6 @@ Globals:
         SYNC_PUBLISH_SQS_URL: !Ref PublishSyncSQS
         PREPARE_PRODUCTS_SQS_URL: !Ref PrepareProductsSQS
         PREPARE_STORES_SQS_URL: !Ref PrepareStoresSQS
-        SYNC_IMAGES_DLQ_URL: !Ref SyncImagesDLQ
-        SYNC_STORES_DLQ_URL: !Ref StoresSyncDLQ
-        SYNC_PRODUCT_DLQ_URL: !Ref ProductSyncDLQ
-        SYNC_SHIPPING_COST_DLQ_URL: !Ref ShippingCostSyncDLQ
-        SYNC_PUBLISH_DLQ_URL: !Ref PublishSyncDLQ
-        PREPARE_PRODUCTS_DLQ_URL: !Ref PrepareProductsDLQ
-        PREPARE_STORES_DLQ_URL: !Ref PrepareStoresDLQ
-        SYNC_IMAGES_DLQ_ARN: !GetAtt SyncImagesDLQ.Arn
-        SYNC_STORES_DLQ_ARN: !GetAtt StoresSyncDLQ.Arn
-        SYNC_PRODUCT_DLQ_ARN: !GetAtt ProductSyncDLQ.Arn
-        SYNC_SHIPPING_COST_DLQ_ARN: !GetAtt ShippingCostSyncDLQ.Arn
-        SYNC_PUBLISH_DLQ_ARN: !GetAtt PublishSyncDLQ.Arn
-        PREPARE_PRODUCTS_DLQ_ARN: !GetAtt PrepareProductsDLQ.Arn
-        PREPARE_STORES_DLQ_ARN: !GetAtt PrepareStoresDLQ.Arn
         SYNC_IMAGES_SQS_ARN: !GetAtt SyncImagesSQS.Arn
         SYNC_STORES_SQS_ARN: !GetAtt StoresSyncSQS.Arn
         SYNC_PRODUCT_SQS_ARN: !GetAtt ProductSyncSQS.Arn
@@ -51,6 +37,7 @@ Globals:
         NEW_PRODUCTS_SERVICE_URL: !Ref newProductsServiceUrl
         CLOUDFRONT_URL: !GetAtt SyncServiceV4AdminCloudFront.DomainName
         STAGE_NAME: !Ref StageName
+        SYNC_BLACK_LIST: ""
     VpcConfig:
       SecurityGroupIds:
         - !Ref securityGroupIds

@@ -92,3 +92,7 @@ export const genErrorResponse = (statusCode: number, message: string) => ({
   statusCode: statusCode,
   body: JSON.stringify({ message })
 });
+
+export const blackListValidator = (blackList: string[], value: string) => {
+  return blackList.includes(value);
+};
