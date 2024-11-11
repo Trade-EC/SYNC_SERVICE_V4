@@ -48,9 +48,11 @@ export const buildStore = (overrides: Partial<Store> = {}): Store => {
       deliveryTimeUnit: faker.helpers.arrayElement(["min", "hour"]),
       shippingCost: +faker.finance.amount()
     },
-    taxesInfo: {
-      vatRatePercentage: faker.number.int()
-    },
+    taxesInfo: [
+      {
+        vatRatePercentage: faker.number.int()
+      }
+    ],
     ...overrides
   };
 };

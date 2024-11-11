@@ -12,8 +12,9 @@ import * as sqsEvent from "../../events/sqs.json";
 
 import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
-
+// @ts-ignore
 mockClient(sqsClient);
+// @ts-ignore
 mockClient(s3Client);
 
 describe("Unit test for app handler", function () {
@@ -23,7 +24,7 @@ describe("Unit test for app handler", function () {
     const storesId = faker.helpers.multiple(faker.string.uuid, { count: 5 });
     const product = buildProduct();
     const { productId } = product;
-    const vendorTaxes = { vatRatePercentage: 15 };
+    const vendorTaxes = [{ vatRatePercentage: 15 }];
     const body: CreateProductProps = {
       body: {
         accountId: faker.string.uuid(),
