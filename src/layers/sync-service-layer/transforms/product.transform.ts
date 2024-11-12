@@ -119,24 +119,19 @@ export const transformCategory = async (
  * @returns {{grossPrice: number, taxes: {name: string, percentage: number}[]}}
  */
 export const getTaxes = (taxesInfo: TaxesInfo | undefined) => {
-  const { taxRate, vatRatePercentage } = taxesInfo ?? {};
-  const taxes = [];
-  if (typeof vatRatePercentage !== "undefined") {
+  const taxes: any[] = [];
+
+  if (!taxesInfo) return taxes;
+
+  for (const tax of taxesInfo) {
+    const { name, vatRatePercentage } = tax;
+
     taxes.push({
       percentage: vatRatePercentage,
-      name: `IVA ${vatRatePercentage}%`,
+      name: `${name ?? "OTROS"} ${vatRatePercentage}%`,
       vatRateCode: vatRatePercentage,
       code: vatRatePercentage,
       vatRate: `${vatRatePercentage}%`
-    });
-  }
-  if (typeof taxRate !== "undefined") {
-    taxes.push({
-      percentage: taxRate,
-      name: `OTROS ${taxRate}%`,
-      vatRateCode: taxRate,
-      code: taxRate,
-      vatRate: `${taxRate}%`
     });
   }
 
@@ -148,8 +143,7 @@ export const calculateGrossPrice = (
   taxes: TaxesInfo | undefined
 ) => {
   if (!taxes) return price;
-  const { taxRate = 0, vatRatePercentage = 0 } = taxes;
-  const sumTaxes = taxRate + vatRatePercentage;
+  const sumTaxes = taxes.reduce((acc, tax) => acc + tax.vatRatePercentage, 0);
   console.log({ sumTaxes });
   const totalTaxes = 1 + sumTaxes / 100;
   const grossPrice = Math.floor((price / totalTaxes) * 10000) / 10000;

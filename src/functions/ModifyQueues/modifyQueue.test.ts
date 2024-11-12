@@ -6,7 +6,7 @@ import { lambdaHandler } from "./handler";
 import * as gatewayEvent from "../../events/gateway.json";
 
 import { sqsClient } from "/opt/nodejs/sync-service-layer/configs/config";
-
+// @ts-ignore
 const sqsMockClient = mockClient(sqsClient);
 
 afterAll(() => {

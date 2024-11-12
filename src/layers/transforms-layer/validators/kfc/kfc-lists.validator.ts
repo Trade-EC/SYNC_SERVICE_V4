@@ -38,7 +38,6 @@ const kfcProductListValidator = z.object({
   active: z.boolean().optional(),
   productId: z.number().int(),
   priceInfo: kfcListProductPriceInfoValidator.array(),
-  taxInfo: taxesValidator.array().optional(),
   tags: z.string().optional(),
   upselling: z.string().optional()
 });

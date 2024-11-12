@@ -43,7 +43,7 @@ const kfcStoreValidator = z.object({
     .merge(kfcStoreServicesValidator)
     .array()
     .optional(),
-  taxesInfo: taxesValidator.array().optional(),
+  taxesInfo: taxesValidator.optional(),
   contactInfo: storeContactValidator.array(),
   deliveryInfo: storeDeliveryValidator
     .merge(kfcStoreDeliveryValidator)

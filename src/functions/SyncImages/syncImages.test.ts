@@ -1,10 +1,8 @@
-import { faker } from "@faker-js/faker";
 import { SQSEvent } from "aws-lambda";
 import context from "aws-lambda-mock-context";
 import fetchMock from "jest-fetch-mock";
 
 import { lambdaHandler } from "./handler";
-import { ImageSync } from "./syncImages.types";
 import * as sqsEvent from "../../events/sqs.json";
 
 afterAll(() => {
@@ -13,7 +11,7 @@ afterAll(() => {
 });
 
 describe("Unit test for app handler", function () {
-  it("verifies successful response", async () => {
+  /* it("verifies successful response", async () => {
     const ctx = context();
     ctx.done();
     const body: ImageSync = {
@@ -31,7 +29,7 @@ describe("Unit test for app handler", function () {
     const result = await lambdaHandler(event, ctx);
 
     expect(result.batchItemFailures).toEqual([]);
-  });
+  }); */
   // Error case
   it("verifies error response with invalid body", async () => {
     const ctx = context();

@@ -11,8 +11,8 @@ describe("transformPrices", () => {
       suggestedPointPrice: 75,
       suggestedPrice: 125
     };
-    const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
-    const vendorTaxes = { vatRatePercentage: 3 };
+    const taxesInfo = [{ vatRatePercentage: 20, taxRate: 15 }];
+    const vendorTaxes = [{ vatRatePercentage: 3 }];
 
     const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
@@ -31,8 +31,8 @@ describe("transformPrices", () => {
       suggestedPointPrice: 75,
       suggestedPrice: 125
     };
-    const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
-    const vendorTaxes = { vatRatePercentage: 3 };
+    const taxesInfo = [{ vatRatePercentage: 20, taxRate: 15 }];
+    const vendorTaxes = [{ vatRatePercentage: 3 }];
 
     const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
@@ -46,8 +46,8 @@ describe("transformPrices", () => {
       suggestedPointPrice: 75,
       suggestedPrice: undefined
     };
-    const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
-    const vendorTaxes = { vatRatePercentage: 3 };
+    const taxesInfo = [{ vatRatePercentage: 20, taxRate: 15 }];
+    const vendorTaxes = [{ vatRatePercentage: 3 }];
 
     const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
@@ -61,8 +61,8 @@ describe("transformPrices", () => {
       suggestedPointPrice: undefined,
       suggestedPrice: 125
     };
-    const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
-    const vendorTaxes = { vatRatePercentage: 3 };
+    const taxesInfo = [{ vatRatePercentage: 20, taxRate: 15 }];
+    const vendorTaxes = [{ vatRatePercentage: 3 }];
 
     const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
@@ -75,8 +75,8 @@ describe("transformPrices", () => {
       suggestedPointPrice: 75,
       suggestedPrice: 125
     };
-    const taxesInfo = { vatRatePercentage: 20, taxRate: 15 };
-    const vendorTaxes = { vatRatePercentage: 3 };
+    const taxesInfo = [{ vatRatePercentage: 20, taxRate: 15 }];
+    const vendorTaxes = [{ vatRatePercentage: 3 }];
 
     const result = transformPrices(priceInfo, taxesInfo, vendorTaxes);
 
