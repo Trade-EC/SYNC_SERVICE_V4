@@ -124,11 +124,11 @@ export const getTaxes = (taxesInfo: TaxesInfo | undefined) => {
   if (!taxesInfo) return taxes;
 
   for (const tax of taxesInfo) {
-    const { name, vatRatePercentage } = tax;
-
+    const { type, vatRatePercentage } = tax;
+    const taxName = type ?? !taxes.length ? "IVA" : "OTROS";
     taxes.push({
       percentage: vatRatePercentage,
-      name: `${name ?? "OTROS"} ${vatRatePercentage}%`,
+      name: `${taxName} ${vatRatePercentage}%`,
       vatRateCode: vatRatePercentage,
       code: vatRatePercentage,
       vatRate: `${vatRatePercentage}%`

@@ -7,6 +7,7 @@ export const additionalInfoValidator = z.record(z.string().min(1), z.any());
 export const taxesValidator = z.array(
   z.object({
     name: z.string().optional(),
+    type: z.enum(["IVA", "ICE", "SERVICIO", "OTROS"]).optional(),
     vatRatePercentage: z.number()
   })
 );
