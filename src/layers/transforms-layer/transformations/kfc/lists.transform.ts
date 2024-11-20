@@ -23,6 +23,9 @@ export const transformProducts = (products: any[]) => {
     if (product.priceInfo && product.priceInfo.length > 0) {
       product.priceInfo = product.priceInfo[0];
     }
+    if (product.taxInfo && product.taxInfo.length > 0) {
+      product.taxInfo = product.taxInfo[0];
+    }
     if (product.description === null) {
       delete product.description;
     }
