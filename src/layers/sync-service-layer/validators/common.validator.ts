@@ -4,12 +4,10 @@ export const timeRegExp = new RegExp("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$");
 
 export const additionalInfoValidator = z.record(z.string().min(1), z.any());
 
-export const taxesValidator = z.array(
-  z.object({
-    name: z.string().optional(),
-    vatRatePercentage: z.number()
-  })
-);
+export const taxesValidator = z.object({
+  taxRate: z.number().optional(),
+  vatRatePercentage: z.number().optional()
+});
 
 export const scheduleValidator = z.object({
   day: z.enum([

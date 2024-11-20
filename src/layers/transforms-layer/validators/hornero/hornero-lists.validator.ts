@@ -5,8 +5,10 @@ import { categoryValidator } from "/opt/nodejs/sync-service-layer/validators/lis
 import { productValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { modifierGroupValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
+import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
 const horneroProductListValidator = z.object({
+  taxInfo: taxesValidator.or(z.array(taxesValidator)),
   active: z.boolean()
 });
 

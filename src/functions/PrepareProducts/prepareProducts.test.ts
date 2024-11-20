@@ -22,7 +22,7 @@ describe("Unit test for app handler", function () {
   it("verifies successful response", async () => {
     const sqsSpy = jest.spyOn(sqsExtendedClient, "sendMessage");
     const ctx = context();
-    const vendorTaxes = [{ vatRatePercentage: 15 }];
+    const vendorTaxes = { vatRatePercentage: 15 };
     ctx.done();
     const body: PrepareProductsPayload = {
       listInfo: mockList,
