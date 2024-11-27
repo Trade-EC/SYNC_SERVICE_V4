@@ -16,7 +16,7 @@ export const syncSummaryService = async (event: APIGatewayProxyEvent) => {
   const { account: accountId } = headersValidator.parse(headers);
   const params = syncSummaryValidator.parse(queryStringParameters);
   const { vendorId, channelId, listId } = params;
-  const response = await fetchSyncLists(vendorId, accountId, channelId, listId);
+  const response = await fetchSyncLists(accountId, vendorId, channelId, listId);
 
   return { statusCode: 200, body: JSON.stringify(response) };
 };
