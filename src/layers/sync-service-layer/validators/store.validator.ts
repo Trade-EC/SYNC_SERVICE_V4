@@ -22,13 +22,29 @@ export const storeContactValidator = z.object({
   address: z.string()
 });
 
+export const deliveryAdditionalServicesValidator = z.object({
+  serviceName: z.string().optional(),
+  serviceTimeValue: z.number().optional(),
+  serviceTimeUnit: z.string().optional(),
+  serviceDescription: z.string().optional(),
+  cookTime: z.string().optional(),
+  deliveryId: z.coerce.number().int(),
+  minimumOrder: z.number().optional(),
+  maximumOrder: z.number().optional(),
+  serviceCost: z.number(),
+  geoType: z.string(),
+  geoShape: z.array(z.array(z.array(z.coerce.number()))).nullable(),
+  geoDistance: z.number().nullable()
+});
+
 export const storeDeliveryValidator = z.object({
   deliveryTimeValue: z.coerce.number().int().optional(),
   deliveryTimeUnit: z.enum(["min", "hour"]).optional(),
   minimumOrder: z.number().optional(),
   shippingCost: z.number().optional(),
   cookTime: z.number().int().optional(),
-  deliveryId: z.coerce.number().int().optional()
+  deliveryId: z.coerce.number().int().optional(),
+  additionalServices: z.array(deliveryAdditionalServicesValidator).optional()
 });
 
 export const storeLocationValidator = z.object({

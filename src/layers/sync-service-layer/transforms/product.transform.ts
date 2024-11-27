@@ -1,7 +1,12 @@
 import { cloneDeep, isEqual } from "lodash";
 
 import { logger } from "../configs/observability.config";
-import { DbCategory, DbProduct, DbQuestion } from "../types/products.types";
+import {
+  DbCategory,
+  DbProduct,
+  DbQuestion,
+  GroupedTag
+} from "../types/products.types";
 import { normalizeProductType } from "../utils/common.utils";
 import { imageHandler } from "../utils/images.utils";
 
@@ -341,6 +346,11 @@ export const transformProduct = async (props: TransformProductsProps) => {
     });
   }
 
+  const tagsMetadata = additionalInfo?.tags
+    ? generateTagsMetadata(vendorId, channelId, storesId, additionalInfo.tags)
+    : [];
+  delete additionalInfo?.tags;
+
   const newProduct: DbProduct = {
     hash: null,
     productId: `${accountId}.${countryId}.${vendorId}.${productId}`,
@@ -424,6 +434,9 @@ export const transformProduct = async (props: TransformProductsProps) => {
     },
     account: {
       accountId
+    },
+    metadata: {
+      tags: tagsMetadata
     }
   };
 
@@ -483,4 +496,45 @@ export const mergeEntity = (
   );
 
   return temporalEntitiesFiltered;
+};
+
+const generateTagsMetadata = (
+  vendorId: string,
+  channelId: string,
+  storeIds: string[],
+  tags: string[]
+) => {
+  const grouped = tags.reduce<Record<string, GroupedTag>>((acc, tag) => {
+    const key = `${channelId}-${storeIds.sort().join(",")}`;
+
+    if (!acc[key]) {
+      acc[key] = { tags: new Set(), vendorIdStoreIdChannelId: new Set() };
+    }
+
+    acc[key].tags.add(normalizeString(tag));
+
+    storeIds.forEach(storeId =>
+      acc[key].vendorIdStoreIdChannelId.add(
+        `${vendorId}.${storeId}.${channelId}`
+      )
+    );
+
+    return acc;
+  }, {});
+
+  const result = {
+    tags: Object.values(grouped).map(group => ({
+      tags: Array.from(group.tags),
+      vendorIdStoreIdChannelId: Array.from(group.vendorIdStoreIdChannelId)
+    }))
+  };
+  return result.tags;
+};
+
+const normalizeString = (str: string) => {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9 ]/g, "")
+    .toUpperCase();
 };

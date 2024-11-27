@@ -15,6 +15,11 @@ export interface TransformProductsProps {
   categories: Category[];
 }
 
+export interface GroupedTag {
+  tags: Set<string>;
+  vendorIdStoreIdChannelId: Set<string>;
+}
+
 export type DbProduct = z.infer<typeof dbProductValidator>;
 export type DbQuestion = z.infer<typeof dbQuestionsValidator>;
 export type DbCategory = z.infer<typeof dbCategoryValidator>;
