@@ -49,7 +49,6 @@ const kfcImageValidator = z.object({
 
 const kfcProductValidator = kfcProductListValidator.merge(
   z.object({
-    taxInfo: taxesValidator.array().optional(),
     priceInfo: kfcListProductPriceInfoValidator,
     images: z.array(kfcImageValidator).optional()
   })
