@@ -178,9 +178,7 @@ export const transformPrices = (
     ? calculateGrossPrice(priceBeforeSale, taxes)
     : 0;
 
-  const salePercentage = salePrice
-    ? Math.floor((1 - netPrice / priceBeforeSale) * 10000) / 10000
-    : 0;
+  const salePercentage = salePrice ? 1 - netPrice / priceBeforeSale : 0;
   const saleValue = salePrice ? grossPriceForSale * salePercentage : 0;
 
   const normal = {
@@ -196,7 +194,7 @@ export const transformPrices = (
     priceBeforeSale,
     grossPriceForSale,
     salePercentageDecimal: salePercentage,
-    salePercentage: salePercentage * 100,
+    salePercentage: +(salePercentage * 100).toFixed(0),
     saleValue
   };
 
