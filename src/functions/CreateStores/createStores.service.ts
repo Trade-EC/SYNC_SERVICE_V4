@@ -6,7 +6,7 @@ import { findStore } from "./createStores.repository";
 import { createOrUpdateStores } from "./createStores.repository";
 import { verifyCompletedStore } from "./createStores.repository";
 import { storeTransformer } from "./createStores.transform";
-import { CreateStoreProps } from "./createStores.types";
+import { CreateStoreProps, DeliveryServices } from "./createStores.types";
 import { CreateShippingCostProps } from "../CreateShippingCost/createShippingCost.types";
 
 import { sortObjectByKeys } from "/opt/nodejs/sync-service-layer/utils/common.utils";
@@ -25,7 +25,7 @@ export const syncStoresService = async (props: CreateStoreProps) => {
   const { accountId, store, vendorId, channels, countryId } = body;
   const { standardChannels } = body;
   const { storeId, deliveryInfo, storeChannels } = store;
-  const { deliveryId, shippingCost } = deliveryInfo ?? {};
+  const { deliveryId, shippingCost, additionalServices } = deliveryInfo ?? {};
   const dbStoreId = `${accountId}.${countryId}.${vendorId}.${storeId}`;
   const logKeys = { vendorId, accountId, storeId, requestId };
   logger.info("STORE: INIT", logKeys);
@@ -78,6 +78,15 @@ export const syncStoresService = async (props: CreateStoreProps) => {
     typeof deliveryId !== "undefined" &&
     typeof shippingCost !== "undefined"
   ) {
+    const additionalServicesTransform: DeliveryServices[] = [];
+    if (additionalServices) {
+      additionalServices.forEach(service => {
+        additionalServicesTransform.push({
+          ...service,
+          vendorIdStoreIdChannelId: [`${vendorId}.${storeId}.${deliveryId}`]
+        });
+      });
+    }
     const shippingPayload: CreateShippingCostProps = {
       accountId,
       deliveryId,
@@ -86,7 +95,8 @@ export const syncStoresService = async (props: CreateStoreProps) => {
       storeId,
       vendorId,
       oldShippingCostId: shippingCostId,
-      countryId
+      countryId,
+      additionalServices: additionalServicesTransform
     };
     logger.info("STORE: SEND SHIPPING COST", { shippingPayload, ...logKeys });
     await sqsExtendedClient.sendMessage({
