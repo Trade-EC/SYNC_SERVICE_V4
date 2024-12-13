@@ -9,7 +9,8 @@ export const productPriceInfoValidator = z.object({
   price: z.number(),
   pointPrice: z.number().optional(),
   suggestedPrice: z.number().optional(),
-  suggestedPointPrice: z.number().optional()
+  suggestedPointPrice: z.number().optional(),
+  salePrice: z.number().optional()
 });
 
 export const productModifier = z.object({
