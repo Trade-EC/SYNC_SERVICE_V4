@@ -8,9 +8,9 @@ import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.ut
  * @returns void
  */
 export const fetchSyncLists = async (
-  vendorId: string,
   accountId: string,
-  channelId: string,
+  vendorId?: string,
+  channelId?: string,
   listId?: string
 ) => {
   const dbClient = await connectToDatabase();

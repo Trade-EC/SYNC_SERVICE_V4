@@ -134,6 +134,15 @@ export const getTaxes = (taxesInfo: TaxesInfo | undefined) => {
       vatRate: `${vatRatePercentage}%`
     });
   }
+  if (typeof taxRate !== "undefined") {
+    taxes.push({
+      percentage: taxRate,
+      name: `OTROS ${taxRate}%`,
+      vatRateCode: taxRate,
+      code: taxRate,
+      vatRate: `${taxRate}%`
+    });
+  }
 
   return taxes;
 };
@@ -143,7 +152,8 @@ export const calculateGrossPrice = (
   taxes: TaxesInfo | undefined
 ) => {
   if (!taxes) return price;
-  const sumTaxes = taxes.reduce((acc, tax) => acc + tax.vatRatePercentage, 0);
+  const { taxRate = 0, vatRatePercentage = 0 } = taxes;
+  const sumTaxes = taxRate + vatRatePercentage;
   console.log({ sumTaxes });
   const totalTaxes = 1 + sumTaxes / 100;
   const grossPrice = Math.floor((price / totalTaxes) * 10000) / 10000;

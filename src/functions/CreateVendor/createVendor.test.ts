@@ -10,7 +10,7 @@ import { createVendorValidator } from "./createVendor.validator";
 
 //import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 import { dynamoDBClient } from "/opt/nodejs/sync-service-layer/configs/config";
-// @ts-ignore
+
 const dynamoDbMockClient = mockClient(dynamoDBClient);
 
 afterAll(() => {
