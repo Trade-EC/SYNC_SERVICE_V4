@@ -7,7 +7,6 @@ import { listValidator } from "/opt/nodejs/sync-service-layer/validators/lists.v
 import { modifierGroupValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { productListingValidator } from "/opt/nodejs/sync-service-layer/validators/lists.validator";
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
-import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
 import { kfcPreprocessArray } from "./kfc-common.validator";
 import { isUndefined } from "../../../sync-service-layer/utils/common.utils";
@@ -50,7 +49,6 @@ const kfcImageValidator = z.object({
 
 const kfcProductValidator = kfcProductListValidator.merge(
   z.object({
-    taxInfo: taxesValidator.array().optional(),
     priceInfo: kfcListProductPriceInfoValidator,
     images: z.array(kfcImageValidator).optional()
   })
