@@ -9,7 +9,9 @@ import { productListingValidator } from "/opt/nodejs/sync-service-layer/validato
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
 
 import { kfcPreprocessArray } from "./kfc-common.validator";
-import { isUndefined } from "../../../sync-service-layer/utils/common.utils";
+
+import { isUndefined } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
 const kfcListValidator = z.object({
   vendorId: z.number(),
@@ -37,7 +39,7 @@ const kfcProductListValidator = z.object({
   active: z.boolean().optional(),
   productId: z.number().int(),
   priceInfo: kfcListProductPriceInfoValidator.array(),
-  taxInfo: taxesValidator.array().optional(),
+  taxInfo: taxesValidator.optional(),
   tags: z.string().optional(),
   upselling: z.string().optional()
 });

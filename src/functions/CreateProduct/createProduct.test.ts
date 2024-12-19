@@ -23,7 +23,7 @@ describe("Unit test for app handler", function () {
     const storesId = faker.helpers.multiple(faker.string.uuid, { count: 5 });
     const product = buildProduct();
     const { productId } = product;
-    const vendorTaxes = { vatRatePercentage: 15 };
+    const vendorTaxes = [{ vatRatePercentage: 15 }];
     const body: CreateProductProps = {
       body: {
         accountId: faker.string.uuid(),
