@@ -11,9 +11,6 @@ const transformStores = (stores: any[]) => {
     } else {
       store.storeChannels = Object.values(store.storeChannels);
     }
-    if (store.taxesInfo && store.taxesInfo.length > 0) {
-      store.taxesInfo = store.taxesInfo[0];
-    }
     store = transformStoresDeliveryInfo(store);
     if (store.contactInfo && store.contactInfo.length > 0) {
       store.contactInfo = store.contactInfo[0];

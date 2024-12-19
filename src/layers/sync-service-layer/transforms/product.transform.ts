@@ -119,12 +119,16 @@ export const transformCategory = async (
  * @returns {{grossPrice: number, taxes: {name: string, percentage: number}[]}}
  */
 export const getTaxes = (taxesInfo: TaxesInfo | undefined) => {
-  const { taxRate, vatRatePercentage } = taxesInfo ?? {};
-  const taxes = [];
-  if (typeof vatRatePercentage !== "undefined") {
+  const taxes: any[] = [];
+
+  if (!taxesInfo) return taxes;
+
+  for (const tax of taxesInfo) {
+    const { type, vatRatePercentage } = tax;
+    const taxName = type ?? !taxes.length ? "IVA" : "OTROS";
     taxes.push({
       percentage: vatRatePercentage,
-      name: `IVA ${vatRatePercentage}%`,
+      name: `${taxName} ${vatRatePercentage}%`,
       vatRateCode: vatRatePercentage,
       code: vatRatePercentage,
       vatRate: `${vatRatePercentage}%`
