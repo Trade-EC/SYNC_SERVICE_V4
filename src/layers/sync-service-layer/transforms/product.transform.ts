@@ -172,20 +172,34 @@ export const transformPrices = (
   taxesInfo: TaxesInfo | undefined,
   vendorTaxes: TaxesInfo | undefined
 ) => {
-  const { price, pointPrice, suggestedPointPrice, suggestedPrice } = priceInfo;
+  const { price, pointPrice, suggestedPointPrice, suggestedPrice, salePrice } =
+    priceInfo;
   const productPrice: any = {};
   const taxes = taxesInfo ?? vendorTaxes;
+  const netPrice = salePrice ?? price;
+  const priceBeforeSale = salePrice ? price : 0;
+  const grossPriceForSale = salePrice
+    ? calculateGrossPrice(priceBeforeSale, taxes)
+    : 0;
+
+  const salePercentage = salePrice ? 1 - netPrice / priceBeforeSale : 0;
+  const saleValue = salePrice ? grossPriceForSale * salePercentage : 0;
 
   const normal = {
     category: "NORMAL",
     symbol: "",
-    netPrice: price,
+    netPrice: netPrice,
     taxes: getTaxes(taxes),
-    grossPrice: calculateGrossPrice(price, taxes),
+    grossPrice: calculateGrossPrice(netPrice, taxes),
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
-    discount: 0
+    discount: 0,
+    priceBeforeSale,
+    grossPriceForSale,
+    salePercentageDecimal: salePercentage,
+    salePercentage: +(salePercentage * 100).toFixed(0),
+    saleValue
   };
 
   const points = {
@@ -195,7 +209,12 @@ export const transformPrices = (
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
-    discount: 0
+    discount: 0,
+    priceBeforeSale: 0,
+    grossPriceForSale: 0,
+    salePercentageDecimal: 0,
+    salePercentage: 0,
+    saleValue: 0
   };
 
   const suggested = {
@@ -207,7 +226,12 @@ export const transformPrices = (
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
-    discount: 0
+    discount: 0,
+    priceBeforeSale: 0,
+    grossPriceForSale: 0,
+    salePercentageDecimal: 0,
+    salePercentage: 0,
+    saleValue: 0
   };
 
   const suggestedPoints = {
@@ -217,7 +241,12 @@ export const transformPrices = (
     discounts: [],
     discountGrossPrice: 0,
     discountNetPrice: 0,
-    discount: 0
+    discount: 0,
+    priceBeforeSale: 0,
+    grossPriceForSale: 0,
+    salePercentageDecimal: 0,
+    salePercentage: 0,
+    saleValue: 0
   };
 
   productPrice["NORMAL"] = normal;
