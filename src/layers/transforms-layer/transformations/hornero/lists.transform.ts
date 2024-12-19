@@ -5,12 +5,6 @@ export const transformProducts = (products: any[]) => {
       ?.replace("[", "")
       .replace("]", "")
       .split(",");
-    if (product.taxInfo && product.taxInfo.length > 0) {
-      product.taxInfo = product.taxInfo[0];
-    }
-    if (Array.isArray(product.taxInfo) && product.taxInfo.length === 0) {
-      product.taxInfo = {};
-    }
     if (product.description === null) {
       delete product.description;
     }
