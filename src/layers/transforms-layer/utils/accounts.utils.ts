@@ -8,7 +8,8 @@ export const kfcAccounts = [
   "16",
   "17",
   "37",
-  "39"
+  "39",
+  "100"
 ];
 export const horneroAccounts = ["22"];
 export const sushicorpAccounts = ["29", "30", "31"];
