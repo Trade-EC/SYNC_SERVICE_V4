@@ -65,3 +65,9 @@ export const timeValidator = z.string().superRefine((value, ctx) => {
     });
   }
 });
+
+export const orderLimitsByChannelValidator = z.object({
+  maxAmount: z.number(),
+  minAmount: z.number(),
+  storeChannel: z.string()
+});

@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { schedulesByChannelValidator } from "../validators/common.validator";
+import {
+  orderLimitsByChannelValidator,
+  schedulesByChannelValidator
+} from "../validators/common.validator";
 import { taxesValidator } from "../validators/common.validator";
 import { scheduleValidator } from "../validators/common.validator";
 import { dbImageValidator } from "../validators/database.validator";
@@ -11,6 +14,10 @@ export type Schedule = z.infer<typeof scheduleValidator>;
 
 export type ScheduleByChannel = z.infer<typeof schedulesByChannelValidator>;
 
+export type OrderLimitsByChannel = z.infer<
+  typeof orderLimitsByChannelValidator
+>;
+
 export type DbImage = z.infer<typeof dbImageValidator>;
 
 export interface SchemaSchedule
@@ -18,6 +25,12 @@ export interface SchemaSchedule
   catalogueId: string;
   from: number;
   to: number;
+}
+
+export interface SchemaOrderLimitByChannel {
+  catalogueId: string;
+  minOrderAmount: number;
+  maxOrderAmount: number;
 }
 
 export interface HeadersProps {

@@ -70,6 +70,12 @@ export const dbCatalogueValidator = z.object({
   active: z.boolean()
 });
 
+export const dbOrderLimitsByChannelValidator = z.object({
+  catalogueId: z.string(),
+  minOrderAmount: z.number(),
+  maxOrderAmount: z.number()
+});
+
 export const dbStoreValidator = z.object({
   storeId: z.string(),
   status: statusValidator,
@@ -107,7 +113,8 @@ export const dbStoreValidator = z.object({
   taxes: dbTaxValidator.array(),
   services: z.array(dbServicesValidator),
   additionalInfo: z.record(z.string().min(1), z.any()).optional(),
-  shippingCostId: z.string().nullable()
+  shippingCostId: z.string().nullable(),
+  orderLimitsByChannel: z.array(dbOrderLimitsByChannelValidator)
 });
 
 // ------------------------------------------ list

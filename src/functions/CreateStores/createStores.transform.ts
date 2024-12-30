@@ -1,6 +1,9 @@
 import { DBStore, Store } from "./createStores.types";
 
-import { transformStoreSchedules } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
+import {
+  transformOrderLimitsByChannel,
+  transformStoreSchedules
+} from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
 import { transformStoreSchedulesByChannel } from "/opt/nodejs/sync-service-layer/utils/schedule.utils";
 import { getTaxes } from "/opt/nodejs/sync-service-layer/transforms/product.transform";
 import { ChannelMappings } from "/opt/nodejs/sync-service-layer/types/channel.types";
@@ -37,7 +40,14 @@ export const storeTransformer = (
   channelsMappings: ChannelMappings[],
   countryId: string
 ) => {
-  const { storeId, name, contactInfo, locationInfo, schedules } = store;
+  const {
+    storeId,
+    name,
+    contactInfo,
+    locationInfo,
+    schedules,
+    orderLimitsByChannel
+  } = store;
   const { schedulesByChannel, deliveryInfo } = store;
   const { services, active, default: isDefault, featured } = store;
   const { storeCode, taxesInfo } = store;
@@ -48,6 +58,13 @@ export const storeTransformer = (
   const transformedSchedulesByChannel = schedulesByChannel
     ? transformStoreSchedulesByChannel(
         schedulesByChannel,
+        storeId,
+        channelsMappings
+      )
+    : [];
+  const transformedOrderLimitsByChannel = orderLimitsByChannel
+    ? transformOrderLimitsByChannel(
+        orderLimitsByChannel,
         storeId,
         channelsMappings
       )
@@ -100,7 +117,8 @@ export const storeTransformer = (
     shippingCostId:
       typeof deliveryId !== "undefined"
         ? `${accountId}.${countryId}.${vendorId}.${deliveryId}`
-        : null
+        : null,
+    orderLimitsByChannel: transformedOrderLimitsByChannel
   };
 
   return newStore;
