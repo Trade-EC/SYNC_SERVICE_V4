@@ -96,6 +96,23 @@ export const channelAndStoresRefine = (
         message: "SchedulesByChannel not match with channels array"
       });
     }
+
+    const channelsInOrderLimits = store.orderLimitsByChannel?.map(
+      orderLimitChannel => orderLimitChannel.storeChannel
+    );
+
+    const invalidOrderLimitChannels = channelsInOrderLimits?.filter(
+      channelInOrderLimit => !channelsId.includes(channelInOrderLimit)
+    );
+
+    if (invalidOrderLimitChannels?.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["stores", index, "orderLimitsByChannel"],
+        message:
+          "OrderLimitsByChannel contains channels not present in storeChannels"
+      });
+    }
   });
 };
 

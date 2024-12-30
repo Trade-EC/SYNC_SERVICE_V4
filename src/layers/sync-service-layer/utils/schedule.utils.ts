@@ -1,6 +1,11 @@
 import { ChannelMappings } from "../types/channel.types";
-import { Schedule, ScheduleByChannel } from "../types/common.types";
-import { SchemaSchedule } from "../types/common.types";
+import {
+  OrderLimitsByChannel,
+  Schedule,
+  ScheduleByChannel,
+  SchemaOrderLimitByChannel,
+  SchemaSchedule
+} from "../types/common.types";
 
 /**
  *
@@ -121,4 +126,40 @@ export const transformSchedules = (
   });
 
   return newSchedules;
+};
+
+/**
+ *
+ * @param orderLimitsByChannel
+ * @param storeId
+ * @description Transform store order limits by channel into SchemaOrderLimitByChannel
+ * @returns SchemaOrderLimitByChannel[]
+ */
+export const transformOrderLimitsByChannel = (
+  orderLimitsByChannel: OrderLimitsByChannel[],
+  storeId: string,
+  channelMappings: ChannelMappings[]
+) => {
+  const newOrderLimitsByChannel: SchemaOrderLimitByChannel[] = [];
+  orderLimitsByChannel.forEach(orderLimitByChannel => {
+    const { storeChannel, maxAmount, minAmount } = orderLimitByChannel;
+    const filterChannelMappings = channelMappings.filter(
+      vendorChannel => vendorChannel.externalChannelId === storeChannel
+    );
+    if (!filterChannelMappings.length) {
+      throw new Error(`Channel ${storeChannel} not found`);
+    }
+    filterChannelMappings.forEach(channel => {
+      const { externalChannelId, id } = channel;
+      const channelId = id ?? externalChannelId;
+
+      newOrderLimitsByChannel.push({
+        catalogueId: `${storeId}.${channelId}`,
+        maxOrderAmount: maxAmount,
+        minOrderAmount: minAmount
+      });
+    });
+  });
+
+  return newOrderLimitsByChannel;
 };
