@@ -1,7 +1,10 @@
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
-import { taxesValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
-import { schedulesByChannelValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
-import { scheduleValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import {
+  schedulesByChannelValidator,
+  taxesValidator,
+  orderLimitsByChannelValidator,
+  scheduleValidator
+} from "/opt/nodejs/sync-service-layer/validators/common.validator";
 
 export const channelValidator = z.object({
   active: z.boolean(),
@@ -54,7 +57,8 @@ export const storeValidator = z.object({
   deliveryInfo: storeDeliveryValidator.optional(),
   locationInfo: storeLocationValidator,
   paymentMethodInfo: z.record(z.string().min(1), z.any()).optional(),
-  schedules: z.array(scheduleValidator).optional()
+  schedules: z.array(scheduleValidator).optional(),
+  orderLimitsByChannel: z.array(orderLimitsByChannelValidator).optional()
 });
 
 export const scheduledActivitiesValidator = z.object({
@@ -106,6 +110,23 @@ export const channelAndStoresRefine = (
         code: z.ZodIssueCode.custom,
         path: ["stores", index, "schedulesByChannel"],
         message: "SchedulesByChannel not match with channels array"
+      });
+    }
+
+    const channelsInOrderLimits = store.orderLimitsByChannel?.map(
+      orderLimitChannel => orderLimitChannel.storeChannel
+    );
+
+    const invalidOrderLimitChannels = channelsInOrderLimits?.filter(
+      channelInOrderLimit => !store.storeChannels.includes(channelInOrderLimit)
+    );
+
+    if (invalidOrderLimitChannels?.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["stores", index, "orderLimitsByChannel"],
+        message:
+          "OrderLimitsByChannel contains channels not present in storeChannels"
       });
     }
   });
