@@ -72,8 +72,8 @@ export const dbCatalogueValidator = z.object({
 
 export const dbOrderLimitsByChannelValidator = z.object({
   catalogueId: z.string(),
-  minOrderAmount: z.number(),
-  maxOrderAmount: z.number()
+  minAmount: z.number(),
+  maxAmount: z.number()
 });
 
 export const dbStoreValidator = z.object({

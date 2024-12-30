@@ -29,8 +29,8 @@ export interface SchemaSchedule
 
 export interface SchemaOrderLimitByChannel {
   catalogueId: string;
-  minOrderAmount: number;
-  maxOrderAmount: number;
+  minAmount: number;
+  maxAmount: number;
 }
 
 export interface HeadersProps {

@@ -155,8 +155,8 @@ export const transformOrderLimitsByChannel = (
 
       newOrderLimitsByChannel.push({
         catalogueId: `${storeId}.${channelId}`,
-        maxOrderAmount: maxAmount,
-        minOrderAmount: minAmount
+        maxAmount,
+        minAmount
       });
     });
   });
