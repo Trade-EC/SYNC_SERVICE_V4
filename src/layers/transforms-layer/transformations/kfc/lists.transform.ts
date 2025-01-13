@@ -29,6 +29,13 @@ export const transformProducts = (products: any[]) => {
     if (!product.productModifiers) {
       product.productModifiers = [];
     }
+    if (product.images && process.env.FORCE_UPDATE_IMAGES_PRODUCTS === "true") {
+      product.images = product.images.map((image: any) => {
+        image.fileUrl = `${image.fileUrl}?tz=${new Date().getTime()}`;
+        return image;
+      });
+    }
+
     return product;
   });
 };
