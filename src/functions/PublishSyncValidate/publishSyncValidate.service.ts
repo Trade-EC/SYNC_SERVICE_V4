@@ -37,7 +37,7 @@ export const publishSyncValidateService = async (
   const pendingPublish = await fetchPublishRequest(accountId, vendorId);
   if (pendingPublish.length > 0) {
     throw new Error(
-      `Already pending publish for account ${accountId} and vendor ${vendorId}`
+      `Publish process is already running for account ${accountId} and vendor ${vendorId}`
     );
   }
 
