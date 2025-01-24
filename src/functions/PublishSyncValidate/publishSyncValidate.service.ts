@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
+import { fetchPublishRequest } from "./publishSyncValidate.repository";
 import { publishSyncValidateValidator } from "./publishSyncValidate.validator";
 import { publishSyncQueryValidator } from "./publishSyncValidate.validator";
 
@@ -31,6 +32,13 @@ export const publishSyncValidateService = async (
 
   if (!vendorId.startsWith(`${accountId}.${countryId}`)) {
     throw new Error("Vendor not match");
+  }
+
+  const pendingPublish = await fetchPublishRequest(accountId, vendorId);
+  if (pendingPublish.length > 0) {
+    throw new Error(
+      `Publish process is already running for account ${accountId} and vendor ${vendorId}`
+    );
   }
 
   await sqsExtendedClient.sendMessage({

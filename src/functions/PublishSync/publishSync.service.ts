@@ -8,6 +8,8 @@ import { PublishSyncServiceProps } from "./publishSync.types";
 
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
+// @ts-ignore
+import { v4 as uuidv4 } from "/opt/nodejs/sync-service-layer/node_modules/uuid";
 
 const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
 const NEW_PRODUCTS_SERVICE_URL = process.env.NEW_PRODUCTS_SERVICE_URL ?? "";
@@ -21,11 +23,10 @@ const fetchOptions = {
 
 export const callPublishEP = async (
   key: string,
-  accountId: string,
-  vendorId: string,
-  type: "STORES" | "PRODUCTS"
+  type: "STORES" | "PRODUCTS",
+  publishId: string
 ) => {
-  const url = `${NEW_PRODUCTS_SERVICE_URL}/api/v4/publish?bucket=${SYNC_BUCKET}&key=${key}`;
+  const url = `${NEW_PRODUCTS_SERVICE_URL}/api/v4/publish?bucket=${SYNC_BUCKET}&key=${key}&publishId=${publishId}`;
   const response = await fetch(url, fetchOptions);
   const { status } = response;
   const body = await response.json();
@@ -33,16 +34,14 @@ export const callPublishEP = async (
     logger.error("PUBLISH: ERROR SYNCING", { status, type });
     throw new Error("Error syncing");
   }
-  const { publishId } = body;
-  logger.info("PUBLISH PRODUCTS: SAVING PUBLISH REQUEST", { type });
-  await savePublishRequest(vendorId, accountId, type, publishId);
 };
 
 export const publishStores = async (
   vendorId: string,
   accountId: string,
   version: number,
-  all: boolean
+  all: boolean,
+  publishId: string
 ) => {
   logger.info("PUBLISH STORES: FETCHING DATA", { type: "STORES" });
   const stores = await fetchStores(vendorId, accountId, all);
@@ -60,12 +59,13 @@ export const publishStores = async (
       message: "No stores to publish"
     };
   }
+  await savePublishRequest(vendorId, accountId, "STORES", publishId);
   logger.info("PUBLISH STORES: SAVING IN S3", { type: "STORES" });
   const storeResponse = await saveDocumentsInS3(storesWithVersion, storesS3Url);
   await saveDocumentsInS3(shippingCostsWithVersion, shippingCostsS3Url);
   const { key: storesKey } = storeResponse;
   logger.info("PUBLISH STORES: SYNCING", { type: "STORES" });
-  await callPublishEP(storesKey, accountId, vendorId, "STORES");
+  await callPublishEP(storesKey, "STORES", publishId);
   await sendMessageToUpdateStatusSQS(
     vendorId,
     accountId,
@@ -80,7 +80,8 @@ export const publishProducts = async (
   vendorId: string,
   accountId: string,
   version: number,
-  all: boolean
+  all: boolean,
+  publishId: string
 ) => {
   logger.info("PUBLISH PRODUCTS: FETCHING DATA", { type: "PRODUCTS" });
   if (!all) {
@@ -95,6 +96,7 @@ export const publishProducts = async (
       message: "No products to publish"
     };
   }
+  await savePublishRequest(vendorId, accountId, "PRODUCTS", publishId);
   const products = rawProducts.map(product => {
     const { questionsProducts, upsellingProducts, _id } = product;
     const transformedQuestions = transformQuestions(
@@ -131,7 +133,7 @@ export const publishProducts = async (
   const productResponse = await saveDocumentsInS3(products, productsS3Url);
   const { key: productsKey } = productResponse;
   logger.info("PUBLISH PRODUCTS: SYNCING", { type: "PRODUCTS" });
-  await callPublishEP(productsKey, accountId, vendorId, "PRODUCTS");
+  await callPublishEP(productsKey, "PRODUCTS", publishId);
   await sendMessageToUpdateStatusSQS(
     vendorId,
     accountId,
@@ -174,22 +176,30 @@ export const publishSyncService = async (props: PublishSyncServiceProps) => {
   logger.appendKeys({ vendorId, accountId });
   logger.info("PUBLISH: INIT");
   const version = new Date().getTime();
-
+  const productsPublishId = uuidv4();
+  const storesPublishId = uuidv4();
   if (rePublish) {
     const storesKey = `sync/${accountId}/${vendorId}/stores.json`;
     const productsKey = `sync/${accountId}/${vendorId}/products.json`;
+    await savePublishRequest(vendorId, accountId, "STORES", storesPublishId);
+    await savePublishRequest(
+      vendorId,
+      accountId,
+      "PRODUCTS",
+      productsPublishId
+    );
     logger.info("PUBLISH: REPUBLISH");
     await Promise.all([
-      callPublishEP(storesKey, accountId, vendorId, "STORES"),
-      callPublishEP(productsKey, accountId, vendorId, "PRODUCTS")
+      callPublishEP(storesKey, "STORES", storesPublishId),
+      callPublishEP(productsKey, "PRODUCTS", productsPublishId)
     ]);
     logger.info("PUBLISH: FINISHED");
     return;
   }
 
   await Promise.all([
-    publishStores(vendorId, accountId, version, all),
-    publishProducts(vendorId, accountId, version, all)
+    publishStores(vendorId, accountId, version, all, storesPublishId),
+    publishProducts(vendorId, accountId, version, all, productsPublishId)
   ]);
 
   logger.info("PUBLISH: FINISHED");
