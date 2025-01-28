@@ -102,7 +102,7 @@ export const publishProducts = async (
     const transformedQuestions = transformQuestions(
       product?.questions ?? [],
       questionsProducts,
-      1
+      2
     );
     const transformedUpselling = product.upselling.map(
       (productExternalId: string) => {
