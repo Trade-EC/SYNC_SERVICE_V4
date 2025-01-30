@@ -29,7 +29,7 @@ export const callPublishEP = async (
   const url = `${NEW_PRODUCTS_SERVICE_URL}/api/v4/publish?bucket=${SYNC_BUCKET}&key=${key}&publishId=${publishId}`;
   const response = await fetch(url, fetchOptions);
   const { status } = response;
-  const body = await response.json();
+  // const body = await response.json();
   if (status > 399) {
     logger.error("PUBLISH: ERROR SYNCING", { status, type });
     throw new Error("Error syncing");
