@@ -4,6 +4,8 @@ import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
+import { Readable } from "stream";
+
 const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
 
 /**
@@ -144,19 +146,32 @@ export const saveDocumentsInS3 = async (
   documents: WithId<Document>[],
   s3Url: string
 ) => {
+  const jsonStream = new Readable({
+    read() {
+      for (const doc of documents) {
+        this.push(JSON.stringify(doc));
+      }
+      this.push(null);
+    }
+  });
+
   const documentInput = {
     Bucket: SYNC_BUCKET,
     Key: s3Url,
-    Body: Buffer.from(JSON.stringify(documents))
+    Body: jsonStream
   };
+
   const uploadDocuments = new Upload({
     client: s3Client,
     params: documentInput
   });
+
   const responseDocuments = await uploadDocuments.done();
   const { $metadata: metadata } = responseDocuments;
   const { httpStatusCode } = metadata;
-  if (httpStatusCode !== 200) throw new Error("Upload stores failed");
+
+  if (httpStatusCode !== 200) throw new Error("Upload documents failed");
+
   return {
     bucket: SYNC_BUCKET,
     key: s3Url,
