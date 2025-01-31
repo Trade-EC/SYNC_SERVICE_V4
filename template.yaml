@@ -525,7 +525,7 @@ Resources:
       Handler: handler.lambdaHandler
       Runtime: nodejs18.x
       Tracing: Active
-      MemorySize: 2048
+      MemorySize: 4048
       Architectures:
         - x86_64
       Events:

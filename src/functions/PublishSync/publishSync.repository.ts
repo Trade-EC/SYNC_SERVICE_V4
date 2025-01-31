@@ -4,6 +4,8 @@ import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
+import { Readable } from "stream";
+
 const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
 
 /**
@@ -132,6 +134,21 @@ export const fetchProducts = async (
   return response;
 };
 
+function createJsonStream(documents: WithId<Document>[]) {
+  return new Readable({
+    objectMode: true,
+    async read() {
+      this.push("[\n"); // 📌 Iniciar JSON con '['
+      for (let i = 0; i < documents.length; i++) {
+        if (i > 0) this.push(",\n"); // 📌 Separar con coma después del primer elemento
+        this.push(JSON.stringify(documents[i])); // 📌 Enviar cada documento al stream
+      }
+      this.push("\n]"); // 📌 Cerrar JSON
+      this.push(null); // 📌 Finalizar Stream
+    }
+  });
+}
+
 /**
  *
  * @param vendorId
@@ -144,10 +161,13 @@ export const saveDocumentsInS3 = async (
   documents: WithId<Document>[],
   s3Url: string
 ) => {
+  const jsonStream = createJsonStream(documents);
+
   const documentInput = {
     Bucket: SYNC_BUCKET,
     Key: s3Url,
-    Body: Buffer.from(JSON.stringify(documents))
+    Body: jsonStream,
+    ContentType: "application/json"
   };
   const uploadDocuments = new Upload({
     client: s3Client,

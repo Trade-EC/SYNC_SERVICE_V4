@@ -96,6 +96,7 @@ export const publishProducts = async (
       message: "No products to publish"
     };
   }
+  console.log("Length of rawProducts", rawProducts.length);
   await savePublishRequest(vendorId, accountId, "PRODUCTS", publishId);
   const products = rawProducts.map(product => {
     const { questionsProducts, upsellingProducts, _id } = product;
@@ -129,11 +130,11 @@ export const publishProducts = async (
       upselling: transformedUpselling.filter(Boolean)
     };
   });
-  logger.info("PUBLISH PRODUCTS: SAVING IN S3", { type: "PRODUCTS" });
+  /* logger.info("PUBLISH PRODUCTS: SAVING IN S3", { type: "PRODUCTS" });
   const productResponse = await saveDocumentsInS3(products, productsS3Url);
-  const { key: productsKey } = productResponse;
+  const { key: productsKey } = productResponse; */
   logger.info("PUBLISH PRODUCTS: SYNCING", { type: "PRODUCTS" });
-  await callPublishEP(productsKey, "PRODUCTS", publishId);
+  await callPublishEP(productsS3Url, "PRODUCTS", publishId);
   await sendMessageToUpdateStatusSQS(
     vendorId,
     accountId,
@@ -141,7 +142,6 @@ export const publishProducts = async (
     all,
     "PRODUCTS"
   );
-  return productResponse;
 };
 
 export const sendMessageToUpdateStatusSQS = async (
