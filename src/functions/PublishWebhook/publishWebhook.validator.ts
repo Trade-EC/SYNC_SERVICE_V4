@@ -5,5 +5,6 @@ export const publishWebhookValidator = z.object({
   accountId: z.string(),
   status: z.enum(["ERROR", "SUCCESS"]),
   type: z.enum(["PRODUCTS", "STORES"]),
-  publishId: z.string()
+  publishId: z.string(),
+  error: z.string().optional()
 });

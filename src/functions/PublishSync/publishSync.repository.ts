@@ -1,5 +1,7 @@
-import { Document } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
-import { WithId } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
+import {
+  Document,
+  WithId
+} from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
 import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";

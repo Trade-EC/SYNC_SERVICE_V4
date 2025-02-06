@@ -1,12 +1,17 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { rollbackValidator } from "./rollback.validator";
-import { rollbackProductsRepository } from "./rollback.repository";
-import { rollbackShippingCostRepository } from "./rollback.repository";
-import { rollbackStoresRepository } from "./rollback.repository";
 
-import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+// @ts-ignore
+import { v4 as uuidv4 } from "/opt/nodejs/sync-service-layer/node_modules/uuid";
 
+const NEW_PRODUCTS_SERVICE_URL = process.env.NEW_PRODUCTS_SERVICE_URL ?? "";
+const fetchOptions = {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  }
+};
 /**
  *
  * @param event
@@ -14,19 +19,17 @@ import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/comm
  * @returns {Promise<{statusCode: number, body: string}>}
  */
 export const rollbackService = async (event: APIGatewayProxyEvent) => {
-  const { headers, body } = event;
+  const { body } = event;
   const parsedBody = JSON.parse(body ?? "");
-  const { account } = headersValidator.parse(headers);
   const info = rollbackValidator.parse(parsedBody);
   const { vendorId, type, version } = info;
 
   switch (type) {
     case "STORES":
-      await rollbackStoresRepository(account, vendorId, version);
-      await rollbackShippingCostRepository(account, vendorId, version);
+      await callPublishEP(vendorId, "STORES", uuidv4(), version);
       break;
     case "PRODUCTS":
-      await rollbackProductsRepository(account, vendorId, version);
+      await callPublishEP(vendorId, "PRODUCTS", uuidv4(), version);
       break;
     default:
       throw new Error("Invalid type");
@@ -38,4 +41,19 @@ export const rollbackService = async (event: APIGatewayProxyEvent) => {
       message: `Rollback ${type} done`
     })
   };
+};
+
+const callPublishEP = async (
+  vendorId: string,
+  type: "STORES" | "PRODUCTS",
+  publishId: string,
+  version: number
+) => {
+  const url = `${NEW_PRODUCTS_SERVICE_URL}/api/v4/publish?publishId=${publishId}&version=${version}&vendorId=${vendorId}&type=${type.toLowerCase()}&isRollback=true`;
+  const response = await fetch(url, fetchOptions);
+  const { status } = response;
+  if (status > 399) {
+    console.error("PUBLISH: ERROR SYNCING", { status, type });
+    throw new Error("Error rolling back");
+  }
 };
