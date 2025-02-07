@@ -13,11 +13,26 @@ export type ScheduleByChannel = z.infer<typeof schedulesByChannelValidator>;
 
 export type DbImage = z.infer<typeof dbImageValidator>;
 
+export interface GroupedSchedule {
+  vendorIdStoreIdChannelId: string[];
+  schedule: {
+    days: string[];
+    from: number;
+    to: number;
+    fromTime: string;
+    toTime: string;
+    startDate: string | undefined;
+    endDate: string | undefined;
+  };
+}
+
 export interface SchemaSchedule
   extends Pick<Schedule, "day" | "startDate" | "endDate"> {
-  catalogueId: string;
   from: number;
   to: number;
+  fromTime: string;
+  toTime: string;
+  vendorIdStoreIdChannelId: string[];
 }
 
 export interface HeadersProps {

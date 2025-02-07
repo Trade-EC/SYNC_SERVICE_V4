@@ -33,11 +33,17 @@ describe("Unit test for transformStoreSchedules function", function () {
       }
     ];
     const storeId = "storeId";
-    const result = transformStoreSchedules(schedules, channels, storeId);
+    const vendorId = "vendorId";
+    const result = transformStoreSchedules(
+      schedules,
+      channels,
+      vendorId,
+      storeId
+    );
     expect(result).toEqual([
       {
+        vendorIdStoreIdChannelId: ["vendorId.storeId.channelId"],
         day: "MONDAY",
-        catalogueId: "storeId.channelId",
         from: 0,
         to: 86340,
         startDate: "2021-07-01",
@@ -66,6 +72,7 @@ describe("Unit test for transformStoreSchedulesByChannel function", function () 
       }
     ];
     const storeId = "storeId";
+    const vendorId = "vendorId";
     const channelMappings: ChannelMappings[] = [
       {
         id: "channelId",
@@ -76,12 +83,13 @@ describe("Unit test for transformStoreSchedulesByChannel function", function () 
     const result = transformStoreSchedulesByChannel(
       scheduleByChannel,
       storeId,
+      vendorId,
       channelMappings
     );
     expect(result).toEqual([
       {
+        vendorIdStoreIdChannelId: ["vendorId.storeId.channelId"],
         day: "MONDAY",
-        catalogueId: "storeId.channelId",
         from: 0,
         to: 86340,
         startDate: "2021-07-01",
@@ -104,11 +112,12 @@ describe("Unit test for transformSchedules function", function () {
     ];
     const storesId = ["storeId"];
     const channelId = "channelId";
-    const result = transformSchedules(schedules, storesId, channelId);
+    const vendorId = "vendorId";
+    const result = transformSchedules(schedules, storesId, channelId, vendorId);
     expect(result).toEqual([
       {
+        vendorIdStoreIdChannelId: ["vendorId.storeId.channelId"],
         day: "MONDAY",
-        catalogueId: "storeId.channelId",
         from: 0,
         to: 86340,
         startDate: "2021-07-01",
