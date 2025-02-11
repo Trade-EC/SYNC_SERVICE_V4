@@ -1,10 +1,15 @@
+import { sortObjectByKeys } from "./common.utils";
 import { ChannelMappings } from "../types/channel.types";
+
+// @ts-ignore
+import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
+
 import {
   GroupedSchedule,
   Schedule,
-  ScheduleByChannel
+  ScheduleByChannel,
+  SchemaSchedule
 } from "../types/common.types";
-import { SchemaSchedule } from "../types/common.types";
 
 /**
  *
@@ -186,18 +191,15 @@ const groupSchedules = (data: SchemaSchedule[]): GroupedSchedule[] => {
     const existingGroup = findGroup(schedule);
 
     if (existingGroup) {
-      // Si el grupo ya existe, agregar el día y los vendorIdStoreIdChannelId
       if (!existingGroup.schedule.days.includes(schedule.day)) {
         existingGroup.schedule.days.push(schedule.day);
       }
-      // Agregar los IDs al array plano, evitando duplicados
       schedule.vendorIdStoreIdChannelId.forEach(id => {
         if (!existingGroup.vendorIdStoreIdChannelId.includes(id)) {
           existingGroup.vendorIdStoreIdChannelId.push(id);
         }
       });
     } else {
-      // Si no existe, crear un nuevo grupo
       groupedSchedules.push({
         vendorIdStoreIdChannelId: [...schedule.vendorIdStoreIdChannelId], // Array plano
         schedule: {
@@ -213,5 +215,34 @@ const groupSchedules = (data: SchemaSchedule[]): GroupedSchedule[] => {
     }
   });
 
-  return groupedSchedules;
+  return mergeGroupSchedules(groupedSchedules);
+};
+
+const mergeGroupSchedules = (
+  schedules: GroupedSchedule[]
+): GroupedSchedule[] => {
+  const mergedSchedules: GroupedSchedule[] = [];
+
+  schedules.forEach(schedule => {
+    schedule.schedule.days = schedule.schedule.days.sort();
+    const sortSchedule = sortObjectByKeys(schedule.schedule);
+    const hashSchedule = JSON.stringify(sortSchedule);
+    const findSchedule = mergedSchedules.find(
+      mergedSchedule => JSON.stringify(mergedSchedule.schedule) === hashSchedule
+    );
+    if (findSchedule) {
+      schedule.vendorIdStoreIdChannelId.forEach(id => {
+        if (!findSchedule.vendorIdStoreIdChannelId.includes(id)) {
+          findSchedule.vendorIdStoreIdChannelId.push(id);
+        }
+      });
+    } else {
+      mergedSchedules.push({
+        vendorIdStoreIdChannelId: schedule.vendorIdStoreIdChannelId,
+        schedule: sortSchedule
+      });
+    }
+  });
+
+  return mergedSchedules;
 };

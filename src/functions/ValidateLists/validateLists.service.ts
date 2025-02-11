@@ -134,7 +134,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     syncRequest.requestId = requestUid;
     await saveSyncRequest(syncRequest);
     logger.info("LISTS VALIDATE: TRANSFORMING LIST");
-    // await syncList(listInfo, accountId, hash, channelId, syncAll);
+
     const payload: PrepareProductsPayload = {
       listInfo,
       accountId,
