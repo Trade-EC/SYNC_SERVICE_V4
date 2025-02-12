@@ -2,6 +2,8 @@ import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.ut
 
 import { PublishValidatorProps } from "./publishWebhook.types";
 
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+
 /**
  *
  * @param vendorId
@@ -22,9 +24,7 @@ export const savePublishRequest = async (props: PublishValidatorProps) => {
     },
     {
       $set: {
-        updatedAt: new Date(
-          new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-        ),
+        updatedAt: getDateNow(),
         status,
         error: status === "ERROR" ? error : undefined
       }

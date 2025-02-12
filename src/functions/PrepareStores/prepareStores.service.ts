@@ -1,3 +1,5 @@
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+
 import { createSyncStoresRecords } from "./prepareStores.repository";
 import { deactivateStores } from "./prepareStores.repository";
 import { PrepareStoresPayload } from "./prepareStores.types";
@@ -26,9 +28,7 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
       countryId,
       status: "PENDING" as const,
       hash: storeHash,
-      createdAt: new Date(
-        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-      ),
+      createdAt: getDateNow(),
       requestId
     };
   });

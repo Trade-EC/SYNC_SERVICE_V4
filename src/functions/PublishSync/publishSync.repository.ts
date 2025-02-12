@@ -8,6 +8,8 @@ import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.ut
 
 import { Readable } from "stream";
 
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+
 const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
 
 /**
@@ -28,9 +30,7 @@ export const savePublishRequest = async (
     vendorId,
     accountId,
     status: "PENDING",
-    createdAt: new Date(
-      new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-    ),
+    createdAt: getDateNow(),
     type,
     publishId
   });

@@ -1,3 +1,5 @@
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+
 import { CreateProductProps } from "../CreateProduct/createProduct.types";
 import { DeleteProductsBody } from "../CreateProduct/createProduct.types";
 import { CreateProductsBody } from "../CreateProduct/createProduct.types";
@@ -34,9 +36,7 @@ const buildSyncRecords = async (
       source,
       hash: listHash,
       requestId,
-      createdAt: new Date(
-        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-      )
+      createdAt: getDateNow()
     };
   });
   return syncProducts;

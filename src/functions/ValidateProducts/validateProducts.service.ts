@@ -17,7 +17,8 @@ import { v4 as uuid } from "/opt/nodejs/sync-service-layer/node_modules/uuid";
 import { validateProducts } from "/opt/nodejs/transforms-layer/validators/products.validator";
 import {
   blackListValidator,
-  genErrorResponse
+  genErrorResponse,
+  getDateNow
 } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
@@ -110,9 +111,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
       type: "PRODUCTS",
       vendorId,
       hash,
-      createdAt: new Date(
-        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-      ),
+      createdAt: getDateNow(),
       metadata: { channelId, storesId: storeId, listId },
       s3Path: Location
     };
@@ -170,9 +169,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
       vendorId: "NAN",
       hash: "",
       error: JSON.stringify({ error }),
-      createdAt: new Date(
-        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-      ),
+      createdAt: getDateNow(),
       metadata: {},
       s3Path: Location
     };

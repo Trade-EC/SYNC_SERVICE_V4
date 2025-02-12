@@ -1,4 +1,5 @@
 import { ErrorSyncRequest, SyncRequest } from "../types/syncRequest.types";
+import { getDateNow } from "../utils/common.utils";
 import { connectToDatabase } from "../utils/mongo.utils";
 
 /**
@@ -35,9 +36,7 @@ export const saveSyncRequest = async (
     {
       $set: {
         ...syncRequest,
-        updatedAt: new Date(
-          new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-        )
+        updatedAt: getDateNow()
       }
     },
     { upsert, ignoreUndefined: true }
@@ -55,9 +54,7 @@ export const saveErrorSyncRequest = async (
     {
       $set: {
         status: "ERROR",
-        updatedAt: new Date(
-          new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-        )
+        updatedAt: getDateNow()
       }
     }
   );

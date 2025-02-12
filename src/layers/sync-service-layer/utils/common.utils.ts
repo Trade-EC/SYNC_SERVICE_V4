@@ -96,3 +96,14 @@ export const genErrorResponse = (statusCode: number, message: string) => ({
 export const blackListValidator = (blackList: string[], value: string) => {
   return blackList.includes(value);
 };
+
+export const getTodayMidnight = (): Date => {
+  const now = getDateNow();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+};
+
+export const getDateNow = (): Date => {
+  return new Date(
+    new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
+  );
+};
