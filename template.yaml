@@ -629,6 +629,11 @@ Resources:
               Action:
                 - s3:*
               Resource: !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+        - Statement:  # 🔹 Agregar permisos para AWS Translate
+          - Effect: Allow
+            Action:
+              - translate:TranslateText
+            Resource: "*"
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

@@ -8,6 +8,7 @@ import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { createSyncRecords } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
 import { fetchDraftStores } from "/opt/nodejs/sync-service-layer/repositories/common.repository";
+import translateText from "/opt/nodejs/sync-service-layer/configs/translate";
 
 const buildSyncRecords = async (
   productsIds: string[],
@@ -55,6 +56,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
   const { categories, list, modifierGroups, products } = listInfo;
   const { storeId, vendorId, listName, listId } = list;
   const logKeys = { vendorId, accountId, listId, storeId, requestId };
+  let countCharacters = 0;
   let storesId: string[];
   if (storeId === "replicate_in_all") {
     const dbStores = await fetchDraftStores(accountId, vendorId);
@@ -141,13 +143,60 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
   );
   logger.info(`${source} PREPARE: CREATING SYNC LIST RECORDS`, logKeys);
   await createSyncRecords(syncProducts);
-
-  const productsPromises = products.map(product => {
-    const { productId } = product;
-    const body1 = { product, storesId, channelId, accountId, vendorId, listId };
-    const body2 = { modifierGroups, categories, listName, productId, storeId };
+  const modifierGroupsTranslate = await Promise.all(
+    modifierGroups.map(async modifierGroup => {
+      countCharacters += modifierGroup.modifier.length;
+      return {
+        ...modifierGroup,
+        modifier: await translateText(modifierGroup.modifier, "es", "en")
+      };
+    })
+  );
+  const categoriesTranslate = await Promise.all(
+    categories.map(async category => {
+      countCharacters += category.name.length;
+      return {
+        ...category,
+        name: await translateText(category.name, "es", "en")
+      };
+    })
+  );
+  const productsPromises = products.map(async product => {
+    const { productId, name, description } = product;
+    const nameEn = await translateText(name, "es", "en");
+    const descriptionEn = description
+      ? await translateText(description, "es", "en")
+      : null;
+    //console.log("nameEn", { name, nameEn });
+    //console.log("descriptionEn", { description, descriptionEn });
+    countCharacters += nameEn.length;
+    countCharacters += descriptionEn ? descriptionEn.length : 0;
+    const productTranslated = {
+      ...product,
+      name: nameEn,
+      description: descriptionEn
+    };
+    const body1 = {
+      product: productTranslated,
+      storesId,
+      channelId,
+      accountId,
+      vendorId,
+      listId
+    };
+    const body2 = {
+      modifierGroups: modifierGroupsTranslate,
+      categories: categoriesTranslate,
+      listName,
+      productId,
+      storeId
+    };
     const body3 = { countryId, source, syncType: "NORMAL", vendorTaxes };
-    const body = { ...body1, ...body2, ...body3 } as CreateProductsBody;
+    const body = {
+      ...body1,
+      ...body2,
+      ...body3
+    } as CreateProductsBody;
     const messageBody: CreateProductProps = {
       vendorIdStoreIdChannelId,
       body,
@@ -161,7 +210,7 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
       MessageGroupId: `${accountId}-${countryId}-${vendorId}-${productId}`
     });
   });
-
+  console.log(`Count of characters: ${countCharacters}`);
   logger.info(`${source} PREPARE: SEND TO SQS`, logKeys);
   return await Promise.all(productsPromises);
 };

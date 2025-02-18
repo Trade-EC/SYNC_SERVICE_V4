@@ -6,7 +6,8 @@ import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syn
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 
 import { CreateProductProps } from "./createProduct.types";
-import { Vendor } from "../../layers/sync-service-layer/types/vendor.types";
+
+import { Vendor } from "/opt/nodejs/sync-service-layer/types/vendor.types";
 
 /**
  *
