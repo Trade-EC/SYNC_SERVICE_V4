@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 
+import { createOrUpdateImages } from "../../../functions/SyncImages/syncImages.repository";
 import { sqsExtendedClient } from "../configs/config";
 import { fetchImage } from "../repositories/images.repository";
 
@@ -47,6 +48,7 @@ export const imageHandler = async (url: string, imageCategory: string) => {
     };
   }
   const imageProps = getAwsImageProps(url, imageCategory);
+  await createOrUpdateImages({ ...imageProps, status: "PROCESSING" });
   const { bucket, cloudFrontUrl, key, name, url: s3Url } = imageProps;
   const transformedUrl = s3Url?.replace(key, encodeURIComponent(key)) ?? null;
   const response = {
