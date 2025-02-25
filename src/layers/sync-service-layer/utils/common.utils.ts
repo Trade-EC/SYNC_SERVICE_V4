@@ -107,3 +107,16 @@ export const getDateNow = (): Date => {
     new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
   );
 };
+
+export const getStartOfDayTimestamp = (date: Date = new Date()): number => {
+  const startOfDay = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+  return startOfDay.getTime();
+};

@@ -73,7 +73,7 @@ export const imageHandler = async (url: string, imageCategory: string) => {
 export const getAwsImageProps = (url: string, imageCategory: string) => {
   const clearUrl = url.split("?")[0];
   const extension = clearUrl.split(".").pop();
-  const name = `${randomUUID()}_${new Date().getTime()}.${extension}`; //clearUrl.split("/").pop();
+  const name = `${randomUUID()}_${new Date().getTime()}.${extension}`;
   const directory = getAwsDirectory(imageCategory);
   const Key = `${directory}${name}`;
 
@@ -84,6 +84,6 @@ export const getAwsImageProps = (url: string, imageCategory: string) => {
     category: imageCategory,
     cloudFrontUrl,
     name: imageCategory,
-    externalUrl: clearUrl
+    externalUrl: url
   };
 };
