@@ -15,7 +15,8 @@ import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 import { validateLists } from "/opt/nodejs/transforms-layer/validators/lists.validator";
 import {
   blackListValidator,
-  genErrorResponse
+  genErrorResponse,
+  getDateNow
 } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
@@ -111,9 +112,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
       type: "LISTS",
       vendorId,
       hash,
-      createdAt: new Date(
-        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-      ),
+      createdAt: getDateNow(),
       metadata: {
         channelId,
         storesId: storeId,
@@ -134,7 +133,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
     syncRequest.requestId = requestUid;
     await saveSyncRequest(syncRequest);
     logger.info("LISTS VALIDATE: TRANSFORMING LIST");
-    // await syncList(listInfo, accountId, hash, channelId, syncAll);
+
     const payload: PrepareProductsPayload = {
       listInfo,
       accountId,
@@ -174,9 +173,7 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
       vendorId: "NAN",
       hash: "",
       error: JSON.stringify({ error }),
-      createdAt: new Date(
-        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-      ),
+      createdAt: getDateNow(),
       metadata: {},
       s3Path: Location
     };

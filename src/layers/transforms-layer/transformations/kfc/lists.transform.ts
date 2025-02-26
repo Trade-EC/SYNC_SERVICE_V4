@@ -1,4 +1,7 @@
-import { isUndefined } from "../../../sync-service-layer/utils/common.utils";
+import {
+  getStartOfDayTimestamp,
+  isUndefined
+} from "../../../sync-service-layer/utils/common.utils";
 
 export const transformList = (list: any) => {
   delete list.stores;
@@ -31,7 +34,7 @@ export const transformProducts = (products: any[]) => {
     }
     if (product.images && process.env.FORCE_UPDATE_IMAGES_PRODUCTS === "true") {
       product.images = product.images.map((image: any) => {
-        image.fileUrl = `${image.fileUrl}?tz=${new Date().getTime()}`;
+        image.fileUrl = `${image.fileUrl}?tz=${getStartOfDayTimestamp()}`;
         return image;
       });
     }
@@ -54,7 +57,7 @@ export const transformCategories = (categories: any[]) => {
 
     category.images = category.images
       ? category.images.map((image: any) => {
-          image.fileUrl = `${image.fileUrl}?tz=${new Date().getTime()}`;
+          image.fileUrl = `${image.fileUrl}?tz=${getStartOfDayTimestamp()}`;
           return image;
         })
       : [];

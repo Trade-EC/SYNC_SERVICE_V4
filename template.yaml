@@ -1294,6 +1294,47 @@ Resources:
         External:
           - "/opt/nodejs/*"
 
+  ExecuteSync:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-ExecuteSync-${StageName}"
+      CodeUri: src/functions/ExecuteSync/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/api/v4/execute-sync"
+            Method: PUT
+            RestApiId: !Ref SyncServiceV4Api
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt PrepareProductsSQS.Arn 
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:*
+              Resource: 
+                - !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
+                - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
 
   CompareResponse:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction

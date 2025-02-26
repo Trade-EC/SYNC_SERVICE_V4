@@ -30,13 +30,18 @@ export const catalogueValidator = z.object({
 
 // ------------------------------------------ schedules
 
-export const dbScheduleValidator = scheduleValidator
-  .pick({ day: true, endDate: true, startDate: true })
-  .extend({
-    catalogueId: z.string(),
+export const dbScheduleValidator = z.object({
+  vendorIdStoreIdChannelId: z.array(z.string()),
+  schedule: z.object({
+    days: z.array(z.string()),
     from: z.number(),
-    to: z.number()
-  });
+    to: z.number(),
+    fromTime: z.string(),
+    toTime: z.string(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional()
+  })
+});
 
 export const locationValidator = z.object({
   lat: z.number(),
@@ -234,7 +239,7 @@ export const dbProductValidator = productValidator
     outOfStock: z.boolean(),
     outOfService: z.boolean(),
     hasModifiers: z.boolean(),
-    schedules: z.array(dbScheduleValidator.merge(catalogueValidator)),
+    schedules: z.array(dbScheduleValidator),
     images: z.array(dbImageValidator.merge(catalogueValidator)),
     vendor: idValidator,
     account: accountValidator,

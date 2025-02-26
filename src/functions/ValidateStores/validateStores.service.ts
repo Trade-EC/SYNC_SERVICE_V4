@@ -10,7 +10,10 @@ import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syn
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { validateStores } from "/opt/nodejs/transforms-layer/validators/store.validator";
-import { genErrorResponse } from "/opt/nodejs/sync-service-layer/utils/common.utils";
+import {
+  genErrorResponse,
+  getDateNow
+} from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
 // @ts-ignore
@@ -75,9 +78,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
       type: "CHANNELS_STORES",
       vendorId,
       hash,
-      createdAt: new Date(
-        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-      ),
+      createdAt: getDateNow(),
       s3Path: Location,
       metadata: {}
     };
@@ -132,9 +133,7 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
       vendorId: "NAN",
       hash: "",
       error: JSON.stringify({ error }),
-      createdAt: new Date(
-        new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-      ),
+      createdAt: getDateNow(),
       metadata: {},
       s3Path: Location
     };

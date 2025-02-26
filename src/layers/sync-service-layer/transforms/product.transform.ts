@@ -89,7 +89,7 @@ export const transformCategory = async (
     name,
     images: newImages,
     schedules: schedules
-      ? transformSchedules(schedules, storesId, channelId)
+      ? transformSchedules(schedules, storesId, channelId, vendorId)
       : [],
     subcategories: newChildCategories,
     parentId: parentId ? parentId : "",
@@ -435,12 +435,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
     upselling: upselling ? upselling : [],
     standardTime: standardTime || schedules ? "YES" : "NO", // Si me llegan schedules standardTime YES si no NO
     schedules: schedules
-      ? transformSchedules(schedules, storesId, channelId).map(schedule => ({
-          vendorIdStoreIdChannelId: storesId
-            .map(storeId => `${vendorId}.${storeId}.${channelId}`)
-            .sort(),
-          ...schedule
-        }))
+      ? transformSchedules(schedules, storesId, channelId, vendorId)
       : [],
     vendor: {
       id: `${accountId}.${countryId}.${vendorId}`

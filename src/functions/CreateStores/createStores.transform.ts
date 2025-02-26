@@ -43,12 +43,13 @@ export const storeTransformer = (
   const { storeCode, taxesInfo } = store;
   const { deliveryId } = deliveryInfo ?? {};
   const transformedSchedules = schedules
-    ? transformStoreSchedules(schedules, channelsMappings, storeId)
+    ? transformStoreSchedules(schedules, channelsMappings, vendorId, storeId)
     : [];
   const transformedSchedulesByChannel = schedulesByChannel
     ? transformStoreSchedulesByChannel(
         schedulesByChannel,
         storeId,
+        vendorId,
         channelsMappings
       )
     : [];

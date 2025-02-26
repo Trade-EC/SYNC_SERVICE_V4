@@ -4,6 +4,7 @@ import { CompleteMultipartUploadCommandOutput } from "/opt/nodejs/sync-service-l
 import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
 import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 
 const cloudfront = process.env.CLOUDFRONT_URL ?? "";
 const cloudFrontUrl = `https://${cloudfront}`;
@@ -17,10 +18,25 @@ const cloudFrontUrl = `https://${cloudfront}`;
 export const createOrUpdateImages = async (image: Partial<Image>) => {
   const { externalUrl, name } = image;
   const dbClient = await connectToDatabase();
+
+  const existingImage = await dbClient
+    .collection("images")
+    .findOne({ externalUrl, name });
+
+  const timestamps = {
+    updatedAt: getDateNow(),
+    ...(existingImage ? {} : { createdAt: getDateNow() })
+  };
+
   await dbClient
     .collection("images")
-    .updateOne({ externalUrl, name }, { $set: { ...image } }, { upsert: true });
-  return image;
+    .updateOne(
+      { externalUrl, name },
+      { $set: { ...image, ...timestamps } },
+      { upsert: true }
+    );
+
+  return { ...image, ...timestamps };
 };
 
 /**
@@ -32,7 +48,8 @@ export const createOrUpdateImages = async (image: Partial<Image>) => {
  */
 export const saveImage = async (imageProps: ImageSync): Promise<Image> => {
   const { externalUrl } = imageProps;
-  const rawImage = await fetch(externalUrl ?? "");
+  const clearUrl = externalUrl?.split("?")[0];
+  const rawImage = await fetch(clearUrl ?? "");
 
   const { bucket, key, name, url: s3Url, category } = imageProps;
   if (!rawImage?.body || !name) throw new Error("Image not found");

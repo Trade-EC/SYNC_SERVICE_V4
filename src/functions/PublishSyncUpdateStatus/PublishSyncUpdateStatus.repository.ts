@@ -1,3 +1,4 @@
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
@@ -149,9 +150,7 @@ export const saveVersion = async (
     vendorId,
     accountId,
     version,
-    createdAt: new Date(
-      new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-    ),
+    createdAt: getDateNow(),
     type
   });
 

@@ -1,10 +1,14 @@
-import { Document } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
-import { WithId } from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
+import {
+  Document,
+  WithId
+} from "/opt/nodejs/sync-service-layer/node_modules/mongodb/mongodb";
 import { s3Client } from "/opt/nodejs/sync-service-layer/configs/config";
 import { Upload } from "/opt/nodejs/sync-service-layer/node_modules/@aws-sdk/lib-storage";
 import { connectToDatabase } from "/opt/nodejs/sync-service-layer/utils/mongo.utils";
 
 import { Readable } from "stream";
+
+import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 
 const SYNC_BUCKET = process.env.SYNC_BUCKET_SYNC ?? "";
 
@@ -26,9 +30,7 @@ export const savePublishRequest = async (
     vendorId,
     accountId,
     status: "PENDING",
-    createdAt: new Date(
-      new Date().toLocaleString("en", { timeZone: "America/Guayaquil" })
-    ),
+    createdAt: getDateNow(),
     type,
     publishId
   });
