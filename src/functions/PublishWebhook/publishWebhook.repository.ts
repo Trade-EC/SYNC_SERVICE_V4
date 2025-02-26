@@ -12,23 +12,33 @@ import { getDateNow } from "/opt/nodejs/sync-service-layer/utils/common.utils";
  * @returns void
  */
 export const savePublishRequest = async (props: PublishValidatorProps) => {
-  const { vendorId, accountId, status, type, publishId, error } = props;
+  const { vendorId, accountId, status, type, publishId } = props;
+  const { error, warning } = props;
   const dbClient = await connectToDatabase();
+
+  const updateQuery: any = {
+    $set: {
+      updatedAt: getDateNow()
+    }
+  };
+
+  if (status === "ERROR") {
+    updateQuery.$set.error = error;
+    updateQuery.$set.status = status;
+  }
+
+  if (status === "WARNING" && warning) {
+    updateQuery.$push = { warnings: warning };
+  }
+
   const response = await dbClient.collection("publishRequest").updateOne(
     {
       vendorId,
       accountId,
-      $or: [{ status: "PENDING" }],
       type,
       publishId
     },
-    {
-      $set: {
-        updatedAt: getDateNow(),
-        status,
-        error: status === "ERROR" ? error : undefined
-      }
-    }
+    { ...updateQuery }
   );
 
   return response;
