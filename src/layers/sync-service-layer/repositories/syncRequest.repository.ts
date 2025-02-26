@@ -9,7 +9,7 @@ import { connectToDatabase } from "../utils/mongo.utils";
  * @returns {Promise<SyncRequest>}
  */
 export const fetchSyncRequest = async (syncRequest: SyncRequest) => {
-  const { createdAt, s3Path, ...restFilters } = syncRequest;
+  const { createdAt, s3Path, metadata, ...restFilters } = syncRequest;
   const dbClient = await connectToDatabase();
   const dbSyncRequest = await dbClient
     .collection("syncRequests")
@@ -29,13 +29,20 @@ export const saveSyncRequest = async (
   syncRequest: SyncRequest,
   upsert = true
 ) => {
-  const { status, ...restFilters } = syncRequest;
+  const { requestId } = syncRequest;
+  const { status, metadata, ...restFilters } = syncRequest;
   const dbClient = await connectToDatabase();
+  const request = requestId
+    ? await dbClient.collection("syncRequests").findOne({ requestId })
+    : null;
+  const updateQuery = request
+    ? { ...syncRequest, metadata: request.metadata }
+    : { ...syncRequest };
   const dbSyncRequest = await dbClient.collection("syncRequests").updateMany(
     { ...restFilters, $or: [{ status: "PENDING" }, { status: "ERROR" }] },
     {
       $set: {
-        ...syncRequest,
+        ...updateQuery,
         updatedAt: getDateNow()
       }
     },

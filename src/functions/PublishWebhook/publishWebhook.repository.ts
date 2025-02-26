@@ -18,7 +18,8 @@ export const savePublishRequest = async (props: PublishValidatorProps) => {
 
   const updateQuery: any = {
     $set: {
-      updatedAt: getDateNow()
+      updatedAt: getDateNow(),
+      status
     }
   };
 
