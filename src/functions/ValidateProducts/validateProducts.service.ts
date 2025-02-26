@@ -4,10 +4,14 @@ import { handleError } from "/opt/nodejs/sync-service-layer/utils/error.utils";
 
 import { PrepareProductsPayload } from "../PrepareProducts/prepareProducts.types";
 
-import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
-import { productsQueryParamsValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
-import { fetchSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
-import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
+import {
+  headersValidator,
+  productsQueryParamsValidator
+} from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import {
+  fetchSyncRequest,
+  saveSyncRequest
+} from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 //@ts-ignore
@@ -18,12 +22,14 @@ import { validateProducts } from "/opt/nodejs/transforms-layer/validators/produc
 import {
   blackListValidator,
   genErrorResponse,
-  getDateNow
+  getDateNow,
+  generateSyncS3Path
 } from "/opt/nodejs/sync-service-layer/utils/common.utils";
-import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
-import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
-import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
+import {
+  fetchMapAccount,
+  fetchVendor
+} from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 import { fetchAccount } from "/opt/nodejs/sync-service-layer/repositories/accounts.repository";
 import { fetchChannels } from "/opt/nodejs/sync-service-layer/repositories/channels.repository";
@@ -48,6 +54,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   try {
     logger.info("PRODUCTS VALIDATE: INIT");
     const listInfo = validateProducts(parsedBody, accountId);
+    const productIds = listInfo.products.map(product => product.productId);
     const { list } = listInfo;
     const { storeId, vendorId, listId } = list;
     logger.appendKeys({
@@ -112,7 +119,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
       vendorId,
       hash,
       createdAt: getDateNow(),
-      metadata: { channelId, storesId: storeId, listId },
+      metadata: { channelId, storesId: storeId, listId, productIds },
       s3Path: Location
     };
     const dbSyncRequest = await fetchSyncRequest(syncRequest);
@@ -129,7 +136,6 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
     await saveSyncRequest(syncRequest);
 
     logger.info("PRODUCTS VALIDATE: SEND TO SQS");
-    // await syncProducts(listInfo, accountId, hash, channelId, syncAll);
     const payload: PrepareProductsPayload = {
       listInfo,
       accountId,

@@ -1,4 +1,4 @@
-import { executeSyncValidator } from "./ExecuteSync.validator";
+import { executeSyncValidator } from "./executeSync.validator";
 
 import { z } from "/opt/nodejs/sync-service-layer/node_modules/zod";
 

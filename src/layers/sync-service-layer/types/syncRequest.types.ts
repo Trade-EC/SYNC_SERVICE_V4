@@ -16,6 +16,7 @@ export interface SyncRequestMetadata {
   channelId?: string;
   storesId?: string;
   listId?: string;
+  productIds?: string[];
 }
 
 export type ErrorSyncRequest = Pick<
