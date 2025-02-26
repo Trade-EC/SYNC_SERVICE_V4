@@ -32,22 +32,30 @@ export const saveSyncRequest = async (
   const { requestId } = syncRequest;
   const { status, metadata, ...restFilters } = syncRequest;
   const dbClient = await connectToDatabase();
-  const request = requestId
-    ? await dbClient.collection("syncRequests").findOne({ requestId })
-    : null;
-  const updateQuery = request
-    ? { ...syncRequest, metadata: request.metadata }
-    : { ...syncRequest };
-  const dbSyncRequest = await dbClient.collection("syncRequests").updateMany(
-    { ...restFilters, $or: [{ status: "PENDING" }, { status: "ERROR" }] },
-    {
-      $set: {
-        ...updateQuery,
-        updatedAt: getDateNow()
-      }
-    },
-    { upsert, ignoreUndefined: true }
-  );
+  const updateQuery = {
+    $set: {
+      ...syncRequest,
+      updatedAt: getDateNow()
+    }
+  };
+  let dbSyncRequest: any;
+  if (requestId) {
+    dbSyncRequest = await dbClient
+      .collection("syncRequests")
+      .updateOne(
+        { requestId },
+        { status, updatedAt: getDateNow() },
+        { upsert, ignoreUndefined: true }
+      );
+  } else {
+    dbSyncRequest = await dbClient
+      .collection("syncRequests")
+      .updateMany(
+        { ...restFilters, $or: [{ status: "PENDING" }, { status: "ERROR" }] },
+        updateQuery,
+        { upsert, ignoreUndefined: true }
+      );
+  }
 
   return dbSyncRequest;
 };

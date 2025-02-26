@@ -25,7 +25,6 @@ export const savePublishRequest = async (props: PublishValidatorProps) => {
 
   if (status === "ERROR") {
     updateQuery.$set.error = error;
-    updateQuery.$set.status = status;
   }
 
   if (status === "WARNING" && warning) {
