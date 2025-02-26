@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 
-import { validateExecuteSync } from "./ExecuteSync.validator";
+import { validateExecuteSync } from "./executeSync.validator";
 import { fetchSyncRequests } from "./executeSync.repository";
 
 import { fetchAccount } from "/opt/nodejs/sync-service-layer/repositories/accounts.repository";

@@ -9,11 +9,14 @@ import { ExecuteSyncParams } from "./executeSyncs.types";
 
 export const fetchSyncRequests = async (params: ExecuteSyncParams) => {
   const { vendorId, status, type, requestId, dateStart, dateEnd } = params;
+  const { accountId, countryId } = params;
   const dbClient = await connectToDatabase();
   const allRecords = await dbClient
     .collection("syncRequests")
     .find(
       {
+        accountId,
+        countryId,
         vendorId,
         status,
         type,
