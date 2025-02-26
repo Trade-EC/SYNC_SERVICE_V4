@@ -48,7 +48,6 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
   try {
     logger.info("PRODUCTS VALIDATE: INIT");
     const listInfo = validateProducts(parsedBody, accountId);
-    const productIds = listInfo.products.map(product => product.productId);
     const { list } = listInfo;
     const { storeId, vendorId, listId } = list;
     logger.appendKeys({
@@ -113,7 +112,7 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
       vendorId,
       hash,
       createdAt: getDateNow(),
-      metadata: { channelId, storesId: storeId, listId, productIds },
+      metadata: { channelId, storesId: storeId, listId },
       s3Path: Location
     };
     const dbSyncRequest = await fetchSyncRequest(syncRequest);
