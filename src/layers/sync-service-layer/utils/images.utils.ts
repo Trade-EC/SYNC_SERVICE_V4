@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 
+import { createOrUpdateImages } from "../../../functions/SyncImages/syncImages.repository";
 import { sqsExtendedClient } from "../configs/config";
 import { fetchImage } from "../repositories/images.repository";
 
@@ -47,6 +48,7 @@ export const imageHandler = async (url: string, imageCategory: string) => {
     };
   }
   const imageProps = getAwsImageProps(url, imageCategory);
+  await createOrUpdateImages({ ...imageProps, status: "PROCESSING" });
   const { bucket, cloudFrontUrl, key, name, url: s3Url } = imageProps;
   const transformedUrl = s3Url?.replace(key, encodeURIComponent(key)) ?? null;
   const response = {
@@ -73,7 +75,7 @@ export const imageHandler = async (url: string, imageCategory: string) => {
 export const getAwsImageProps = (url: string, imageCategory: string) => {
   const clearUrl = url.split("?")[0];
   const extension = clearUrl.split(".").pop();
-  const name = `${randomUUID()}_${new Date().getTime()}.${extension}`; //clearUrl.split("/").pop();
+  const name = `${randomUUID()}_${new Date().getTime()}.${extension}`;
   const directory = getAwsDirectory(imageCategory);
   const Key = `${directory}${name}`;
 
@@ -84,6 +86,6 @@ export const getAwsImageProps = (url: string, imageCategory: string) => {
     category: imageCategory,
     cloudFrontUrl,
     name: imageCategory,
-    externalUrl: clearUrl
+    externalUrl: url
   };
 };

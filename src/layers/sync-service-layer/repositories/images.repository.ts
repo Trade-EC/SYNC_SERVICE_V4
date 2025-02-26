@@ -15,7 +15,7 @@ export const fetchImage = async (
   const dbClient = await connectToDatabase();
   const image = await dbClient
     .collection("images")
-    .findOne({ externalUrl, name, status: "DONE" });
+    .findOne({ externalUrl, name });
 
   return image as unknown as DbImage;
 };
