@@ -1325,6 +1325,12 @@ Resources:
               Resource: 
                 - !Join ["", [!GetAtt SyncServiceV4LogsBucket.Arn, "/*"]]
                 - !Join ["", [!GetAtt SyncServiceV4SyncBucket.Arn, "/*"]]
+            - Effect: Allow
+              Action:
+                - s3:ListBucket
+              Resource:
+                - !GetAtt SyncServiceV4LogsBucket.Arn
+                - !GetAtt SyncServiceV4SyncBucket.Arn
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
