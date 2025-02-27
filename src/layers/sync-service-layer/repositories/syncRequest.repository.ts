@@ -9,7 +9,7 @@ import { connectToDatabase } from "../utils/mongo.utils";
  * @returns {Promise<SyncRequest>}
  */
 export const fetchSyncRequest = async (syncRequest: SyncRequest) => {
-  const { createdAt, s3Path, ...restFilters } = syncRequest;
+  const { createdAt, s3Path, metadata, ...restFilters } = syncRequest;
   const dbClient = await connectToDatabase();
   const dbSyncRequest = await dbClient
     .collection("syncRequests")
@@ -29,18 +29,33 @@ export const saveSyncRequest = async (
   syncRequest: SyncRequest,
   upsert = true
 ) => {
-  const { status, ...restFilters } = syncRequest;
+  const { requestId } = syncRequest;
+  const { status, metadata, ...restFilters } = syncRequest;
   const dbClient = await connectToDatabase();
-  const dbSyncRequest = await dbClient.collection("syncRequests").updateMany(
-    { ...restFilters, $or: [{ status: "PENDING" }, { status: "ERROR" }] },
-    {
-      $set: {
-        ...syncRequest,
-        updatedAt: getDateNow()
-      }
-    },
-    { upsert, ignoreUndefined: true }
-  );
+  const updateQuery = {
+    $set: {
+      ...syncRequest,
+      updatedAt: getDateNow()
+    }
+  };
+  let dbSyncRequest: any;
+  if (requestId) {
+    dbSyncRequest = await dbClient
+      .collection("syncRequests")
+      .updateOne(
+        { requestId },
+        { status, updatedAt: getDateNow() },
+        { upsert, ignoreUndefined: true }
+      );
+  } else {
+    dbSyncRequest = await dbClient
+      .collection("syncRequests")
+      .updateMany(
+        { ...restFilters, $or: [{ status: "PENDING" }, { status: "ERROR" }] },
+        updateQuery,
+        { upsert, ignoreUndefined: true }
+      );
+  }
 
   return dbSyncRequest;
 };
