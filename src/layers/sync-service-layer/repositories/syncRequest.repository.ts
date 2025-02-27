@@ -31,20 +31,24 @@ export const saveSyncRequest = async (
 ) => {
   const { requestId } = syncRequest;
   const { status, metadata, ...restFilters } = syncRequest;
+  let dbSyncRequest: any;
   const dbClient = await connectToDatabase();
+  const syncRequestDb = await dbClient
+    .collection("syncRequests")
+    .findOne({ requestId });
   const updateQuery = {
     $set: {
       ...syncRequest,
       updatedAt: getDateNow()
     }
   };
-  let dbSyncRequest: any;
-  if (requestId) {
+
+  if (syncRequestDb) {
     dbSyncRequest = await dbClient
       .collection("syncRequests")
       .updateOne(
         { requestId },
-        { status, updatedAt: getDateNow() },
+        { $set: { status, updatedAt: getDateNow() } },
         { upsert, ignoreUndefined: true }
       );
   } else {
