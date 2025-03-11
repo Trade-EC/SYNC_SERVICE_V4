@@ -4,11 +4,15 @@ import { handleError } from "/opt/nodejs/sync-service-layer/utils/error.utils";
 
 import { PrepareProductsPayload } from "../PrepareProducts/prepareProducts.types";
 
-import { headersValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
-import { productsQueryParamsValidator } from "/opt/nodejs/sync-service-layer/validators/common.validator";
+import {
+  headersValidator,
+  productsQueryParamsValidator
+} from "/opt/nodejs/sync-service-layer/validators/common.validator";
 import { SyncRequest } from "/opt/nodejs/sync-service-layer/types/syncRequest.types";
-import { fetchSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
-import { saveSyncRequest } from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
+import {
+  fetchSyncRequest,
+  saveSyncRequest
+} from "/opt/nodejs/sync-service-layer/repositories/syncRequest.repository";
 import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.config";
 //@ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
@@ -16,12 +20,14 @@ import { validateLists } from "/opt/nodejs/transforms-layer/validators/lists.val
 import {
   blackListValidator,
   genErrorResponse,
-  getDateNow
+  getDateNow,
+  generateSyncS3Path
 } from "/opt/nodejs/sync-service-layer/utils/common.utils";
-import { generateSyncS3Path } from "/opt/nodejs/sync-service-layer/utils/common.utils";
 import { createFileS3 } from "/opt/nodejs/sync-service-layer/utils/s3.utils";
-import { fetchMapAccount } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
-import { fetchVendor } from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
+import {
+  fetchMapAccount,
+  fetchVendor
+} from "/opt/nodejs/sync-service-layer/repositories/vendors.repository";
 import { sqsExtendedClient } from "/opt/nodejs/sync-service-layer/configs/config";
 // @ts-ignore
 import { v4 as uuid } from "/opt/nodejs/sync-service-layer/node_modules/uuid";
@@ -143,7 +149,10 @@ export const validateListsService = async (event: APIGatewayProxyEvent) => {
       requestId: requestUid,
       countryId,
       source: "LISTS",
-      vendorTaxes
+      vendorTaxes,
+      metadata: {
+        lambda: "PrepareProducts"
+      }
     };
 
     await sqsExtendedClient.sendMessage({

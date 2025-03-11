@@ -46,7 +46,13 @@ export const prepareStoreService = async (payload: PrepareStoresPayload) => {
       countryId,
       standardChannels
     };
-    const messageBody = { body, storeHash, syncAll, requestId };
+    const messageBody = {
+      body,
+      storeHash,
+      syncAll,
+      requestId,
+      metadata: { lambda: "SyncStores" }
+    };
 
     await sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_STORES_SQS_URL ?? "",

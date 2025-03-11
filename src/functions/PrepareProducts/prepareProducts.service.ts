@@ -113,7 +113,8 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
             body,
             listHash,
             syncAll,
-            requestId
+            requestId,
+            metadata: { lambda: "SyncProducts" }
           };
           return sqsExtendedClient.sendMessage({
             QueueUrl: process.env.SYNC_PRODUCT_SQS_URL ?? "",
@@ -153,7 +154,8 @@ export const prepareProductsService = async (props: PrepareProductsPayload) => {
       body,
       listHash,
       syncAll,
-      requestId
+      requestId,
+      metadata: { lambda: "SyncProducts" }
     };
     return sqsExtendedClient.sendMessage({
       QueueUrl: process.env.SYNC_PRODUCT_SQS_URL ?? "",

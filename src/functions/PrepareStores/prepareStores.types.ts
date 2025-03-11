@@ -12,4 +12,5 @@ export interface PrepareStoresPayload {
   requestId: string;
   countryId: string;
   syncAll?: boolean;
+  metadata?: any;
 }

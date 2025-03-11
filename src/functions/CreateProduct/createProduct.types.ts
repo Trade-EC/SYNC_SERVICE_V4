@@ -15,6 +15,7 @@ export interface CreateProductProps {
   listHash: string;
   syncAll: boolean;
   requestId: string;
+  metadata?: any;
 }
 
 export interface DeleteProductsBody {

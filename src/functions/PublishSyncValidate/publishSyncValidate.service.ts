@@ -47,7 +47,10 @@ export const publishSyncValidateService = async (
       vendorId,
       accountId,
       rePublish,
-      all
+      all,
+      metadata: {
+        lambda: "PublishSync"
+      }
     })
   });
 

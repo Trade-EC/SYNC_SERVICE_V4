@@ -2,9 +2,11 @@ import { logger } from "/opt/nodejs/sync-service-layer/configs/observability.con
 // @ts-ignore
 import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
 
-import { findStore } from "./createStores.repository";
-import { createOrUpdateStores } from "./createStores.repository";
-import { verifyCompletedStore } from "./createStores.repository";
+import {
+  findStore,
+  createOrUpdateStores,
+  verifyCompletedStore
+} from "./createStores.repository";
 import { storeTransformer } from "./createStores.transform";
 import { CreateStoreProps } from "./createStores.types";
 import { CreateShippingCostProps } from "../CreateShippingCost/createShippingCost.types";
@@ -86,7 +88,8 @@ export const syncStoresService = async (props: CreateStoreProps) => {
       storeId,
       vendorId,
       oldShippingCostId: shippingCostId,
-      countryId
+      countryId,
+      metadata: { lambda: "ShippingCostSync" }
     };
     logger.info("STORE: SEND SHIPPING COST", { shippingPayload, ...logKeys });
     await sqsExtendedClient.sendMessage({
@@ -126,5 +129,4 @@ export const syncStoresService = async (props: CreateStoreProps) => {
   logger.info("STORE: VERIFY COMPLETED STORE", logKeys);
   await verifyCompletedStore(syncStoreRequest, storeHash);
   logger.info("STORE: FINISHED", logKeys);
-  return;
 };

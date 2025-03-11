@@ -108,7 +108,10 @@ export const sendMessageToUpdateStatusSQS = async (
     accountId,
     version,
     all,
-    type
+    type,
+    metadata: {
+      lambda: "UpdateStatus"
+    }
   };
 
   await sqsExtendedClient.sendMessage({

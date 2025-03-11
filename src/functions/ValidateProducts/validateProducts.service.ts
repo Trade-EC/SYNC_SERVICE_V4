@@ -145,7 +145,10 @@ export const validateProductsService = async (event: APIGatewayProxyEvent) => {
       source: "PRODUCTS",
       requestId: requestUid,
       countryId,
-      vendorTaxes
+      vendorTaxes,
+      metadata: {
+        lambda: "PrepareProducts"
+      }
     };
 
     await sqsExtendedClient.sendMessage({

@@ -103,7 +103,8 @@ export const validateStoresService = async (event: APIGatewayProxyEvent) => {
       storeHash: hash,
       standardChannels: channels,
       requestId: requestUid,
-      countryId
+      countryId,
+      metadata: { lambda: "PrepareStores" }
     };
 
     await sqsExtendedClient.sendMessage({

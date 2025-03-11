@@ -1370,6 +1370,71 @@ Resources:
         External:
           - "/opt/nodejs/*"
           
+  ErrorHandling:
+    Type: AWS::Serverless::Function # More info about Function Resource:
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-ErrorHandling-${StageName}"
+      CodeUri: src/functions/ErrorHandling/
+      Handler: handler.lambdaHandler
+      Runtime: nodejs18.x
+      Tracing: Active
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 30
+      Events:
+        DLQEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt PrepareProductsDLQ.Arn
+            BatchSize: 1
+        DLQPrepareStoresEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt PrepareStoresDLQ.Arn
+            BatchSize: 1
+        DLQSyncImagesEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt SyncImagesDLQ.Arn
+            BatchSize: 1
+        DLQStoresSyncEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt StoresSyncDLQ.Arn
+            BatchSize: 1
+        DLQProductSyncEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ProductSyncDLQ.Arn
+            BatchSize: 1
+        DLQPublishSyncEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt PublishSyncDLQ.Arn
+            BatchSize: 1
+        DLQUpdateStatusEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt UpdateStatusDLQ.Arn
+            BatchSize: 1
+        DLQShippingCostSyncEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ShippingCostSyncDLQ.Arn
+            BatchSize: 1
+    
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - handler.ts
+        External:
+          - "/opt/nodejs/*"
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

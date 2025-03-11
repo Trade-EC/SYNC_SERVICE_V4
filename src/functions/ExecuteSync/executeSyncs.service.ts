@@ -134,7 +134,8 @@ const syncList = async (syncRequest: SyncRequest, data: any) => {
       requestId: requestUid,
       countryId,
       source: "LISTS",
-      vendorTaxes
+      vendorTaxes,
+      metadata: { lambda: "PrepareLists" }
     };
 
     await sqsExtendedClient.sendMessage({
@@ -196,7 +197,8 @@ const syncStore = async (syncRequest: SyncRequest, data: any) => {
       storeHash: hash,
       standardChannels: channels,
       requestId: requestUid,
-      countryId
+      countryId,
+      metadata: { lambda: "PrepareStores" }
     };
 
     await sqsExtendedClient.sendMessage({
@@ -271,7 +273,8 @@ const syncProducts = async (syncRequest: SyncRequest, data: any) => {
       source: "PRODUCTS",
       requestId: requestUid,
       countryId,
-      vendorTaxes
+      vendorTaxes,
+      metadata: { lambda: "PrepareProducts" }
     };
 
     await sqsExtendedClient.sendMessage({

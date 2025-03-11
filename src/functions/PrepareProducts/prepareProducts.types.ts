@@ -14,4 +14,5 @@ export interface PrepareProductsPayload {
   countryId: string;
   vendorTaxes: TaxesInfo | undefined;
   syncAll?: boolean;
+  metadata?: any;
 }

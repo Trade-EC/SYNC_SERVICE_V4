@@ -56,7 +56,8 @@ export const imageHandler = async (url: string, imageCategory: string) => {
     cloudFrontUrl,
     key,
     name,
-    url: transformedUrl
+    url: transformedUrl,
+    metadata: { lambda: "SyncImages" }
   };
   await sqsExtendedClient.sendMessage({
     QueueUrl: process.env.SYNC_IMAGES_SQS_URL ?? "",
