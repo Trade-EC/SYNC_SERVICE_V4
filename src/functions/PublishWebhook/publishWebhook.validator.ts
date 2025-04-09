@@ -4,7 +4,7 @@ export const publishWebhookValidator = z.object({
   vendorId: z.string(),
   accountId: z.string(),
   status: z.enum(["ERROR", "SUCCESS", "WARNING"]),
-  type: z.enum(["PRODUCTS", "STORES"]),
+  type: z.enum(["PRODUCTS", "STORES", "SHIPPINGCOST"]),
   publishId: z.string(),
   error: z.string().optional(),
   warning: z.string().optional()

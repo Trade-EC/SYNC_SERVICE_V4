@@ -15,7 +15,7 @@ export const savePublishRequest = async (props: PublishValidatorProps) => {
   const { vendorId, accountId, status, type, publishId } = props;
   const { error, warning } = props;
   const dbClient = await connectToDatabase();
-
+  const indexName = type === "SHIPPINGCOST" ? "STORES" : type;
   const updateQuery: any = {
     $set: {
       updatedAt: getDateNow(),
@@ -35,7 +35,7 @@ export const savePublishRequest = async (props: PublishValidatorProps) => {
     {
       vendorId,
       accountId,
-      type,
+      type: indexName,
       publishId
     },
     { ...updateQuery }
