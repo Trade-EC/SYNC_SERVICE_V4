@@ -262,7 +262,7 @@ export const transformPrices = (
  */
 export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
   const { modifier, modifierId, maxOptions } = modifierGroup;
-  const { minOptions, additionalInfo } = modifierGroup; // type is not using
+  const { minOptions, additionalInfo, type } = modifierGroup;
 
   let description = "";
 
@@ -283,9 +283,10 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
     externalId: modifierId,
     name: modifier,
     description,
+    type,
     min: minOptions,
     max: maxOptions,
-    additionalInfo: additionalInfo ? additionalInfo : null,
+    additionalInfo: additionalInfo ?? null,
     visible: true
   };
   return question;
