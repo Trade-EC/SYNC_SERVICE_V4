@@ -287,12 +287,13 @@ export const transformModifierGroup = (
     externalId: modifierId,
     name: modifier,
     description,
-    type: accountsWithTypeInQuestions.includes(accountId) ? type : "CUSTOM",
     min: minOptions,
     max: maxOptions,
     additionalInfo: additionalInfo ?? null,
-    visible: true
+    visible: true,
+    ...(accountsWithTypeInQuestions.includes(accountId) && { type })
   };
+
   return question;
 };
 
