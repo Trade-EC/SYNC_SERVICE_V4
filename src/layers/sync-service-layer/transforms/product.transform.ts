@@ -260,10 +260,14 @@ export const transformPrices = (
  * @description Transform modifier group into DbQuestion
  * @returns DbQuestion
  */
-export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
+export const transformModifierGroup = (
+  modifierGroup: ModifierGroup,
+  accountId: string
+) => {
   const { modifier, modifierId, maxOptions } = modifierGroup;
-  const { minOptions, additionalInfo } = modifierGroup; // type is not using
-
+  const { minOptions, additionalInfo, type } = modifierGroup;
+  const accountsWithTypeInQuestions =
+    process.env.ACCOUNTS_WITH_TYPE_IN_QUESTIONS?.split(",") ?? [];
   let description = "";
 
   if (minOptions === 1 && maxOptions === 1) {
@@ -283,9 +287,10 @@ export const transformModifierGroup = (modifierGroup: ModifierGroup) => {
     externalId: modifierId,
     name: modifier,
     description,
+    type: accountsWithTypeInQuestions.includes(accountId) ? type : "CUSTOM",
     min: minOptions,
     max: maxOptions,
-    additionalInfo: additionalInfo ? additionalInfo : null,
+    additionalInfo: additionalInfo ?? null,
     visible: true
   };
   return question;
@@ -338,7 +343,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
         .filter(modifier => !!modifier);
 
       const question: DbQuestion = {
-        ...transformModifierGroup(modifierGroup),
+        ...transformModifierGroup(modifierGroup, accountId),
         position: questionPosition ?? questionIndex,
         answers: syncModifiers
       };
