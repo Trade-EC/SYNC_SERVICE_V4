@@ -1,3 +1,5 @@
+import { v4 as uuid } from "uuid";
+
 import { ErrorSyncRequest, SyncRequest } from "../types/syncRequest.types";
 import { getDateNow } from "../utils/common.utils";
 import { connectToDatabase } from "../utils/mongo.utils";
@@ -29,19 +31,14 @@ export const saveSyncRequest = async (
   syncRequest: SyncRequest,
   upsert = true
 ) => {
-  const { requestId } = syncRequest;
-  const { status, metadata, ...restFilters } = syncRequest;
+  const { requestId: request } = syncRequest;
+  const { status } = syncRequest;
   let dbSyncRequest: any;
   const dbClient = await connectToDatabase();
+  const requestId = request ?? uuid();
   const syncRequestDb = await dbClient
     .collection("syncRequests")
     .findOne({ requestId });
-  const updateQuery = {
-    $set: {
-      ...syncRequest,
-      updatedAt: getDateNow()
-    }
-  };
 
   if (syncRequestDb) {
     dbSyncRequest = await dbClient
@@ -52,13 +49,12 @@ export const saveSyncRequest = async (
         { upsert, ignoreUndefined: true }
       );
   } else {
-    dbSyncRequest = await dbClient
-      .collection("syncRequests")
-      .updateMany(
-        { ...restFilters, $or: [{ status: "PENDING" }, { status: "ERROR" }] },
-        updateQuery,
-        { upsert, ignoreUndefined: true }
-      );
+    dbSyncRequest = await dbClient.collection("syncRequests").insertOne({
+      ...syncRequest,
+      requestId,
+      createdAt: getDateNow(),
+      updatedAt: getDateNow()
+    });
   }
 
   return dbSyncRequest;
