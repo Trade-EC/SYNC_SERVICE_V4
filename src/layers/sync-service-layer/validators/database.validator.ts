@@ -254,6 +254,21 @@ export const dbProductValidator = productValidator
   });
 
 // ------------------------------------------ shippingCost
+export const dbDeliveryAdditionalServicesValidator = z.object({
+  serviceName: z.string().optional(),
+  serviceTimeValue: z.number().optional(),
+  serviceTimeUnit: z.string().optional(),
+  serviceDescription: z.string().optional(),
+  cookTime: z.string().optional(),
+  deliveryId: z.coerce.number().int(),
+  minimumOrder: z.number().optional(),
+  maximumOrder: z.number().optional(),
+  serviceCost: z.number(),
+  geoType: z.string(),
+  geoShape: z.array(z.array(z.array(z.coerce.number()))).nullable(),
+  geoDistance: z.number().nullable(),
+  vendorIdStoreIdChannelId: z.array(z.string())
+});
 
 export const dbShippingCostValidator = z.object({
   shippingCostId: z.string(),
@@ -271,5 +286,9 @@ export const dbShippingCostValidator = z.object({
   total: z.number(),
   account: z.object({ accountId: z.string() }),
   vendor: z.object({ id: z.string() }),
-  externalId: z.number().optional()
+  externalId: z.number().optional(),
+  additionalServices: z
+    .array(dbDeliveryAdditionalServicesValidator)
+    .optional()
+    .default([])
 });
