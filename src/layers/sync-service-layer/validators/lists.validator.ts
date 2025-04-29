@@ -15,8 +15,7 @@ export const productPriceInfoValidator = z.object({
 
 export const productModifier = z.object({
   modifierId: z.string().max(100),
-  position: z.number().int(),
-  default: z.boolean().optional().default(false)
+  position: z.number().int()
 });
 
 export const productValidator = z.object({
@@ -51,7 +50,7 @@ export const modifierOptionValidator = z.object({
   optionId: z.string().max(100),
   productId: z.string().max(100),
   position: z.number().int().optional(),
-  default: z.boolean().or(z.number()).optional().default(false),
+  default: z.boolean().or(z.number()).optional(),
   additionalInfo: z.record(z.string().min(1), z.any()).optional()
 });
 

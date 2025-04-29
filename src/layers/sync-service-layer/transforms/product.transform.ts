@@ -325,14 +325,13 @@ export const transformProduct = async (props: TransformProductsProps) => {
       if (!modifierGroup) return undefined;
       const syncModifiers: any = modifierGroup?.modifierOptions
         .map(modifier => {
-          const { productId, optionId, default: isDefault } = modifier;
+          const { productId, optionId } = modifier;
           return {
             productId: `${accountId}.${countryId}.${vendorId}.${productId}`,
             attributes: {
               externalId: productId,
               showInMenu: true,
-              answerExternalId: optionId,
-              default: !!isDefault
+              answerExternalId: optionId
             },
             questionId: modifierGroup.modifierId
           };

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { additionalInfoValidator } from "./common.validator";
+import { scheduleValidator } from "./common.validator";
 import { productValidator } from "./lists.validator";
 
 export const dbTaxValidator = z.object({
@@ -180,8 +181,7 @@ export const dbPriceValidator = z.object({
 export const dbAnswerAttributesValidator = z.object({
   externalId: z.string(),
   showInMenu: z.boolean(),
-  answerExternalId: z.string(),
-  default: z.boolean().optional().default(false)
+  answerExternalId: z.string()
 });
 
 export const dbAnswerValidator = z.object({
