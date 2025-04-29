@@ -1,9 +1,5 @@
 import { sortObjectByKeys } from "./common.utils";
 import { ChannelMappings } from "../types/channel.types";
-
-// @ts-ignore
-import sha1 from "/opt/nodejs/sync-service-layer/node_modules/sha1";
-
 import {
   GroupedSchedule,
   Schedule,
