@@ -407,8 +407,8 @@ export const transformProduct = async (props: TransformProductsProps) => {
     outOfStock: false,
     sponsored: !!featured,
     suggestedPrice: suggestedPrice ? +suggestedPrice.toPrecision(2) : 0,
-    maxAmountForSale: maxAmountForSale,
-    minAmountForSale: minAmountForSale,
+    maxAmountForSale: maxAmountForSale ?? null,
+    minAmountForSale: minAmountForSale ?? null,
     statuses: [
       {
         vendorIdStoreIdChannelId: storesId
