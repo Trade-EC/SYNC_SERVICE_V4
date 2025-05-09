@@ -414,7 +414,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
         vendorIdStoreIdChannelId: storesId
           .map(storeId => `${vendorId}.${storeId}.${channelId}`)
           .sort(),
-        availability: true,
+        available: true,
         isVisible: true,
         maxInCart: null,
         minInCart: null,
