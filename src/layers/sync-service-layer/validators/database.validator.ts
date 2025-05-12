@@ -158,7 +158,7 @@ export const dbStatusPromotedValidator = z.object({
 
 export const dbProductStatuses = z
   .object({
-    availability: z.boolean(),
+    available: z.boolean(),
     isVisible: z.boolean(),
     maxInCart: z.number().nullable(),
     minInCart: z.number().nullable(),
