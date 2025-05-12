@@ -39,6 +39,7 @@ Globals:
         STAGE_NAME: !Ref StageName
         SYNC_BLACK_LIST: ""
         FORCE_UPDATE_IMAGES_PRODUCTS: !Ref ForceUpdateImagesProducts
+        ACCOUNTS_WITH_TYPE_IN_QUESTIONS: !Ref accountsWithTypeInQuestions
     VpcConfig:
       SecurityGroupIds:
         - !Ref securityGroupIds
@@ -87,6 +88,10 @@ Parameters:
     Type: String
     Default: "false"
     Description: (Required) Force update images and products
+  accountsWithTypeInQuestions:
+    Type: String
+    Default: "39"
+    Description: (Required) Accounts with type in questions
 Resources:
   # SQS Queues
   SyncImagesSQS:
