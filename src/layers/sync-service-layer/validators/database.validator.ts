@@ -160,8 +160,8 @@ export const dbProductStatuses = z
   .object({
     available: z.boolean(),
     showInMenu: z.boolean(),
-    maxInCart: z.number().nullable(),
-    minInCart: z.number().nullable(),
+    maxAmountForSale: z.number().nullable(),
+    minAmountForSale: z.number().nullable(),
     promoted: dbStatusPromotedValidator
   })
   .merge(catalogueValidator);

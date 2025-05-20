@@ -416,8 +416,8 @@ export const transformProduct = async (props: TransformProductsProps) => {
           .sort(),
         available: true,
         showInMenu: true,
-        maxInCart: null,
-        minInCart: null,
+        maxAmountForSale: null,
+        minAmountForSale: null,
         promoted: {
           isPromotionActive: false,
           discountPercentage: null
