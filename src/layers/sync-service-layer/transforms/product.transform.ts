@@ -309,6 +309,7 @@ export const transformProduct = async (props: TransformProductsProps) => {
   const { productId, name, description, type, featured } = product;
   const { tags, additionalInfo, standardTime, schedules } = product;
   const { priceInfo, taxInfo, productModifiers, upselling } = product;
+  const { minAmountForSale, maxAmountForSale } = product;
   const { images } = product;
   const { suggestedPrice } = priceInfo;
 
@@ -412,16 +413,17 @@ export const transformProduct = async (props: TransformProductsProps) => {
     outOfStock: false,
     sponsored: !!featured,
     suggestedPrice: suggestedPrice ? +suggestedPrice.toPrecision(2) : 0,
-    maxAmountForSale: 0,
+    maxAmountForSale: maxAmountForSale ?? null,
+    minAmountForSale: minAmountForSale ?? null,
     statuses: [
       {
         vendorIdStoreIdChannelId: storesId
           .map(storeId => `${vendorId}.${storeId}.${channelId}`)
           .sort(),
-        availability: true,
-        isVisible: true,
-        maxInCart: null,
-        minInCart: null,
+        available: true,
+        showInMenu: true,
+        maxAmountForSale: null,
+        minAmountForSale: null,
         promoted: {
           isPromotionActive: false,
           discountPercentage: null

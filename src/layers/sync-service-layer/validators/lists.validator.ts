@@ -34,6 +34,8 @@ export const productValidator = z.object({
   images: z.array(imageValidator).optional(),
   schedules: z.array(scheduleValidator).optional(),
   additionalInfo: z.record(z.string().min(1), z.any()).optional(),
+  minAmountForSale: z.number().int().optional(),
+  maxAmountForSale: z.number().int().optional(),
   type: z.enum([
     "PRODUCT",
     "MODIFIER",

@@ -158,10 +158,10 @@ export const dbStatusPromotedValidator = z.object({
 
 export const dbProductStatuses = z
   .object({
-    availability: z.boolean(),
-    isVisible: z.boolean(),
-    maxInCart: z.number().nullable(),
-    minInCart: z.number().nullable(),
+    available: z.boolean(),
+    showInMenu: z.boolean(),
+    maxAmountForSale: z.number().nullable(),
+    minAmountForSale: z.number().nullable(),
     promoted: dbStatusPromotedValidator
   })
   .merge(catalogueValidator);
@@ -234,7 +234,8 @@ export const dbProductValidator = productValidator
     attributes: dbProductAttributesValidator,
     additionalInfo: additionalInfoValidator.nullable(),
     sponsored: z.boolean(),
-    maxAmountForSale: z.number(),
+    minAmountForSale: z.number().int().nullable(),
+    maxAmountForSale: z.number().int().nullable(),
     available: z.boolean(),
     outOfStock: z.boolean(),
     outOfService: z.boolean(),

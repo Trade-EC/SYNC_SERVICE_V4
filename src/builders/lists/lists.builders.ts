@@ -50,6 +50,8 @@ export const buildProduct = (overrides: Partial<Product> = {}): Product => {
     description: faker.lorem.words(2),
     standardTime: faker.datatype.boolean(),
     featured: faker.datatype.boolean(),
+    minAmountForSale: faker.number.int(),
+    maxAmountForSale: faker.number.int(),
     type: faker.helpers.arrayElement([
       "PRODUCT",
       "MODIFIER",
